@@ -57,7 +57,7 @@ def dijkstras(sourceNodeIndex, adjacencyMatrix):
                     distances[neighbourIndex] = newDistance
                     nodesToBeVisited.ChangePriority(neighbourNode,newDistance)
         
-    print(distances)
+    #print(distances)
     for i in range(numNodes):
         print(f"Shortest distance to {nodeLabels[i]} is {distances[i]}")
     
