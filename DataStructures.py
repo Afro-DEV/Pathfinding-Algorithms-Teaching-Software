@@ -34,7 +34,7 @@ class PriorityQueue():
     def __init__(self):
         self.__queue: list[Node] = []
     
-    def Enqueue(self, node: Node):
+    def Enqueue(self, node: Node) -> None:
         for index, item in enumerate(self.__queue):
         # Lower priority node goes first if equal then goes in alphabetical order of lael
             if node.GetPriority() < item.GetPriority() or (node.GetPriority() == item.GetPriority() and node.GetLabel() < item.GetLabel()):
@@ -77,7 +77,7 @@ class PriorityQueue():
              
      
         
-    def Dequeue(self):
+    def Dequeue(self) -> None:
         self.__queue.pop(0)
                  
 
@@ -87,7 +87,7 @@ class PriorityQueue():
         else:
             return False
 
-    def ChangePriority(self, node, priority):
+    def ChangePriority(self, node: Node, priority:int) -> Node:
         #Insert into correct place delete occurence
         temp: Node = node
         self.__queue.remove(node)
@@ -99,7 +99,7 @@ class PriorityQueue():
     def ReturnNodeAtIndex(self, index: int) -> Node:
         return self.__queue[index]
         
-    def OutputQueue(self):
+    def OutputQueue(self)-> None:
         #print(len(self.queue))
         for item in self.__queue:
             print(item.GetNodeData(), end= "")

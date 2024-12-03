@@ -1,10 +1,8 @@
 import time
 import random
-import numpy as np    
-
 
 #Main function I will be using
-def matrix(n,d):
+def matrix(n: int,d: float) -> list[list[int]]:
     
     matrix = [[0 for x in range(n)] for y in range(n)]
     for i in range(n):
