@@ -6,14 +6,36 @@ import generatingmatix as g
 nodeLabels = {i: chr(65+i) for i in range(11)}
 
 class AnimationController():
-    def __init__(self, nodeReferences, edgeReferences, visitedNodesText, nodesToBeVisitedText, distancesTable):
+    def __init__(self, nodeReferences, edgeReferences, visitedNodesText, nodesToBeVisitedText, distancesTable, tableData, axs, fig):
         self.__visitedNodesText = visitedNodesText
         self.__nodesToBeVisitedText = nodesToBeVisitedText
-        self.__distancesTable = distancesTable
         self.__nodeReferences = nodeReferences
         self.__edgeReferences = edgeReferences
-    def UpdateDistancesTableUI(distancesTable):
-        ...
+        self.__distancesTable = distancesTable
+        self.__tableData: list = tableData
+        self.__axs = axs
+        self.__fig = fig 
+
+    def UpdateDistancesTableUI(self, distances):
+        newRow = [distance if distance != float('inf') else '∞' for distance in distances.copy()]
+        self.__tableData.append(newRow)
+        if self.__distancesTable:
+            self.__distancesTable.remove()
+    
+        self.__distancesTable = self.__axs[1].table(
+        cellText=self.__tableData,
+        colLabels=[nodeLabels[i] for i in range(len(distances))],
+        loc='center',
+        cellLoc='center',
+        bbox = [0,0.3,1,0.4]
+        )
+        # self.__distancesTable.auto_set_font_size(False)
+        # self.__distancesTable.set_fontsize(14)
+        for cell in self.__distancesTable.get_celld().values():
+            cell.PAD = 1
+        
+        # May not need self.__fig.canvas.draw()
+        #self.__distancesTable.plt.remove()
 
     def HighlightEdgesOfNode(self, currentIndex) -> None:
         for edge in self.__edgeReferences[currentIndex]:
@@ -35,7 +57,7 @@ class AnimationController():
         notesToBeVisitedString = ','.join(node.GetLabel() for node in nodesToBeVisited.GetQueue())
         self.__nodesToBeVisitedText.set_text(f'P[{notesToBeVisitedString}]')
     
-    def UpdateDataStructuresUI(self, visitedNodes: list[Node], nodesToBeVisited: PriorityQueue):
+    def UpdateDataStructuresPAndS(self, visitedNodes: list[Node], nodesToBeVisited: PriorityQueue):
         self.UpdateNodesToBeVisitedText(nodesToBeVisited)
         self.UpdateVisitedNodesText(visitedNodes)
     
@@ -113,25 +135,28 @@ def DisplayDataStrucutures(axs, numNodes, sourceNodeIndex):
     axs[1].set_title('Data Structures')
     #axs[1].set_axis_off()
     visitedNodesText =axs[1].text(0.5, 0.8, 'S{ABCDEF}', fontsize=20, ha='center', va='center', wrap=True)
-    nodesToOptimiseText = axs[1].text(0.5, 0.7, 'P[DFAFDAE]', fontsize=20, ha='center', va='center', wrap=True)
+    nodesToOptimiseText = axs[1].text(0.5, 0.7, 'P[]', fontsize=20, ha='center', va='center', wrap=True)
     #Fix lol
     data = [[distance if distance != float('inf') else '∞' for distance in initialDistances]]
     distancesTable = axs[1].table(cellText=data,
                                   colLabels=columnLabels,
                                   loc='center',
-                                  cellLoc='center')
+                                  cellLoc='center',
+                                  edges='closed',
+                                  bbox = [0,0.3,1,0.4])
     distancesTable.auto_set_font_size(False)
     distancesTable.set_fontsize(14)
-    distancesTable.auto_set_column_width(col=list(range(len(columnLabels))))
+    axs[1].set_axis_off()
+    #distancesTable.auto_set_column_width(col=list(range(len(columnLabels))))
     
-    return visitedNodesText, nodesToOptimiseText, distancesTable
+    return visitedNodesText, nodesToOptimiseText, distancesTable, data
 
 def DisplayWindow(adjacencyMatrix: list[list[int]], sourceNodeIndex: int) -> None:
     numNodes: int = len(adjacencyMatrix)
     fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
     nodeReference, edgeReferences = DisplayGraph(adjacencyMatrix, axs)
-    visitedNodesText, nodesToBeVisitedText, distancesTable = DisplayDataStrucutures(axs, numNodes, sourceNodeIndex)
-    animationController = AnimationController(nodeReference, edgeReferences, visitedNodesText, nodesToBeVisitedText , distancesTable)
+    visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = DisplayDataStrucutures(axs, numNodes, sourceNodeIndex)
+    animationController = AnimationController(nodeReference, edgeReferences, visitedNodesText, nodesToBeVisitedText , distancesTable, tableData, axs, fig)
 
     AnimateDijkstras( adjacencyMatrix, sourceNodeIndex,  distancesTable, animationController)
     plt.tight_layout()
@@ -154,7 +179,7 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
     visitedNodes: list[Node]= []
     for i in range(numNodes):
         priority = distances[i]
-        nodesToBeVisited.Enqueue(Node(nodeLabels[i], priority, i,False))
+        nodesToBeVisited.Enqueue(Node(nodeLabels[i], priority, i))
         
     #nodesToBeVisited.queue[sourceNode].SetPriority(0)
     #sourceNode = nodesToBeVisited.ReturnNodeAtIndex(sourceNodeIndex)
@@ -167,7 +192,8 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
     #nodesToBeVisited.OutputQueue()
     while not nodesToBeVisited.IsEmpty():
         currentNode: Node = nodesToBeVisited.Peek()
-        nodesToBeVisited.Dequeue()
+        
+        
         currentIndex = currentNode.GetIndex()
         visitedNodes.append(currentNode)
         if currentIndex != sourceNodeIndex:
@@ -175,8 +201,8 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
         animationController.HighlightEdgesOfNode(currentIndex)
         #UpdateVisitedNodesText(visitedNodes, visitedNodesText)
         #UpdatenodesToBeVisitedText(nodesToBeVisited, nodesToBeVisitedText)
-        animationController.UpdateDataStructuresUI(visitedNodes, nodesToBeVisited)
-        plt.pause(1.9)
+        animationController.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
+        plt.pause(3)
         
         
 
@@ -192,11 +218,13 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
                 if newDistance < distances[neighbourIndex]:
                     distances[neighbourIndex] = newDistance
                     nodesToBeVisited.ChangePriority(neighbourNode,newDistance)
-                    animationController.UpdateDistancesTableUI()
+                    
+        animationController.UpdateDistancesTableUI(distances)
         
         
         
         animationController.DehighlightEdgesOfNode(currentIndex)
+        nodesToBeVisited.Dequeue()
     animationController.DehighlightAllNodes()
         
     #print(distances)
@@ -223,6 +251,6 @@ if __name__ == '__main__':
     
     #Maker ur own version
     num = 8
-    b = g.matrix(5,75)
+    b = g.matrix(3,100)
     #DisplayWindow(test)
     DisplayWindow(test, 0)

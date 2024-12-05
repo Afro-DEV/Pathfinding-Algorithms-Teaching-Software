@@ -1,9 +1,9 @@
 class Node():
-    def __init__(self, label,priority, index, visitedState):
+    def __init__(self, label,priority, index, ):
         self.__label: str = label
         self.__priority = priority
         self.__index: int = index
-        self.__visitedState:bool  = visitedState
+        
 
     def OutputNode(self):
         print((f"({self.__label}, {self.__priority})"))
