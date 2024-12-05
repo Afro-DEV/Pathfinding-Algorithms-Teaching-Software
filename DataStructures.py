@@ -21,14 +21,12 @@ class Node():
     def GetLabel(self)-> str:
         return self.__label
     
-    def GetVisitedState(self):
-        return self.__visitedState
+    
 
     def SetPriority(self, newPriority):
         self.__priority = newPriority
     
-    def SetVisitedStateTrue(self):
-        self.__visitedState = True
+   
 
 class PriorityQueue():
     def __init__(self):
