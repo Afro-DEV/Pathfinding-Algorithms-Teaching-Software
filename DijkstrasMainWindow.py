@@ -15,6 +15,7 @@ class AnimationController():
         self.__tableData: list = tableData
         self.__axs = axs
         self.__fig = fig 
+        self.__callCounter = 0
 
     def UpdateDistancesTableUI(self, distances):
         newRow = [distance if distance != float('inf') else '∞' for distance in distances.copy()]
@@ -27,14 +28,16 @@ class AnimationController():
         colLabels=[nodeLabels[i] for i in range(len(distances))],
         loc='center',
         cellLoc='center',
-        bbox = [0,0.2,1,0.4]
+        bbox = [0,0.1,1,0.4]
         )
         # self.__distancesTable.auto_set_font_size(False)
         # self.__distancesTable.set_fontsize(14)
         for cell in self.__distancesTable.get_celld().values():
-            cell.PAD = 1
+            #cell.PAD = 1
+            pass
         
-        # May not need self.__fig.canvas.draw()
+        self.__callCounter += 0.1
+        self.__fig.canvas.draw()
         #self.__distancesTable.plt.remove()
 
     def HighlightEdgesOfNode(self, currentIndex) -> None:
@@ -122,7 +125,7 @@ def DisplayGraph(adjacencyMatrix: list[list[int]], axs) :
     # plt.axis('off')
     # plt.title('Dijkstras demeonstration')
     axs[0].set_title('Dijkstras Demonstration')
-    #axs[0].set_axis_off()
+    axs[0].set_axis_off()
     return nodeReferecnce, edgeReferences
     
     
@@ -143,10 +146,10 @@ def DisplayDataStrucutures(axs, numNodes, sourceNodeIndex):
                                   loc='center',
                                   cellLoc='center',
                                   edges='closed',
-                                  bbox = [0,0.,1,0.4])
+                                  bbox = [0,0.1,1,0.4])
     distancesTable.auto_set_font_size(False)
     distancesTable.set_fontsize(14)
-    axs[1].set_axis_off()
+    #axs[1].set_axis_off()
     #distancesTable.auto_set_column_width(col=list(range(len(columnLabels))))
     
     return visitedNodesText, nodesToOptimiseText, distancesTable, data
@@ -195,14 +198,13 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
         
         
         currentIndex = currentNode.GetID()
-        visitedNodes.append(currentNode)
-        if currentIndex != sourceNodeIndex:
-            animationController.SetNodeColour(currentIndex, 'darksalmon')
         animationController.HighlightEdgesOfNode(currentIndex)
-        #UpdateVisitedNodesText(visitedNodes, visitedNodesText)
-        #UpdatenodesToBeVisitedText(nodesToBeVisited, nodesToBeVisitedText)
         animationController.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
+        animationController.SetNodeColour(currentIndex, 'yellow') if currentIndex != sourceNodeIndex else None
         plt.pause(3)
+        
+        visitedNodes.append(currentNode)
+        animationController.SetNodeColour(currentIndex, 'darksalmon') if currentIndex != sourceNodeIndex else None
         
         
 
@@ -225,6 +227,7 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
         
         animationController.DehighlightEdgesOfNode(currentIndex)
         nodesToBeVisited.Dequeue()
+    animationController.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
     animationController.DehighlightAllNodes()
         
     #print(distances)
@@ -251,6 +254,6 @@ if __name__ == '__main__':
     
     #Maker ur own version
     num = 8
-    b = g.GenerateMatrix(3,100)
+    b = g.GenerateMatrix(6,60)
     #DisplayWindow(test)
-    DisplayWindow(test, 0)
+    DisplayWindow(b, 0)
