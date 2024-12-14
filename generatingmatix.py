@@ -2,7 +2,7 @@ import time
 import random
 
 #Main function I will be using
-def matrix(n: int,d: float) -> list[list[int]]:
+def GenerateMatrix(n: int,d: float) -> list[list[int]]:
     
     matrix = [[0 for x in range(n)] for y in range(n)]
     for i in range(n):
@@ -17,9 +17,9 @@ def matrix(n: int,d: float) -> list[list[int]]:
 
 if __name__ == "__main__":
     start_time = time.time()
-    a = matrix(5, 0)
-    b = matrix(5, 50)
-    c = matrix(5,100)
+    a = GenerateMatrix(5, 0)
+    b = GenerateMatrix(5, 50)
+    c = GenerateMatrix(5,100)
     print(a)
     print()
     print(b)

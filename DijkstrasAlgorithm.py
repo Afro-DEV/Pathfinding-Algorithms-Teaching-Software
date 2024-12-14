@@ -24,7 +24,7 @@ def dijkstras(sourceNodeIndex, adjacencyMatrix):
     while not nodesToBeVisited.IsEmpty():
         currentNode: Node = nodesToBeVisited.Peek()
         nodesToBeVisited.Dequeue()
-        currentIndex = currentNode.GetIndex()
+        currentIndex = currentNode.GetID()
         # if currentNode.GetVisitedState():
         #     print('hi')
         #     #Skip node if already visited
@@ -82,7 +82,7 @@ def dijkstras(sourceNodeIndex, adjacencyMatrix):
         
     
 if __name__== '__main__':
-    a = g.matrix(4,5)
+    a = g.GenerateMatrix(4,5)
     matrix = [[ 0, 10,  5,],
     [10,  0, 12],
     [ 5, 12,  0,]]

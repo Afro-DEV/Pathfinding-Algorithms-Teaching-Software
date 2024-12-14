@@ -1,8 +1,8 @@
 class Node():
-    def __init__(self, label,priority, index, ):
+    def __init__(self, label,priority, id, ):
         self.__label: str = label
         self.__priority = priority
-        self.__index: int = index
+        self.__id: int = id
         
 
     def OutputNode(self):
@@ -15,8 +15,8 @@ class Node():
     def GetNodeData(self):
         return f"({self.__label}, {self.__priority})"
     
-    def GetIndex(self) -> int:
-        return self.__index
+    def GetID(self) -> int:
+        return self.__id
     
     def GetLabel(self)-> str:
         return self.__label
@@ -103,9 +103,9 @@ class PriorityQueue():
             print(item.GetNodeData(), end= "")
         print()
 
-    def GetNodeByIndex(self, index: int) -> Node:
+    def GetNodeByID(self, index: int) -> Node:
         for node in self.__queue:
-            if node.GetIndex() == index:
+            if node.GetID() == index:
                 return node
         #Therefore node has already been visited
         return None

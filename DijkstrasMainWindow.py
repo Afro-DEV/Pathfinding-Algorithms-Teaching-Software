@@ -27,7 +27,7 @@ class AnimationController():
         colLabels=[nodeLabels[i] for i in range(len(distances))],
         loc='center',
         cellLoc='center',
-        bbox = [0,0.3,1,0.4]
+        bbox = [0,0.2,1,0.4]
         )
         # self.__distancesTable.auto_set_font_size(False)
         # self.__distancesTable.set_fontsize(14)
@@ -61,11 +61,11 @@ class AnimationController():
         self.UpdateNodesToBeVisitedText(nodesToBeVisited)
         self.UpdateVisitedNodesText(visitedNodes)
     
-    def SetNodeColour(self, index, colour):
-        self.__nodeReferences[index].set(color = colour)
+    def SetNodeColour(self, id, colour):
+        self.__nodeReferences[id].set(color = colour)
 
 
-def GetAngles(numNodes: int) -> list:
+def GetAngles(numNodes: int) -> list[float]:
     #tau is 2pi
     #Make your own pi function
     step = math.tau / numNodes
@@ -122,7 +122,7 @@ def DisplayGraph(adjacencyMatrix: list[list[int]], axs) :
     # plt.axis('off')
     # plt.title('Dijkstras demeonstration')
     axs[0].set_title('Dijkstras Demonstration')
-    axs[0].set_axis_off()
+    #axs[0].set_axis_off()
     return nodeReferecnce, edgeReferences
     
     
@@ -143,7 +143,7 @@ def DisplayDataStrucutures(axs, numNodes, sourceNodeIndex):
                                   loc='center',
                                   cellLoc='center',
                                   edges='closed',
-                                  bbox = [0,0.3,1,0.4])
+                                  bbox = [0,0.,1,0.4])
     distancesTable.auto_set_font_size(False)
     distancesTable.set_fontsize(14)
     axs[1].set_axis_off()
@@ -194,7 +194,7 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
         currentNode: Node = nodesToBeVisited.Peek()
         
         
-        currentIndex = currentNode.GetIndex()
+        currentIndex = currentNode.GetID()
         visitedNodes.append(currentNode)
         if currentIndex != sourceNodeIndex:
             animationController.SetNodeColour(currentIndex, 'darksalmon')
@@ -210,7 +210,7 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
             weight = adjacencyMatrix[currentIndex][neighbourIndex]
             
             #neighbourNode of type None when neighbourNode has already been visited
-            neighbourNode: Node = nodesToBeVisited.GetNodeByIndex(neighbourIndex)
+            neighbourNode: Node = nodesToBeVisited.GetNodeByID(neighbourIndex)
             if weight > 0 and neighbourNode != None:
                 newDistance = distances[currentIndex] + weight
                 
@@ -251,6 +251,6 @@ if __name__ == '__main__':
     
     #Maker ur own version
     num = 8
-    b = g.matrix(3,100)
+    b = g.GenerateMatrix(3,100)
     #DisplayWindow(test)
     DisplayWindow(test, 0)
