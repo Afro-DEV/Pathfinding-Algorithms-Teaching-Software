@@ -19,7 +19,6 @@ def sin(x: float) -> float:
 if __name__ == '__main__':
     print([i for i in range(3,20,4)])
     pi = math.pi
-    a=1
     
     print(cos(pi))
     print(sin(pi))
