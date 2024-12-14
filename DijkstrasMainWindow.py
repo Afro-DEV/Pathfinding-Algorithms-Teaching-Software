@@ -3,6 +3,9 @@ import math
 from Utilities import sin, cos
 from DataStructures import Node, PriorityQueue
 import generatingmatix as g
+import random
+from adjustText import adjust_text
+from math import sqrt
 nodeLabels = {i: chr(65+i) for i in range(11)}
 
 class AnimationController():
@@ -16,6 +19,7 @@ class AnimationController():
         self.__axs = axs
         self.__fig = fig 
         self.__callCounter = 0
+        self.__pauseLength: int = 3
 
     def UpdateDistancesTableUI(self, distances):
         newRow = [distance if distance != float('inf') else '∞' for distance in distances.copy()]
@@ -76,13 +80,13 @@ def GetAngles(numNodes: int) -> list[float]:
     return angles
 
 
-def CircularLayout(numNodes: int) -> dict[int, float]:
+def CircularLayout(numNodes: int) -> dict[int, tuple[float,float]]:
     radius = 1
     angles = GetAngles(numNodes)
     coordinates = {}
     for i,angle in enumerate(angles):
-        x_Coord = radius * cos(angle)
-        y_Coord = radius * sin(angle)
+        x_Coord = radius * cos(angle) 
+        y_Coord = radius * sin(angle) 
         coordinates[i] = (x_Coord, y_Coord)
     return coordinates
 
@@ -92,7 +96,8 @@ def DisplayGraph(adjacencyMatrix: list[list[int]], axs) :
     numNodes: int = len(adjacencyMatrix)
     nodeReferecnce = {}
     edgeReferences = [[] for i in range(numNodes)]
-    
+    edgeLabels = []
+    lablePositions = []
     #plt.figure(figsize=(8,8))
     coordinates = CircularLayout(numNodes)
     
@@ -119,7 +124,12 @@ def DisplayGraph(adjacencyMatrix: list[list[int]], axs) :
                 edgeReferences[j].append(edge)
                 
                 # plt.text(x_mid, y_mid-0.05, str([adjMatrix[i][j]])[1:-1], fontsize=14, ha='center', va='center',)
-                axs[0].text(x_mid, y_mid-0.05, str([adjacencyMatrix[i][j]])[1:-1], fontsize=14, ha='center', va='center',)
+                offset_x = 0.05 if abs(x_Coords[0] - x_Coords[1]) > abs(y_Coords[0] - y_Coords[1]) else 0 
+                offset_y = 0 if abs(x_Coords[0] - x_Coords[1]) > abs(y_Coords[0] - y_Coords[1]) else 0.05
+                label_x = x_mid + offset_x + random.uniform(-0.02, 0.02)
+                label_y = y_mid + offset_y + random.uniform(-0.02, 0.02)
+                edgeLabels.append(axs[0].text(label_x, label_y, str([adjacencyMatrix[i][j]])[1:-1], fontsize=14, ha='center', va='center',))
+    adjust_text(edgeLabels, ax=axs[0])
     
     #nodeReferecnce[2].set_color('red')
     # plt.axis('off')
@@ -127,7 +137,8 @@ def DisplayGraph(adjacencyMatrix: list[list[int]], axs) :
     axs[0].set_title('Dijkstras Demonstration')
     axs[0].set_axis_off()
     return nodeReferecnce, edgeReferences
-    
+
+
     
     
 
@@ -254,6 +265,6 @@ if __name__ == '__main__':
     
     #Maker ur own version
     num = 8
-    b = g.GenerateMatrix(6,60)
+    b = g.GenerateMatrix(8,50)
     #DisplayWindow(test)
     DisplayWindow(b, 0)
