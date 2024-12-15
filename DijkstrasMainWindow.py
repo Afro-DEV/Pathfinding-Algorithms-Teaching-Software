@@ -5,7 +5,9 @@ from DataStructures import Node, PriorityQueue
 import generatingmatix as g
 import random
 from adjustText import adjust_text
-from math import sqrt
+import tkinter as tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from time import sleep
 nodeLabels = {i: chr(65+i) for i in range(11)}
 
 class AnimationController():
@@ -18,8 +20,7 @@ class AnimationController():
         self.__tableData: list = tableData
         self.__axs = axs
         self.__fig = fig 
-        self.__callCounter = 0
-        self.__pauseLength: int = 3
+        self.__callCounter = 10
 
     def UpdateDistancesTableUI(self, distances):
         newRow = [distance if distance != float('inf') else '∞' for distance in distances.copy()]
@@ -55,6 +56,7 @@ class AnimationController():
     def DehighlightAllNodes(self) -> None:
         for node in self.__nodeReferences.values():
             node.set(color = 'skyblue')
+        self.__fig.canvas.draw()
 
     def UpdateVisitedNodesText(self, visitedNodes: list[Node]) -> None:
         visitedNodesString = ','.join(node.GetLabel() for node in visitedNodes)
@@ -67,9 +69,20 @@ class AnimationController():
     def UpdateDataStructuresPAndS(self, visitedNodes: list[Node], nodesToBeVisited: PriorityQueue):
         self.UpdateNodesToBeVisitedText(nodesToBeVisited)
         self.UpdateVisitedNodesText(visitedNodes)
+        self.__fig.canvas.draw()
     
     def SetNodeColour(self, id, colour):
         self.__nodeReferences[id].set(color = colour)
+
+    def GetFigure(self):
+        return self.__fig
+    
+    def AnimationSleep(self):
+        window = self.__fig.canvas.get_tk_widget().master  # Get the Tkinter window
+        window.after(10000, self.resume_animation)
+    
+    def resume_animation():  
+        pass
 
 
 def GetAngles(numNodes: int) -> list[float]:
@@ -105,9 +118,9 @@ def DisplayGraph(adjacencyMatrix: list[list[int]], axs) :
     for i, (x, y) in coordinates.items():
         #How to alter properties of value
         #node  = plt.scatter(x, y, s=300, color='skyblue', zorder=3)
-        node = axs[0].scatter(x, y, s=300, color='skyblue', zorder=3)
+        node = axs.scatter(x, y, s=300, color='skyblue', zorder=3)
         nodeReferecnce[i] = node
-        axs[0].text(x, y, nodeLabels[i], fontsize=12, ha='center', va='center')
+        axs.text(x, y, nodeLabels[i], fontsize=12, ha='center', va='center')
         
     #Plotting the edges
     for i in range(numNodes):
@@ -119,23 +132,27 @@ def DisplayGraph(adjacencyMatrix: list[list[int]], axs) :
                 y_mid = (y_Coords[0] + y_Coords[1]) / 2
 
                 # b =plt.plot(x_Coords, y_Coords, color='grey')
-                edge, = axs[0].plot(x_Coords, y_Coords, color='grey')
+                edge, = axs.plot(x_Coords, y_Coords, color='grey')
                 edgeReferences[i].append(edge)
                 edgeReferences[j].append(edge)
-                
-                # plt.text(x_mid, y_mid-0.05, str([adjMatrix[i][j]])[1:-1], fontsize=14, ha='center', va='center',)
-                offset_x = 0.05 if abs(x_Coords[0] - x_Coords[1]) > abs(y_Coords[0] - y_Coords[1]) else 0 
-                offset_y = 0 if abs(x_Coords[0] - x_Coords[1]) > abs(y_Coords[0] - y_Coords[1]) else 0.05
-                label_x = x_mid + offset_x + random.uniform(-0.02, 0.02)
-                label_y = y_mid + offset_y + random.uniform(-0.02, 0.02)
-                edgeLabels.append(axs[0].text(label_x, label_y, str([adjacencyMatrix[i][j]])[1:-1], fontsize=14, ha='center', va='center',))
-    adjust_text(edgeLabels, ax=axs[0])
+                if numNodes == 2:
+                # For two nodes, place label exactly at the midpoint
+                    label_x = x_mid
+                    label_y = y_mid
+                else:
+                    offset_x = 0.05 if abs(x_Coords[0] - x_Coords[1]) > abs(y_Coords[0] - y_Coords[1]) else 0 
+                    offset_y = 0 if abs(x_Coords[0] - x_Coords[1]) > abs(y_Coords[0] - y_Coords[1]) else 0.05
+                    #Adding random jitter in addition to offset
+                    label_x = x_mid + offset_x + random.uniform(-0.02, 0.02)
+                    label_y = y_mid + offset_y + random.uniform(-0.02, 0.02)
+                edgeLabels.append(axs.text(label_x, label_y, str([adjacencyMatrix[i][j]])[1:-1], fontsize=14, ha='center', va='center',))
+    adjust_text(edgeLabels, ax=axs)
     
     #nodeReferecnce[2].set_color('red')
     # plt.axis('off')
     # plt.title('Dijkstras demeonstration')
-    axs[0].set_title('Dijkstras Demonstration')
-    axs[0].set_axis_off()
+    axs.set_title('Dijkstras Demonstration')
+    axs.set_axis_off()
     return nodeReferecnce, edgeReferences
 
 
@@ -146,13 +163,13 @@ def DisplayDataStrucutures(axs, numNodes, sourceNodeIndex):
     columnLabels = [nodeLabels[i] for i in range(numNodes)]
     initialDistances = [float('inf')]* numNodes
     initialDistances[sourceNodeIndex] = 0
-    axs[1].set_title('Data Structures')
+    axs.set_title('Data Structures')
     #axs[1].set_axis_off()
-    visitedNodesText =axs[1].text(0.5, 0.8, 'S{ABCDEF}', fontsize=20, ha='center', va='center', wrap=True)
-    nodesToOptimiseText = axs[1].text(0.5, 0.7, 'P[]', fontsize=20, ha='center', va='center', wrap=True)
+    visitedNodesText =axs.text(0.5, 0.8, 'S{ABCDEF}', fontsize=20, ha='center', va='center', wrap=True)
+    nodesToOptimiseText = axs.text(0.5, 0.7, 'P[]', fontsize=20, ha='center', va='center', wrap=True)
     #Fix lol
     data = [[distance if distance != float('inf') else '∞' for distance in initialDistances]]
-    distancesTable = axs[1].table(cellText=data,
+    distancesTable = axs.table(cellText=data,
                                   colLabels=columnLabels,
                                   loc='center',
                                   cellLoc='center',
@@ -166,15 +183,28 @@ def DisplayDataStrucutures(axs, numNodes, sourceNodeIndex):
     return visitedNodesText, nodesToOptimiseText, distancesTable, data
 
 def DisplayWindow(adjacencyMatrix: list[list[int]], sourceNodeIndex: int) -> None:
+    
+
+
     numNodes: int = len(adjacencyMatrix)
     fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
-    nodeReference, edgeReferences = DisplayGraph(adjacencyMatrix, axs)
-    visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = DisplayDataStrucutures(axs, numNodes, sourceNodeIndex)
+    nodeReference, edgeReferences = DisplayGraph(adjacencyMatrix, axs[0])
+    visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = DisplayDataStrucutures(axs[1], numNodes, sourceNodeIndex)
     animationController = AnimationController(nodeReference, edgeReferences, visitedNodesText, nodesToBeVisitedText , distancesTable, tableData, axs, fig)
 
+    window = tk.Tk()
+    window.title("Dijkstra's demonstration")
+    GraphFrame = tk.Frame(master=window)
+    GraphFrame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+    canvas = FigureCanvasTkAgg(fig, master=GraphFrame,)
+    canvasWidget = canvas.get_tk_widget()  # Get the Tkinter widget
+    canvasWidget.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+    #window.mainloop()
     AnimateDijkstras( adjacencyMatrix, sourceNodeIndex,  distancesTable, animationController)
+    window.mainloop()
     plt.tight_layout()
-    plt.show()
+    #plt.show()
+    
 
 
 def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  distancesTable, animationController: AnimationController) -> None:
@@ -206,13 +236,15 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
     #nodesToBeVisited.OutputQueue()
     while not nodesToBeVisited.IsEmpty():
         currentNode: Node = nodesToBeVisited.Peek()
-        
+        nodesToBeVisited.Dequeue()
         
         currentIndex = currentNode.GetID()
         animationController.HighlightEdgesOfNode(currentIndex)
         animationController.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
         animationController.SetNodeColour(currentIndex, 'yellow') if currentIndex != sourceNodeIndex else None
         plt.pause(3)
+        #animationController.AnimationSleep()
+        
         
         visitedNodes.append(currentNode)
         animationController.SetNodeColour(currentIndex, 'darksalmon') if currentIndex != sourceNodeIndex else None
@@ -237,7 +269,7 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
         
         
         animationController.DehighlightEdgesOfNode(currentIndex)
-        nodesToBeVisited.Dequeue()
+        
     animationController.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
     animationController.DehighlightAllNodes()
         
@@ -265,6 +297,6 @@ if __name__ == '__main__':
     
     #Maker ur own version
     num = 8
-    b = g.GenerateMatrix(8,50)
+    b = g.GenerateMatrix(2,100)
     #DisplayWindow(test)
-    DisplayWindow(b, 0)
+    DisplayWindow(test, 0)
