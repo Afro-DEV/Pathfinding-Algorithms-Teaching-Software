@@ -47,11 +47,13 @@ class AnimationController():
 
     def HighlightEdgesOfNode(self, currentIndex) -> None:
         for edge in self.__edgeReferences[currentIndex]:
-            edge.set(color='red')
+            edge.set(color='red', linewidth=2)
+        self.__fig.canvas.draw()
 
     def DehighlightEdgesOfNode(self, currentIndex) -> None:
         for edge in self.__edgeReferences[currentIndex]:
             edge.set(color='grey')
+        self.__fig.canvas.draw()
 
     def DehighlightAllNodes(self) -> None:
         for node in self.__nodeReferences.values():
@@ -73,6 +75,7 @@ class AnimationController():
     
     def SetNodeColour(self, id, colour):
         self.__nodeReferences[id].set(color = colour)
+        self.__fig.canvas.draw()
 
     def GetFigure(self):
         return self.__fig
@@ -195,7 +198,7 @@ def DisplayWindow(adjacencyMatrix: list[list[int]], sourceNodeIndex: int) -> Non
     window = tk.Tk()
     window.title("Dijkstra's demonstration")
     GraphFrame = tk.Frame(master=window)
-    GraphFrame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+    GraphFrame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)    
     canvas = FigureCanvasTkAgg(fig, master=GraphFrame,)
     canvasWidget = canvas.get_tk_widget()  # Get the Tkinter widget
     canvasWidget.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -210,7 +213,7 @@ def DisplayWindow(adjacencyMatrix: list[list[int]], sourceNodeIndex: int) -> Non
 def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  distancesTable, animationController: AnimationController) -> None:
     #Do your own way in this function
     numNodes = len(adjacencyMatrix)
-    
+    window = animationController.GetFigure().canvas.get_tk_widget().master 
 
 
 
@@ -234,7 +237,18 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
     
     #nodesToBeVisited.ChangePriority(, 0)
     #nodesToBeVisited.OutputQueue()
-    while not nodesToBeVisited.IsEmpty():
+    def updateAnimation():
+        
+        if nodesToBeVisited.IsEmpty():
+            animationController.DehighlightAllNodes()
+            print('Animaton Complete!')
+            for i in range(numNodes):
+                print(f"Shortest distance to {nodeLabels[i]} is {distances[i]}")
+    
+    
+            for i in range(numNodes): 
+                visitedNodes[i].OutputNode()
+            return 
         currentNode: Node = nodesToBeVisited.Peek()
         nodesToBeVisited.Dequeue()
         
@@ -242,11 +256,12 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
         animationController.HighlightEdgesOfNode(currentIndex)
         animationController.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
         animationController.SetNodeColour(currentIndex, 'yellow') if currentIndex != sourceNodeIndex else None
-        plt.pause(3)
+        #plt.pause(3)
         #animationController.AnimationSleep()
         
         
         visitedNodes.append(currentNode)
+        print(visitedNodes)
         animationController.SetNodeColour(currentIndex, 'darksalmon') if currentIndex != sourceNodeIndex else None
         
         
@@ -268,17 +283,18 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
         
         
         
-        animationController.DehighlightEdgesOfNode(currentIndex)
         
-    animationController.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
-    animationController.DehighlightAllNodes()
-        
+        animationController.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
+        def dehighlightCurrentNodeAndEdges():
+            animationController.DehighlightEdgesOfNode(currentIndex)
+            animationController.DehighlightAllNodes()
+            window.after(1000, updateAnimation)  # Call the next animation step after dehighlighting
+
+    # Delay dehighlighting to let highlighting be visible
+        window.after(750, dehighlightCurrentNodeAndEdges)
+    updateAnimation()
     #print(distances)
-    for i in range(numNodes):
-        print(f"Shortest distance to {nodeLabels[i]} is {distances[i]}")
     
-    for i in range(numNodes):
-        visitedNodes[i].OutputNode()
 
     #plt.show()
 
@@ -297,6 +313,6 @@ if __name__ == '__main__':
     
     #Maker ur own version
     num = 8
-    b = g.GenerateMatrix(2,100)
+    b = g.GenerateMatrix(5,50)
     #DisplayWindow(test)
     DisplayWindow(test, 0)
