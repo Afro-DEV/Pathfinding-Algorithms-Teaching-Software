@@ -10,7 +10,7 @@ def GenerateMatrix(n: int,d: float) -> list[list[int]]:
         for j in range(i+1, n):
             pValue = random.random() #Generates random number between 0 and 1
             if pValue < d/100: # if we are assigning an edge
-                if i !=j and matrix[i][j] == 0:
+                if  matrix[i][j] == 0:
                     matrix[i][j] = random.randint(2,12)
                 matrix[j][i] = matrix[i][j]
     return matrix
