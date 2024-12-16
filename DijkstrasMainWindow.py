@@ -4,13 +4,31 @@ from Utilities import sin, cos
 from DataStructures import Node, PriorityQueue
 import generatingmatix as g
 import random
-from adjustText import adjust_text
+from adjustText import adjust_text #Must be installed
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from time import sleep
+import time
 nodeLabels = {i: chr(65+i) for i in range(11)}
 
 class AnimationController():
+    def __init__(self):
+        self.__frameDelay: int = 1000
+        self.__isPaused: bool = False
+    
+    def GetFrameDelay(self):
+        return self.__frameDelay
+
+    def IsPaused(self):
+        return self.__isPaused
+    
+    def PauseAnimation(self):
+        print(self.__isPaused)
+        self.__isPaused = not self.__isPaused
+        if self.__isPaused:
+            print("Animation Paused")
+        else:
+            print("Animation Resumed")
+class Animator():
     def __init__(self, nodeReferences, edgeReferences, visitedNodesText, nodesToBeVisitedText, distancesTable, tableData, axs, fig):
         self.__visitedNodesText = visitedNodesText
         self.__nodesToBeVisitedText = nodesToBeVisitedText
@@ -21,6 +39,8 @@ class AnimationController():
         self.__axs = axs
         self.__fig = fig 
         self.__callCounter = 10
+        self.__animationController = AnimationController()
+        self.__isRunning: bool = False
 
     def UpdateDistancesTableUI(self, distances):
         newRow = [distance if distance != float('inf') else '∞' for distance in distances.copy()]
@@ -80,12 +100,51 @@ class AnimationController():
     def GetFigure(self):
         return self.__fig
     
-    def AnimationSleep(self):
-        window = self.__fig.canvas.get_tk_widget().master  # Get the Tkinter window
-        window.after(10000, self.resume_animation)
+    def GetFrameDelay(self):
+        return self.__animationController.GetFrameDelay()
     
-    def resume_animation():  
-        pass
+    def IsPaused(self):
+        return self.__animationController.IsPaused()
+
+    
+    
+    def GetAnimationController(self) -> AnimationController:
+        return self.__animationController
+    
+    def SetRunningState(self, state: bool):
+        self.__isRunning = state
+
+    def IsRunning(self):
+        return self.__isRunning
+    
+class BottomBar():
+    def __init__(self, window, animationController: AnimationController):
+        self.__animationController = animationController
+        self.__pauseButton = tk.Button(window, text="Pause", height=5, width=8, command= self.togglePauseAnimation)
+        self.__pauseButton.pack()
+        self.__lastClickTime = 0
+        #self.__playButton = tk.Button(window, text="Play", height=5, width=8).pack(side=tk.LEFT)
+    
+    def debouncedTogglePauseAnimation(self):
+        currentTime = time.time()
+        if currentTime - self.__lastClickTime > 0.2:  # 200ms debounce
+            self.__lastClickTime = currentTime
+            self.togglePauseAnimation()
+    
+    def togglePauseAnimation(self):
+        self.__animationController.PauseAnimation()
+        new_text = "Resume" if self.__animationController.IsPaused() else "Pause"
+        self.__pauseButton.config(text=new_text)
+
+    def IncrementSpeed(self):
+        #Increment Speed up to a max
+        ...
+    
+    def DecrementSpeed(self):
+        ...
+    
+    def RestartAnimation(self):
+        ...
 
 
 def GetAngles(numNodes: int) -> list[float]:
@@ -193,34 +252,35 @@ def DisplayWindow(adjacencyMatrix: list[list[int]], sourceNodeIndex: int) -> Non
     fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
     nodeReference, edgeReferences = DisplayGraph(adjacencyMatrix, axs[0])
     visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = DisplayDataStrucutures(axs[1], numNodes, sourceNodeIndex)
-    animationController = AnimationController(nodeReference, edgeReferences, visitedNodesText, nodesToBeVisitedText , distancesTable, tableData, axs, fig)
+    animator = Animator(nodeReference, edgeReferences, visitedNodesText, nodesToBeVisitedText , distancesTable, tableData, axs, fig)
 
     window = tk.Tk()
     window.title("Dijkstra's demonstration")
-    GraphFrame = tk.Frame(master=window)
+    GraphFrame = tk.Frame(master=window, width=700, height=250)
     GraphFrame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)    
     canvas = FigureCanvasTkAgg(fig, master=GraphFrame,)
     canvasWidget = canvas.get_tk_widget()  # Get the Tkinter widget
     canvasWidget.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+    #tk.Button(window, text="Update", height=10).pack()
+    bottomBar = BottomBar(window, animator.GetAnimationController())
     #window.mainloop()
-    AnimateDijkstras( adjacencyMatrix, sourceNodeIndex,  distancesTable, animationController)
+    AnimateDijkstras( adjacencyMatrix, sourceNodeIndex,   animator)
     window.mainloop()
     plt.tight_layout()
     #plt.show()
     
 
 
-def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  distancesTable, animationController: AnimationController) -> None:
-    #Do your own way in this function
+def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  animator: Animator) -> None:
     numNodes = len(adjacencyMatrix)
-    window = animationController.GetFigure().canvas.get_tk_widget().master 
+    window = animator.GetFigure().canvas.get_tk_widget().master 
 
 
 
 
     distances = [float('inf')] * numNodes
     distances[sourceNodeIndex] = 0
-    animationController.SetNodeColour(sourceNodeIndex, 'lightgreen')
+    animator.SetNodeColour(sourceNodeIndex, 'lightgreen')
     #visited = [False] * numNodes
     nodesToBeVisited: list[Node] = PriorityQueue()
     visitedNodes: list[Node]= []
@@ -238,9 +298,17 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
     #nodesToBeVisited.ChangePriority(, 0)
     #nodesToBeVisited.OutputQueue()
     def updateAnimation():
+        if animator.IsPaused():
+            window.after(100, updateAnimation) #Check again if not paused 
+            return 
+        
+        if not animator.IsRunning():  # Check if already running
+            animator.SetRunningState(True)  # Mark as running
+        else:
+            return
         
         if nodesToBeVisited.IsEmpty():
-            animationController.DehighlightAllNodes()
+            animator.DehighlightAllNodes()
             print('Animaton Complete!')
             for i in range(numNodes):
                 print(f"Shortest distance to {nodeLabels[i]} is {distances[i]}")
@@ -248,21 +316,22 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
     
             for i in range(numNodes): 
                 visitedNodes[i].OutputNode()
+            animator.SetRunningState(False)
             return 
+            
         currentNode: Node = nodesToBeVisited.Peek()
         nodesToBeVisited.Dequeue()
         
         currentIndex = currentNode.GetID()
-        animationController.HighlightEdgesOfNode(currentIndex)
-        animationController.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
-        animationController.SetNodeColour(currentIndex, 'yellow') if currentIndex != sourceNodeIndex else None
+        animator.HighlightEdgesOfNode(currentIndex)
+        animator.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
+        animator.SetNodeColour(currentIndex, 'yellow') if currentIndex != sourceNodeIndex else None
         #plt.pause(3)
         #animationController.AnimationSleep()
         
         
         visitedNodes.append(currentNode)
-        print(visitedNodes)
-        animationController.SetNodeColour(currentIndex, 'darksalmon') if currentIndex != sourceNodeIndex else None
+        animator.SetNodeColour(currentIndex, 'darksalmon') if currentIndex != sourceNodeIndex else None
         
         
 
@@ -279,19 +348,23 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  di
                     distances[neighbourIndex] = newDistance
                     nodesToBeVisited.ChangePriority(neighbourNode,newDistance)
                     
-        animationController.UpdateDistancesTableUI(distances)
+        animator.UpdateDistancesTableUI(distances)
         
         
         
         
-        animationController.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
+        animator.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
         def dehighlightCurrentNodeAndEdges():
-            animationController.DehighlightEdgesOfNode(currentIndex)
-            animationController.DehighlightAllNodes()
-            window.after(1000, updateAnimation)  # Call the next animation step after dehighlighting
+            if animator.IsPaused():
+                window.after(100, dehighlightCurrentNodeAndEdges)  # Retry after a small delay
+                return
+            animator.DehighlightEdgesOfNode(currentIndex)
+            animator.DehighlightAllNodes()
+            animator.SetRunningState(False)
+            window.after(animator.GetFrameDelay(), updateAnimation)  # Call the next animation step after dehighlighting
 
     # Delay dehighlighting to let highlighting be visible
-        window.after(750, dehighlightCurrentNodeAndEdges)
+        window.after(int(animator.GetFrameDelay() * 0.75), dehighlightCurrentNodeAndEdges)
     updateAnimation()
     #print(distances)
     
@@ -315,4 +388,4 @@ if __name__ == '__main__':
     num = 8
     b = g.GenerateMatrix(5,50)
     #DisplayWindow(test)
-    DisplayWindow(test, 0)
+    DisplayWindow(b, 0)
