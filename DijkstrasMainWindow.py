@@ -28,6 +28,17 @@ class AnimationController():
             print("Animation Paused")
         else:
             print("Animation Resumed")
+    
+    def IncrementSpeed(self):
+        #Increment Speed up to a max
+        if self.__frameDelay > 100:
+            self.__frameDelay -= 100
+        print(self.__frameDelay)
+    def DecrementSpeed(self):
+        ...
+    
+    def RestartAnimation(self):
+        ...
 class Animator():
     def __init__(self, nodeReferences, edgeReferences, visitedNodesText, nodesToBeVisitedText, distancesTable, tableData, axs, fig):
         self.__visitedNodesText = visitedNodesText
@@ -120,8 +131,21 @@ class Animator():
 class BottomBar():
     def __init__(self, window, animationController: AnimationController):
         self.__animationController = animationController
-        self.__pauseButton = tk.Button(window, text="Pause", height=5, width=8, command= self.togglePauseAnimation)
-        self.__pauseButton.pack()
+        self.__bottomBarFrame = tk.Frame(window)
+        self.__bottomBarFrame.pack(side=tk.BOTTOM,  fill=tk.X)
+        #self.__bottomBarFrame.pack_propagate(False)  
+        
+        tk.Frame(self.__bottomBarFrame).pack(side=tk.LEFT, expand=True)
+
+        self.__pauseButton = tk.Button(self.__bottomBarFrame, text="Pause", height=5, width=8, command= self.togglePauseAnimation)
+        self.__pauseButton.pack(side=tk.LEFT, padx=5)
+        #self.__pauseButton.place(relx = 0.5, rely = 0.5, anchor = 'center')
+
+        self.__fastForwardButton = tk.Button(self.__bottomBarFrame, text="Speed Up", height=5, width=8, command= self.__animationController.IncrementSpeed)
+        self.__fastForwardButton.pack(side=tk.LEFT, fill=tk.Y)
+        #self.__fastForwardButton.place(relx = 0.7, rely = 0.7, anchor = 'center')
+
+        tk.Frame(self.__bottomBarFrame).pack(side=tk.LEFT, expand=True)
         self.__lastClickTime = 0
         #self.__playButton = tk.Button(window, text="Play", height=5, width=8).pack(side=tk.LEFT)
     
@@ -136,17 +160,9 @@ class BottomBar():
         new_text = "Resume" if self.__animationController.IsPaused() else "Pause"
         self.__pauseButton.config(text=new_text)
 
-    def IncrementSpeed(self):
-        #Increment Speed up to a max
-        ...
     
-    def DecrementSpeed(self):
-        ...
-    
-    def RestartAnimation(self):
-        ...
 
-
+#Perhaps change to line space
 def GetAngles(numNodes: int) -> list[float]:
     #tau is 2pi
     #Make your own pi function
@@ -227,7 +243,7 @@ def DisplayDataStrucutures(axs, numNodes, sourceNodeIndex):
     initialDistances[sourceNodeIndex] = 0
     axs.set_title('Data Structures')
     #axs[1].set_axis_off()
-    visitedNodesText =axs.text(0.5, 0.8, 'S{ABCDEF}', fontsize=20, ha='center', va='center', wrap=True)
+    visitedNodesText =axs.text(0.5, 0.8, 'S{}', fontsize=20, ha='center', va='center', wrap=True)
     nodesToOptimiseText = axs.text(0.5, 0.7, 'P[]', fontsize=20, ha='center', va='center', wrap=True)
     #Fix lol
     data = [[distance if distance != float('inf') else '∞' for distance in initialDistances]]
@@ -255,6 +271,7 @@ def DisplayWindow(adjacencyMatrix: list[list[int]], sourceNodeIndex: int) -> Non
     animator = Animator(nodeReference, edgeReferences, visitedNodesText, nodesToBeVisitedText , distancesTable, tableData, axs, fig)
 
     window = tk.Tk()
+    window.geometry("")
     window.title("Dijkstra's demonstration")
     GraphFrame = tk.Frame(master=window, width=700, height=250)
     GraphFrame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)    
@@ -303,7 +320,7 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
             return 
         
         if not animator.IsRunning():  # Check if already running
-            animator.SetRunningState(True)  # Mark as running
+            animator.SetRunningState(True)  
         else:
             return
         
@@ -388,4 +405,4 @@ if __name__ == '__main__':
     num = 8
     b = g.GenerateMatrix(5,50)
     #DisplayWindow(test)
-    DisplayWindow(b, 0)
+    DisplayWindow(test, 0)
