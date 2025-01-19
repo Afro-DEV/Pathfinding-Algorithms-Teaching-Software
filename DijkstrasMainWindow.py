@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import math
 from Utilities import sin, cos
 from DataStructures import Node, PriorityQueue
+from Forms import SourceNodeInputForm
 import generatingmatix as g
 import random
 from adjustText import adjust_text #Must be installed
@@ -212,7 +213,8 @@ class Window():
         visitedNodesText =axs.text(0.5, 0.8, 'S{}', fontsize=20, ha='center', va='center', wrap=True)
         nodesToOptimiseText = axs.text(0.5, 0.7, 'P[]', fontsize=20, ha='center', va='center', wrap=True)
         #Fix lol
-        data = [[distance if distance != float('inf') else '∞' for distance in initialDistances]]
+        #data = [[distance if distance != float('inf') else '∞' for distance in initialDistances]]
+        data = [['∞' for distance in initialDistances]]
         distancesTable = axs.table(cellText=data,
                                     colLabels=columnLabels,
                                     loc='center',
@@ -310,15 +312,15 @@ class Window():
         canvasWidget.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         #tk.Button(window, text="Update", height=10).pack()
         bottomBar = BottomBar(window, animator)
-        sourceNodeIndex = int(input('Enter Source Node'))
+        sourceNodeInputForm = SourceNodeInputForm(numNodes)
+        sourceNodeInputForm.Run()
+        sourceNodeIndex = sourceNodeInputForm.GetSourceNodeIndex()
+        
         AnimateDijkstras( adjacencyMatrix, sourceNodeIndex,   animator)
         window.mainloop()
         
         plt.tight_layout()
 
-    @staticmethod
-    def GetSourceNode() -> int:
-        return int(input('Enter the source nodes'))
         
 
 
