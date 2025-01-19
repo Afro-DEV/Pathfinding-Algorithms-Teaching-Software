@@ -20,9 +20,19 @@ def sin(x: float) -> float:
     negativeTerms = reduce(lambda x,y: x+y,[-(x**i)/factorial(i) for i in range(3,upperLimitOfExpansion,4)])
     positiveTerms = reduce(lambda x,y: x+y,[(x**i)/factorial(i) for i in range(5,upperLimitOfExpansion,4)])
     return x + negativeTerms + positiveTerms
+
+def IdToCharacter(id):
+    return chr(id+65) 
+
+def CharacterToId(char):
+    return ord(char) - 65
+
 if __name__ == '__main__':
     print([i for i in range(3,20,4)])
     pi = math.pi
     
     print(cos(pi))
     print(sin(pi))
+
+    print(IdToCharacter(0))
+    print(CharacterToId('A '))
