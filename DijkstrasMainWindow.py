@@ -13,8 +13,8 @@ nodeLabels = {i: chr(65+i) for i in range(11)}
 class AnimationController():
     def __init__(self):
         self.__frameDelay: int = 1000
-        self.__isPaused: bool = False
-        self.__animationStarted: bool = False
+        self.__isPaused: bool = True
+        
     
     def GetFrameDelay(self):
         return self.__frameDelay
@@ -55,6 +55,7 @@ class Animator():
         self.__callCounter = 10
         self.__animationController = AnimationController()
         self.__isRunning: bool = False
+        self.__animationStarted: bool = False
 
     def UpdateDistancesTableUI(self, distances):
         newRow = [distance if distance != float('inf') else '∞' for distance in distances.copy()]
@@ -131,6 +132,9 @@ class Animator():
     def IsRunning(self):
         return self.__isRunning
     
+    def GetHasAnimationStarted(self) -> bool:
+        return self.__animationStarted
+    
 class BottomBar():
     def __init__(self, window, animator: Animator):
         self.__animationController = animator.GetAnimationController()
@@ -159,6 +163,7 @@ class BottomBar():
         self.__lastClickTime = 0
 
 
+
     def DebouncedTogglePauseAnimation(self):
         currentTime = time.time()
         if currentTime - self.__lastClickTime > 0.2:  # 200ms debounce
@@ -166,9 +171,16 @@ class BottomBar():
             self.TogglePauseAnimation()
     
     def TogglePauseAnimation(self):
+        # if not self.GetHasAnimationStarted():
+        #     Window.GetSourceNode()
+        #     self.__animator.__animationStarted = True
+        #     return
         self.__animationController.PauseAnimation()
         new_text = "Resume" if self.__animationController.IsPaused() else "Pause"
         self.__pauseButton.config(text=new_text)
+    
+    def GetHasAnimationStarted(self):
+        return self.__animator.GetHasAnimationStarted()
 
 
 class Window():
@@ -188,7 +200,7 @@ class Window():
         
         #visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = self.DisplayDataStrucutures(axs[1], numNodes, sourceNodeIndex)
         #nodeReference, edgeReferences = self.DisplayGraph(self.__demoGraph, axs[0])
-        self.DisplayWindow(self, self.__demoGraph, 0)
+        self.DisplayWindow(self.__demoGraph, 0)
     
     @staticmethod
     def DisplayDataStrucutures(axs, numNodes, sourceNodeIndex):
@@ -279,7 +291,6 @@ class Window():
         #plt.show()
         return nodeReferecnce, edgeReferences
     
-    @staticmethod
     def DisplayWindow(self, adjacencyMatrix: list[list[int]], sourceNodeIndex: int) -> None:
         numNodes: int = len(adjacencyMatrix)
         fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
@@ -299,10 +310,15 @@ class Window():
         canvasWidget.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         #tk.Button(window, text="Update", height=10).pack()
         bottomBar = BottomBar(window, animator)
-        #window.mainloop()
+        sourceNodeIndex = int(input('Enter Source Node'))
         AnimateDijkstras( adjacencyMatrix, sourceNodeIndex,   animator)
         window.mainloop()
+        
         plt.tight_layout()
+
+    @staticmethod
+    def GetSourceNode() -> int:
+        return int(input('Enter the source nodes'))
         
 
 
