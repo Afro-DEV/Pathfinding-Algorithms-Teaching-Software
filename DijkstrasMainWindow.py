@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import math
 from Utilities import sin, cos
 from DataStructures import Node, PriorityQueue
-from Forms import SourceNodeInputForm
+from Forms import SourceNodeInputForm, GraphGeneratorForm
 import generatingmatix as g
 import random
 from adjustText import adjust_text #Must be installed
@@ -135,7 +135,31 @@ class Animator():
     
     def GetHasAnimationStarted(self) -> bool:
         return self.__animationStarted
+
+class TopBar():
+    def __init__(self, window, windowObject):
+        self.__window = window
+        self.__topBarFrame = tk.Frame(window, background='red')
+        self.__topBarFrame.pack(side="top", fill=tk.X)
+        self.__graphGeneratorButton = tk.Button(self.__topBarFrame, text="Generate New Graph", command=self.GenerateNewGraphClick)
+        self.__graphGeneratorButton.pack()
+
+        self.__quitButton = tk.Button(self.__topBarFrame, text='Quit', command=self.QuitButtonClick )
+        self.__quitButton.pack()
+        self.__windowObject = windowObject
+        #self.__topBarFrame.pack_propagate(False)
     
+    def GenerateNewGraphClick(self):
+        graphGeneratorForm = GraphGeneratorForm()
+        graphGeneratorForm.Run()
+        n = int(graphGeneratorForm.numberOfNodes)
+        d = graphGeneratorForm.pValue
+        m = g.GenerateMatrix(n,d)
+        self.__windowObject.DisplayWindow(m, 0)
+
+    def QuitButtonClick(self):
+        self.__window.destroy()
+        
 class BottomBar():
     def __init__(self, window, animator: Animator):
         self.__animationController = animator.GetAnimationController()
@@ -212,7 +236,7 @@ class Window():
         #axs[1].set_axis_off()
         visitedNodesText =axs.text(0.5, 0.8, 'S{}', fontsize=20, ha='center', va='center', wrap=True)
         nodesToOptimiseText = axs.text(0.5, 0.7, 'P[]', fontsize=20, ha='center', va='center', wrap=True)
-        #Fix lol
+        #Fix This part
         #data = [[distance if distance != float('inf') else '∞' for distance in initialDistances]]
         data = [['∞' for distance in initialDistances]]
         distancesTable = axs.table(cellText=data,
@@ -305,6 +329,7 @@ class Window():
         window = tk.Tk()
         window.geometry("")
         window.title("Dijkstra's demonstration")
+        topBar = TopBar(window, self)
         GraphFrame = tk.Frame(master=window, width=700, height=250)
         GraphFrame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)    
         canvas = FigureCanvasTkAgg(fig, master=GraphFrame,)
@@ -312,6 +337,7 @@ class Window():
         canvasWidget.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         #tk.Button(window, text="Update", height=10).pack()
         bottomBar = BottomBar(window, animator)
+        
         sourceNodeInputForm = SourceNodeInputForm(numNodes)
         sourceNodeInputForm.Run()
         sourceNodeIndex = sourceNodeInputForm.GetSourceNodeIndex()
