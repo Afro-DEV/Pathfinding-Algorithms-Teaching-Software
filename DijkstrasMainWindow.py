@@ -71,11 +71,11 @@ class Animator():
         cellLoc='center',
         bbox = [0,0.1,1,0.4]
         )
-        # self.__distancesTable.auto_set_font_size(False)
-        # self.__distancesTable.set_fontsize(14)
+        self.__distancesTable.auto_set_font_size(False)
+        self.__distancesTable.set_fontsize(18) # **** #
         for cell in self.__distancesTable.get_celld().values():
-            #cell.PAD = 1
-            pass
+            cell.PAD = 1
+            #pass
         
         self.__callCounter += 0.1
         self.__fig.canvas.draw()
@@ -135,35 +135,44 @@ class Animator():
     
     def GetHasAnimationStarted(self) -> bool:
         return self.__animationStarted
+    
+    def SetAnimationStarted(self):
+        self.__animationStarted = True
 
 class TopBar():
     def __init__(self, window, windowObject):
         self.__window = window
+
         self.__topBarFrame = tk.Frame(window, background='red')
         self.__topBarFrame.pack(side="top", fill=tk.X)
+
         self.__graphGeneratorButton = tk.Button(self.__topBarFrame, text="Generate New Graph", command=self.GenerateNewGraphClick)
         self.__graphGeneratorButton.pack()
 
         self.__quitButton = tk.Button(self.__topBarFrame, text='Quit', command=self.QuitButtonClick )
         self.__quitButton.pack()
-        self.__windowObject = windowObject
+        
+        self.__windowObject: Window = windowObject
         #self.__topBarFrame.pack_propagate(False)
     
     def GenerateNewGraphClick(self):
         graphGeneratorForm = GraphGeneratorForm()
         graphGeneratorForm.Run()
-        n = int(graphGeneratorForm.numberOfNodes)
-        d = graphGeneratorForm.pValue
-        m = g.GenerateMatrix(n,d)
-        self.__windowObject.DisplayWindow(m, 0)
-
+        numNodes = int(graphGeneratorForm.numberOfNodes)
+        density = graphGeneratorForm.pValue
+        m = g.GenerateMatrix(numNodes,density)
+        self.__windowObject.SetMatrix(m) # Might be redundant
+        self.__window.destroy()
+        self.__windowObject.DisplayWindow(m,0)
+        
     def QuitButtonClick(self):
         self.__window.destroy()
         
 class BottomBar():
-    def __init__(self, window, animator: Animator):
+    def __init__(self, window, animator: Animator, windowObject):
         self.__animationController = animator.GetAnimationController()
         self.__animator = animator
+
         self.__bottomBarFrame = tk.Frame(window,)
         self.__bottomBarFrame.pack(side=tk.BOTTOM,  fill=tk.X)
         #self.__bottomBarFrame.pack_propagate(False)  
@@ -187,6 +196,8 @@ class BottomBar():
         tk.Frame(self.__bottomBarFrame).pack(side=tk.LEFT, expand=True)
         self.__lastClickTime = 0
 
+        self.__windowObject: Window = windowObject
+
 
 
     def DebouncedTogglePauseAnimation(self):
@@ -196,10 +207,14 @@ class BottomBar():
             self.TogglePauseAnimation()
     
     def TogglePauseAnimation(self):
-        # if not self.GetHasAnimationStarted():
-        #     Window.GetSourceNode()
-        #     self.__animator.__animationStarted = True
-        #     return
+        if not self.GetHasAnimationStarted():
+            sourceNodeInputForm = SourceNodeInputForm(self.__windowObject.GetMatrixLength())
+            sourceNodeInputForm.Run()
+            #Window.DisplayDataStrucutures(self.__windowObject.GetAxis()[1],self.__windowObject.GetMatrixLength(),  sourceNodeInputForm.GetSourceNodeIndex())
+            self.__animator.SetAnimationStarted()
+            self.__windowObject.SetSourceNode(sourceNodeInputForm.GetSourceNodeIndex())
+            AnimateDijkstras(self.__windowObject.GetMatrix(), self.__windowObject.GetSourceNode(), self.__animator)
+            
         self.__animationController.PauseAnimation()
         new_text = "Resume" if self.__animationController.IsPaused() else "Pause"
         self.__pauseButton.config(text=new_text)
@@ -210,14 +225,16 @@ class BottomBar():
 
 class Window():
     def __init__(self):
-        self.__demoGraph = [[0,4,3,7,0,0,0],
+        self.__adjMatrix = [[0,4,3,7,0,0,0],
                 [4,0,0,1,0,4,0],
                 [3,0,0,3,5,0,0],
                 [7,1,3,0,2,2,7],
                 [0,0,5,2,0,0,2],
                 [0,4,0,2,0,0,4],
                 [0,0,0,7,2,4,0]]
-        numNodes = len(self.__demoGraph)
+        
+        self.__sourceNode = 0
+        numNodes = len(self.__adjMatrix)
         sourceNodeIndex = 0
         figAndAxis = fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
         self.__fig = figAndAxis[0]
@@ -225,7 +242,7 @@ class Window():
         
         #visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = self.DisplayDataStrucutures(axs[1], numNodes, sourceNodeIndex)
         #nodeReference, edgeReferences = self.DisplayGraph(self.__demoGraph, axs[0])
-        self.DisplayWindow(self.__demoGraph, 0)
+        self.DisplayWindow(self.__adjMatrix, self.__sourceNode)
     
     @staticmethod
     def DisplayDataStrucutures(axs, numNodes, sourceNodeIndex):
@@ -322,7 +339,7 @@ class Window():
         fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
         #Getting references to UI elements
         nodeReference, edgeReferences = self.DisplayGraph(adjacencyMatrix, axs[0])
-        visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = Window.DisplayDataStrucutures(axs[1], numNodes, sourceNodeIndex)
+        visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = Window.DisplayDataStrucutures(axs[1], numNodes, self.__sourceNode)
         
         animator = Animator(nodeReference, edgeReferences, visitedNodesText, nodesToBeVisitedText , distancesTable, tableData, axs, fig)
 
@@ -336,16 +353,39 @@ class Window():
         canvasWidget = canvas.get_tk_widget()  # Get the Tkinter widget
         canvasWidget.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         #tk.Button(window, text="Update", height=10).pack()
-        bottomBar = BottomBar(window, animator)
+        bottomBar = BottomBar(window, animator, self)
         
-        sourceNodeInputForm = SourceNodeInputForm(numNodes)
-        sourceNodeInputForm.Run()
-        sourceNodeIndex = sourceNodeInputForm.GetSourceNodeIndex()
         
-        AnimateDijkstras( adjacencyMatrix, sourceNodeIndex,   animator)
+        #sourceNodeInputForm = SourceNodeInputForm(numNodes)
+        # sourceNodeInputForm.Run()
+        # sourceNodeIndex = sourceNodeInputForm.GetSourceNodeIndex()
+        #self.StartAnimation(adjacencyMatrix, sourceNodeIndex,   animator)
+        
         window.mainloop()
         
         plt.tight_layout()
+
+    def GetAxis(self):
+        return self.__axs
+
+    def GetMatrix(self):
+        return self.__adjMatrix
+    
+    def GetMatrixLength(self) -> int:
+        return len(self.__adjMatrix)
+    
+    def SetMatrix(self, matrix):
+        self.__adjMatrix = matrix
+    
+    def GetSourceNode(self):
+        return self.__sourceNode
+    
+    def SetSourceNode(self, sourceNode):
+        self.__sourceNode = sourceNode
+
+    def StartAnimation(self,adjacencyMatrix, sourceNodeIndex,   animator):
+        AnimateDijkstras( adjacencyMatrix, sourceNodeIndex,   animator)
+
 
         
 
