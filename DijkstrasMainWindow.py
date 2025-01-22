@@ -40,8 +40,6 @@ class AnimationController():
         if self.__frameDelay < 1500:
             self.__frameDelay +=100
         print(self.__frameDelay)  
-    def RestartAnimation(self):
-        ...
 
 class Animator():
     def __init__(self, nodeReferences, edgeReferences, visitedNodesText, nodesToBeVisitedText, distancesTable, tableData, axs, fig):
@@ -120,9 +118,7 @@ class Animator():
         return self.__animationController.GetFrameDelay()
     
     def IsPaused(self):
-        return self.__animationController.IsPaused()
-
-    
+        return self.__animationController.IsPaused()  
     
     def GetAnimationController(self) -> AnimationController:
         return self.__animationController
@@ -170,6 +166,8 @@ class TopBar():
         
 class BottomBar():
     def __init__(self, window, animator: Animator, windowObject):
+        self.__window = window
+
         self.__animationController = animator.GetAnimationController()
         self.__animator = animator
 
@@ -190,7 +188,7 @@ class BottomBar():
         self.__speedUpButton.pack(side=tk.LEFT, fill=tk.Y, padx=10)
         #self.__fastForwardButton.place(relx = 0.7, rely = 0.7, anchor = 'center')
 
-        self.__restartButton = tk.Button(self.__bottomBarFrame, text="Restart", height=5, width=8, command= self.__animationController.RestartAnimation, padx=10)
+        self.__restartButton = tk.Button(self.__bottomBarFrame, text="Restart", height=5, width=8, command= self.RestartAnimation, padx=10)
         self.__restartButton.pack(side=tk.LEFT, fill=tk.Y, padx=10)
 
         tk.Frame(self.__bottomBarFrame).pack(side=tk.LEFT, expand=True)
@@ -198,7 +196,9 @@ class BottomBar():
 
         self.__windowObject: Window = windowObject
 
-
+    def RestartAnimation(self):
+        self.__window.destroy()
+        self.__windowObject.DisplayWindow(self.__windowObject.GetMatrix(),0)
 
     def DebouncedTogglePauseAnimation(self):
         currentTime = time.time()
