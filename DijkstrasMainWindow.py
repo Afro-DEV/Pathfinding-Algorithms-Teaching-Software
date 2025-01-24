@@ -9,9 +9,9 @@ from adjustText import adjust_text #Must be installed
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import time
-from tkinter import Scrollbar
 
-nodeLabels = {i: chr(65+i) for i in range(11)}
+NODELABELS = {i: chr(65+i) for i in range(11)}
+BARHEIGHT = 40
 
 class AnimationController():
     def __init__(self):
@@ -66,7 +66,7 @@ class Animator():
     
         self.__distancesTable = self.__axs[1].table(
         cellText=self.__tableData,
-        colLabels=[nodeLabels[i] for i in range(len(distances))],
+        colLabels=[NODELABELS[i] for i in range(len(distances))],
         loc='center',
         cellLoc='center',
         bbox = [0,0.1,1,0.4]
@@ -140,15 +140,17 @@ class Animator():
 class TopBar():
     def __init__(self, window, windowObject):
         self.__window = window
+        buttonHeight = 2
+        butttonWidth = 8
 
-        self.__topBarFrame = tk.Frame(self.__window)
+        self.__topBarFrame = tk.Frame(self.__window, height=BARHEIGHT)
         self.__topBarFrame.pack(side="top", fill=tk.X)
 
-        self.__quitButton = tk.Button(self.__topBarFrame, text='Quit', command=self.QuitButtonClick )
+        self.__quitButton = tk.Button(self.__topBarFrame, text='Quit', height=buttonHeight, width=butttonWidth, command=self.QuitButtonClick )
         self.__quitButton.pack(side=tk.RIGHT, padx=10)
         
 
-        self.__graphGeneratorButton = tk.Button(self.__topBarFrame, text="Generate New Graph", command=self.GenerateNewGraphClick)
+        self.__graphGeneratorButton = tk.Button(self.__topBarFrame, text="Generate New Graph", height=buttonHeight, command=self.GenerateNewGraphClick)
         self.__graphGeneratorButton.pack(side=tk.RIGHT)
 
         
@@ -172,29 +174,30 @@ class BottomBar():
     def __init__(self, window, animator: Animator, windowObject):
         self.__window = window
         buttonHeight = 2
+        butttonWidth = 8
 
         self.__animationController = animator.GetAnimationController()
         self.__animator = animator
 
-        self.__bottomBarFrame = tk.Frame(window, height=50)
-        self.__bottomBarFrame.pack(side=tk.BOTTOM,  fill=tk.X)
+        self.__bottomBarFrame = tk.Frame(window, height=BARHEIGHT)
+        self.__bottomBarFrame.pack(side="bottom",  fill=tk.X)
         self.__bottomBarFrame.pack_propagate(False)  
         
         #Left Spacer
         tk.Frame(self.__bottomBarFrame).pack(side=tk.LEFT, expand=True)
 
-        self.__slowDownButton = tk.Button(self.__bottomBarFrame, text="Slow Down", height=buttonHeight, width=8, command= self.__animationController.DecrementSpeed, padx=10)
+        self.__slowDownButton = tk.Button(self.__bottomBarFrame, text="Slow Down", height=buttonHeight, width=butttonWidth, command= self.__animationController.DecrementSpeed, padx=10)
         self.__slowDownButton.pack(side=tk.LEFT,  padx=10)
 
-        self.__pauseButton = tk.Button(self.__bottomBarFrame, text="Play", height=buttonHeight, width=8, command= self.TogglePauseAnimation, padx=10)
+        self.__pauseButton = tk.Button(self.__bottomBarFrame, text="Play", height=buttonHeight, width=butttonWidth, command= self.TogglePauseAnimation, padx=10)
         self.__pauseButton.pack(side=tk.LEFT, padx=10)
         #self.__pauseButton.place(relx = 0.5, rely = 0.5, anchor = 'center')
 
-        self.__speedUpButton = tk.Button(self.__bottomBarFrame, text="Speed Up", height=buttonHeight, width=8, command= self.__animationController.IncrementSpeed, padx=10)
+        self.__speedUpButton = tk.Button(self.__bottomBarFrame, text="Speed Up", height=buttonHeight, width=butttonWidth, command= self.__animationController.IncrementSpeed, padx=10)
         self.__speedUpButton.pack(side=tk.LEFT,  padx=10)
         #self.__fastForwardButton.place(relx = 0.7, rely = 0.7, anchor = 'center')
 
-        self.__restartButton = tk.Button(self.__bottomBarFrame, text="Restart", height=buttonHeight, width=8, command= self.RestartAnimation, padx=10)
+        self.__restartButton = tk.Button(self.__bottomBarFrame, text="Restart", height=buttonHeight, width=butttonWidth, command= self.RestartAnimation, padx=10)
         self.__restartButton.pack(side=tk.LEFT,  padx=10)
 
         #Right Spacer
@@ -233,6 +236,7 @@ class BottomBar():
 
 class Window():
     def __init__(self):
+        self.TITLE_FONT_SIZE = 20
         self.__adjMatrix = [[0,4,3,7,0,0,0],
                 [4,0,0,1,0,4,0],
                 [3,0,0,3,5,0,0],
@@ -240,7 +244,6 @@ class Window():
                 [0,0,5,2,0,0,2],
                 [0,4,0,2,0,0,4],
                 [0,0,0,7,2,4,0]]
-        
         self.__sourceNode = 0
         numNodes = len(self.__adjMatrix)
         sourceNodeIndex = 0
@@ -252,12 +255,11 @@ class Window():
         #nodeReference, edgeReferences = self.DisplayGraph(self.__demoGraph, axs[0])
         self.DisplayWindow(self.__adjMatrix, self.__sourceNode)
     
-    @staticmethod
-    def DisplayDataStrucutures(axs, numNodes, sourceNodeIndex):
-        columnLabels = [nodeLabels[i] for i in range(numNodes)]
+    def DisplayDataStrucutures(self, axs, numNodes, sourceNodeIndex):
+        columnLabels = [NODELABELS[i] for i in range(numNodes)]
         initialDistances = [float('inf')]* numNodes
         initialDistances[sourceNodeIndex] = 0
-        axs.set_title('Data Structures')
+        axs.set_title('Data Structures', fontsize=self.TITLE_FONT_SIZE)
         #axs[1].set_axis_off()
         visitedNodesText =axs.text(0.5, 0.8, 'S{}', fontsize=20, ha='center', va='center', wrap=True)
         nodesToOptimiseText = axs.text(0.5, 0.7, 'P[]', fontsize=20, ha='center', va='center', wrap=True)
@@ -310,7 +312,7 @@ class Window():
             #node  = plt.scatter(x, y, s=300, color='skyblue', zorder=3)
             node = axs.scatter(x, y, s=300, color='skyblue', zorder=3)
             nodeReferecnce[i] = node
-            axs.text(x, y, nodeLabels[i], fontsize=12, ha='center', va='center')
+            axs.text(x, y, NODELABELS[i], fontsize=12, ha='center', va='center')
             
         #Plotting the edges
         for i in range(numNodes):
@@ -337,7 +339,7 @@ class Window():
                         label_y = y_mid + offset_y + random.uniform(-0.02, 0.02)
                     edgeLabels.append(axs.text(label_x, label_y, str([adjacencyMatrix[i][j]])[1:-1], fontsize=14, ha='center', va='center',))
         adjust_text(edgeLabels, ax=axs)
-        axs.set_title('Dijkstras Demonstration')
+        axs.set_title('Dijkstras Demonstration', fontsize= self.TITLE_FONT_SIZE)
         axs.set_axis_off()
         #plt.show()
         return nodeReferecnce, edgeReferences
@@ -347,21 +349,25 @@ class Window():
         fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
         #Getting references to UI elements
         nodeReference, edgeReferences = self.DisplayGraph(adjacencyMatrix, axs[0])
-        visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = Window.DisplayDataStrucutures(axs[1], numNodes, self.__sourceNode)
+        visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = self.DisplayDataStrucutures(axs[1], numNodes, self.__sourceNode)
         
         animator = Animator(nodeReference, edgeReferences, visitedNodesText, nodesToBeVisitedText , distancesTable, tableData, axs, fig)
 
         window = tk.Tk()
+        #For laptop turn code below off
         window.geometry("1800x1000")
+        
         window.title("Dijkstra's demonstration")
         
         topBar = TopBar(window, self)
+        
         bottomBar = BottomBar(window, animator, self)
-
         GraphFrame = tk.Frame(master=window, width=700, height=250)
-        GraphFrame.pack(side=tk.TOP, fill=tk.X, expand=True)    
+        GraphFrame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)   
+
+         
         #GraphFrame.pack_propagate(False)
-        canvas = FigureCanvasTkAgg(fig, master=GraphFrame,)
+        canvas = FigureCanvasTkAgg(fig, master=GraphFrame)
         canvasWidget = canvas.get_tk_widget()  # Get the Tkinter widget
         canvasWidget.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         #tk.Button(window, text="Update", height=10).pack()
@@ -411,12 +417,14 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
 
     distances = [float('inf')] * numNodes
     distances[sourceNodeIndex] = 0
+
     animator.SetNodeColour(sourceNodeIndex, 'lightgreen')
+
     nodesToBeVisited: list[Node] = PriorityQueue()
     visitedNodes: list[Node]= []
     for i in range(numNodes):
         priority = distances[i]
-        nodesToBeVisited.Enqueue(Node(nodeLabels[i], priority, i))
+        nodesToBeVisited.Enqueue(Node(NODELABELS[i], priority, i))
         
     def updateAnimation():
         if animator.IsPaused():
@@ -432,24 +440,28 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
             animator.DehighlightAllNodes()
             print('Animaton Complete!')
             for i in range(numNodes):
-                print(f"Shortest distance to {nodeLabels[i]} is {distances[i]}")
+                print(f"Shortest distance to {NODELABELS[i]} is {distances[i]}")
     
     
             for i in range(numNodes): 
                 visitedNodes[i].OutputNode()
             animator.SetRunningState(False)
             return 
-            
+        
+
         currentNode: Node = nodesToBeVisited.Peek()
         nodesToBeVisited.Dequeue()
         
         currentIndex = currentNode.GetID()
+        
         animator.HighlightEdgesOfNode(currentIndex)
         animator.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
         animator.SetNodeColour(currentIndex, 'yellow') if currentIndex != sourceNodeIndex else None
         
         
         visitedNodes.append(currentNode)
+
+        
         animator.SetNodeColour(currentIndex, 'darksalmon') if currentIndex != sourceNodeIndex else None
         
         
