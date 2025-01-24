@@ -9,6 +9,8 @@ from adjustText import adjust_text #Must be installed
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import time
+from tkinter import Scrollbar
+
 nodeLabels = {i: chr(65+i) for i in range(11)}
 
 class AnimationController():
@@ -139,14 +141,16 @@ class TopBar():
     def __init__(self, window, windowObject):
         self.__window = window
 
-        self.__topBarFrame = tk.Frame(window, background='red')
+        self.__topBarFrame = tk.Frame(self.__window)
         self.__topBarFrame.pack(side="top", fill=tk.X)
 
-        self.__graphGeneratorButton = tk.Button(self.__topBarFrame, text="Generate New Graph", command=self.GenerateNewGraphClick)
-        self.__graphGeneratorButton.pack()
-
         self.__quitButton = tk.Button(self.__topBarFrame, text='Quit', command=self.QuitButtonClick )
-        self.__quitButton.pack()
+        self.__quitButton.pack(side=tk.RIGHT, padx=10)
+        
+
+        self.__graphGeneratorButton = tk.Button(self.__topBarFrame, text="Generate New Graph", command=self.GenerateNewGraphClick)
+        self.__graphGeneratorButton.pack(side=tk.RIGHT)
+
         
         self.__windowObject: Window = windowObject
         #self.__topBarFrame.pack_propagate(False)
@@ -167,31 +171,35 @@ class TopBar():
 class BottomBar():
     def __init__(self, window, animator: Animator, windowObject):
         self.__window = window
+        buttonHeight = 2
 
         self.__animationController = animator.GetAnimationController()
         self.__animator = animator
 
-        self.__bottomBarFrame = tk.Frame(window,)
+        self.__bottomBarFrame = tk.Frame(window, height=50)
         self.__bottomBarFrame.pack(side=tk.BOTTOM,  fill=tk.X)
-        #self.__bottomBarFrame.pack_propagate(False)  
+        self.__bottomBarFrame.pack_propagate(False)  
         
+        #Left Spacer
         tk.Frame(self.__bottomBarFrame).pack(side=tk.LEFT, expand=True)
 
-        self.__slowDownButton = tk.Button(self.__bottomBarFrame, text="Slow Down", height=5, width=8, command= self.__animationController.DecrementSpeed, padx=10)
-        self.__slowDownButton.pack(side=tk.LEFT, fill=tk.Y, padx=10)
+        self.__slowDownButton = tk.Button(self.__bottomBarFrame, text="Slow Down", height=buttonHeight, width=8, command= self.__animationController.DecrementSpeed, padx=10)
+        self.__slowDownButton.pack(side=tk.LEFT,  padx=10)
 
-        self.__pauseButton = tk.Button(self.__bottomBarFrame, text="Play", height=5, width=8, command= self.TogglePauseAnimation, padx=10)
+        self.__pauseButton = tk.Button(self.__bottomBarFrame, text="Play", height=buttonHeight, width=8, command= self.TogglePauseAnimation, padx=10)
         self.__pauseButton.pack(side=tk.LEFT, padx=10)
         #self.__pauseButton.place(relx = 0.5, rely = 0.5, anchor = 'center')
 
-        self.__speedUpButton = tk.Button(self.__bottomBarFrame, text="Speed Up", height=5, width=8, command= self.__animationController.IncrementSpeed, padx=10)
-        self.__speedUpButton.pack(side=tk.LEFT, fill=tk.Y, padx=10)
+        self.__speedUpButton = tk.Button(self.__bottomBarFrame, text="Speed Up", height=buttonHeight, width=8, command= self.__animationController.IncrementSpeed, padx=10)
+        self.__speedUpButton.pack(side=tk.LEFT,  padx=10)
         #self.__fastForwardButton.place(relx = 0.7, rely = 0.7, anchor = 'center')
 
-        self.__restartButton = tk.Button(self.__bottomBarFrame, text="Restart", height=5, width=8, command= self.RestartAnimation, padx=10)
-        self.__restartButton.pack(side=tk.LEFT, fill=tk.Y, padx=10)
+        self.__restartButton = tk.Button(self.__bottomBarFrame, text="Restart", height=buttonHeight, width=8, command= self.RestartAnimation, padx=10)
+        self.__restartButton.pack(side=tk.LEFT,  padx=10)
 
-        tk.Frame(self.__bottomBarFrame).pack(side=tk.LEFT, expand=True)
+        #Right Spacer
+        tk.Frame(self.__bottomBarFrame).pack(side=tk.LEFT, fill=tk.X, expand=True)
+
         self.__lastClickTime = 0
 
         self.__windowObject: Window = windowObject
@@ -344,16 +352,20 @@ class Window():
         animator = Animator(nodeReference, edgeReferences, visitedNodesText, nodesToBeVisitedText , distancesTable, tableData, axs, fig)
 
         window = tk.Tk()
-        window.geometry("")
+        window.geometry("1800x1000")
         window.title("Dijkstra's demonstration")
+        
         topBar = TopBar(window, self)
+        bottomBar = BottomBar(window, animator, self)
+
         GraphFrame = tk.Frame(master=window, width=700, height=250)
-        GraphFrame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)    
+        GraphFrame.pack(side=tk.TOP, fill=tk.X, expand=True)    
+        #GraphFrame.pack_propagate(False)
         canvas = FigureCanvasTkAgg(fig, master=GraphFrame,)
         canvasWidget = canvas.get_tk_widget()  # Get the Tkinter widget
         canvasWidget.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         #tk.Button(window, text="Update", height=10).pack()
-        bottomBar = BottomBar(window, animator, self)
+        
         
         
         #sourceNodeInputForm = SourceNodeInputForm(numNodes)
