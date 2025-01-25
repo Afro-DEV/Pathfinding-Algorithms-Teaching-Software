@@ -53,12 +53,17 @@ class Animator():
         self.__tableData: list = tableData
         self.__axs = axs
         self.__fig = fig 
-        self.__callCounter = 10
         self.__animationController = AnimationController()
         self.__isRunning: bool = False
         self.__animationStarted: bool = False
+        self.__removeBlankSpaceTrueFlag: bool = True
 
     def UpdateDistancesTableUI(self, distances):
+        #Removing placeholder blank space row in distances table
+        if self.__removeBlankSpaceTrueFlag:
+            self.__tableData.pop(0)
+            self.__removeBlankSpaceTrueFlag = False
+            
         newRow = [distance if distance != float('inf') else '∞' for distance in distances.copy()]
         self.__tableData.append(newRow)
         if self.__distancesTable:
@@ -77,7 +82,6 @@ class Animator():
             cell.PAD = 1
             #pass
         
-        self.__callCounter += 0.1
         self.__fig.canvas.draw()
         #self.__distancesTable.plt.remove()
 
@@ -259,6 +263,7 @@ class Window():
         columnLabels = [NODELABELS[i] for i in range(numNodes)]
         initialDistances = [float('inf')]* numNodes
         initialDistances[sourceNodeIndex] = 0
+        blankSpaceRow = [[None] * len(columnLabels)]
         axs.set_title('Data Structures', fontsize=self.TITLE_FONT_SIZE)
         #axs[1].set_axis_off()
         visitedNodesText =axs.text(0.5, 0.8, 'S{}', fontsize=20, ha='center', va='center', wrap=True)
@@ -266,7 +271,7 @@ class Window():
         #Fix This part
         #data = [[distance if distance != float('inf') else '∞' for distance in initialDistances]]
         data = [['∞' for distance in initialDistances]]
-        distancesTable = axs.table(cellText=data,
+        distancesTable = axs.table(cellText=blankSpaceRow,
                                     colLabels=columnLabels,
                                     loc='center',
                                     cellLoc='center',
@@ -277,7 +282,7 @@ class Window():
         axs.set_axis_off()
         #distancesTable.auto_set_column_width(col=list(range(len(columnLabels))))
         
-        return visitedNodesText, nodesToOptimiseText, distancesTable, data
+        return visitedNodesText, nodesToOptimiseText, distancesTable, blankSpaceRow
     def GetAngles(self, numNodes: int) -> list[float]:
         #tau is 2pi
         #Make your own pi function
