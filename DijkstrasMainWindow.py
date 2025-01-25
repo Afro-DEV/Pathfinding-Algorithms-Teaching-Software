@@ -160,7 +160,7 @@ class TopBar():
     def GenerateNewGraphClick(self):
         graphGeneratorForm = GraphGeneratorForm()
         graphGeneratorForm.Run()
-        numNodes = int(graphGeneratorForm.numberOfNodes)
+        numNodes = graphGeneratorForm.GetNumberOfNodes()
         density = graphGeneratorForm.pValue
         m = g.GenerateMatrix(numNodes,density)
         self.__windowObject.SetMatrix(m) # Might be redundant
@@ -274,7 +274,7 @@ class Window():
                                     bbox = [0,0.1,1,0.4])
         distancesTable.auto_set_font_size(False)
         distancesTable.set_fontsize(14)
-        #axs[1].set_axis_off()
+        axs.set_axis_off()
         #distancesTable.auto_set_column_width(col=list(range(len(columnLabels))))
         
         return visitedNodesText, nodesToOptimiseText, distancesTable, data

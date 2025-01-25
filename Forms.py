@@ -3,15 +3,27 @@ from tkinter import messagebox
 from tkinter import ttk
 from Utilities import CharacterToId, IdToCharacter
 
+def NormaliseFormSizeOnScaling(root, baseHeight: int, baseWidth: int) -> tuple[int,int]:
+    '''Normalise the size of form based on Screen Scaling'''
+    scaling = root.tk.call('tk', 'scaling')
+    return int(baseHeight*scaling), int(baseWidth* scaling)
+
 class GraphGeneratorForm():
     def __init__(self):
         self.numberOfNodes = 5
         self.pValue = 50
 
+        
         self.root = tk.Tk()
         self.root.title('Graph Form')
-        self.root.geometry("400x370")
-        self.root.resizable(False, False)
+
+
+        baseHeight = 300
+        baseWidth = 400
+        adjustedHeight, adjustedWidth = NormaliseFormSizeOnScaling(self.root, baseHeight, baseWidth)
+
+        self.root.geometry(f"{adjustedWidth}x{adjustedHeight}")
+        #self.root.resizable(False, False)
 
         self.root.columnconfigure(0, weight=1)
         self.root.columnconfigure(1, weight=1)
@@ -23,8 +35,9 @@ class GraphGeneratorForm():
         self.numberOfNodesLabel.grid(row=1,column=0, padx=10, pady=5, sticky="e")
 
         self.numberOfNodesVar = tk.StringVar()
+        #Setting default value to 5
         self.numberOfNodesVar.set("5") 
-        self.numberOfNodesOptions = [str(i) for i in range (2,7)]
+        self.numberOfNodesOptions = [str(i) for i in range (2,9)]
 
         self.numberOfNodesDropdown = ttk.Combobox(self.root, textvariable=self.numberOfNodesVar, values=self.numberOfNodesOptions, state="readonly", width=5, font=("Arial", 12))
         self.numberOfNodesDropdown.grid(row=1, column=1, padx=10, pady=10, sticky="w")
@@ -37,6 +50,7 @@ class GraphGeneratorForm():
         
 
         self.slider = tk.Scale(self.root, from_=0, to=100, orient="horizontal", command=self.OnSelectedPValue,  font=("Arial", 12))
+        #Setting the default value of pValue
         self.slider.set(self.pValue)
         self.slider.grid(row=3, column=0, columnspan=2, padx=10, sticky="ew")
 
@@ -55,7 +69,8 @@ class GraphGeneratorForm():
         
         
     def OnSelectedNumberOfNodes(self, event):
-        self.numberOfNodes = self.numberOfNodesVar.get()
+        self.numberOfNodes = int(self.numberOfNodesVar.get())
+        print(f"Dropdown selected: {self.numberOfNodes}")
     
     def OnSelectedPValue(self, event):
         self.pValue = self.slider.get()
@@ -64,8 +79,15 @@ class GraphGeneratorForm():
         self.root.mainloop()
 
     def Submit(self):
+        self.numberOfNodes = int(self.numberOfNodesDropdown.get())  # Ensure it's an integer
+        self.pValue = self.slider.get()
+        
         self.root.quit()
         self.root.destroy() 
+        print(self.GetNumberOfNodes())
+
+    def GetNumberOfNodes(self) -> int:
+        return self.numberOfNodes
 
 
 
@@ -73,11 +95,17 @@ class SourceNodeInputForm():
     def __init__(self, numNodes):
         self.root = tk.Tk()
         self.root.title('Form')
-        self.root.geometry("200x125")
+        # Normalize the size based on screen scaling
+        scaling = self.root.tk.call('tk', 'scaling')
+        baseHeight = 125
+        baseWidth = 170
+        adjustedHeight, adjustedWidth = NormaliseFormSizeOnScaling(self.root, baseHeight, baseWidth)
+
+        self.root.geometry(f"{adjustedWidth}x{adjustedHeight}")
         #self.root.title("Source Node Input Form")
         self.numNodes = numNodes
 
-        self.label = tk.Label(self.root, text=f"Enter The Source Node from range A -{IdToCharacter(self.numNodes-1)}:", wraplength=150)
+        self.label = tk.Label(self.root, text=f"Enter The Source Node from range A -{IdToCharacter(self.numNodes-1)}:", wraplength=140)
         self.label.pack(pady=10)
 
         
