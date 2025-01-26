@@ -33,15 +33,21 @@ class AnimationController():
         else:
             print("Animation Resumed")
     
-    def IncrementSpeed(self):
+    def IncreaseAnimationSpeed(self):
         #Increment Speed up to a max
         if self.__frameDelay > 100:
             self.__frameDelay -= 100
         print(self.__frameDelay)
-    def DecrementSpeed(self):
+    def DecreaseAnimationSpeed(self):
         if self.__frameDelay < 1500:
             self.__frameDelay +=100
-        print(self.__frameDelay)  
+        print(self.__frameDelay)
+
+    def JumpToEndOfAnimation(self):
+        self.SetAnimationSpeed(0)
+
+    def SetAnimationSpeed(self, num: int):
+        self.__frameDelay = num  
 
 class Animator():
     def __init__(self, nodeReferences, edgeReferences, visitedNodesText, nodesToBeVisitedText, distancesTable, tableData, axs, fig):
@@ -177,10 +183,11 @@ class TopBar():
 class BottomBar():
     def __init__(self, window, animator: Animator, windowObject):
         self.__window = window
+        self.__windowObject: Window = windowObject
         buttonHeight = 2
         butttonWidth = 8
 
-        self.__animationController = animator.GetAnimationController()
+        self.__animationController: AnimationController = animator.GetAnimationController()
         self.__animator = animator
 
         self.__bottomBarFrame = tk.Frame(window, height=BARHEIGHT)
@@ -190,26 +197,29 @@ class BottomBar():
         #Left Spacer
         tk.Frame(self.__bottomBarFrame).pack(side=tk.LEFT, expand=True)
 
-        self.__slowDownButton = tk.Button(self.__bottomBarFrame, text="Slow Down", height=buttonHeight, width=butttonWidth, command= self.__animationController.DecrementSpeed, padx=10)
+        self.__slowDownButton = tk.Button(self.__bottomBarFrame, text="Slow Down", height=buttonHeight, width=butttonWidth, command= self.__animationController.DecreaseAnimationSpeed, padx=10)
         self.__slowDownButton.pack(side=tk.LEFT,  padx=10)
 
         self.__pauseButton = tk.Button(self.__bottomBarFrame, text="Play", height=buttonHeight, width=butttonWidth, command= self.TogglePauseAnimation, padx=10)
         self.__pauseButton.pack(side=tk.LEFT, padx=10)
         #self.__pauseButton.place(relx = 0.5, rely = 0.5, anchor = 'center')
 
-        self.__speedUpButton = tk.Button(self.__bottomBarFrame, text="Speed Up", height=buttonHeight, width=butttonWidth, command= self.__animationController.IncrementSpeed, padx=10)
+        self.__speedUpButton = tk.Button(self.__bottomBarFrame, text="Speed Up", height=buttonHeight, width=butttonWidth, command= self.__animationController.IncreaseAnimationSpeed, padx=10)
         self.__speedUpButton.pack(side=tk.LEFT,  padx=10)
         #self.__fastForwardButton.place(relx = 0.7, rely = 0.7, anchor = 'center')
 
         self.__restartButton = tk.Button(self.__bottomBarFrame, text="Restart", height=buttonHeight, width=butttonWidth, command= self.RestartAnimation, padx=10)
         self.__restartButton.pack(side=tk.LEFT,  padx=10)
 
+        self.__jumpToEndButton = tk.Button(self.__bottomBarFrame, text="Jump To End", height=buttonHeight, width=butttonWidth, command= self.__animationController.JumpToEndOfAnimation, padx=10)
+        self.__jumpToEndButton.pack(side=tk.LEFT,  padx=10)
+
         #Right Spacer
         tk.Frame(self.__bottomBarFrame).pack(side=tk.LEFT, fill=tk.X, expand=True)
 
         self.__lastClickTime = 0
 
-        self.__windowObject: Window = windowObject
+       
 
     def RestartAnimation(self):
         self.__window.destroy()
@@ -228,6 +238,7 @@ class BottomBar():
             #Window.DisplayDataStrucutures(self.__windowObject.GetAxis()[1],self.__windowObject.GetMatrixLength(),  sourceNodeInputForm.GetSourceNodeIndex())
             self.__animator.SetAnimationStarted()
             self.__windowObject.SetSourceNode(sourceNodeInputForm.GetSourceNodeIndex())
+            self.__animationController.SetAnimationSpeed(1000)
             AnimateDijkstras(self.__windowObject.GetMatrix(), self.__windowObject.GetSourceNode(), self.__animator)
             
         self.__animationController.PauseAnimation()
