@@ -127,10 +127,10 @@ class SourceNodeInputForm():
             messagebox.showerror("Error", "Input cannot be more than one character. Please enter a single character")
             return
         elif not userInput.isalpha():
-            messagebox.showerror("Error", "Input must only contain a single alphabetic Character. Please enter a character")
+            messagebox.showerror("Error", "Input must only contain a single alphabetic Character. Please enter an alphabetic character")
             return
         elif  userInput < 'A'  or userInput > IdToCharacter(self.numNodes):
-            messagebox.showerror("Error", f"Input must be in range A -{IdToCharacter(self.numNodes-1)}. Please enter a character")
+            messagebox.showerror("Error", f"Input must be in range A -{IdToCharacter(self.numNodes-1)}. Please enter a character within this range")
             return
 
         try:
@@ -151,5 +151,5 @@ class SourceNodeInputForm():
         return self.sourceNodeIndex
 
 if __name__ == "__main__":
-    app =GraphGeneratorForm()
+    app =SourceNodeInputForm(7)
     app.Run()
