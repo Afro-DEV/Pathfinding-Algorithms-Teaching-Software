@@ -224,12 +224,18 @@ class TopBar():
         #Ensuring when the window is closed via the cross in the top right corner it is handled in the correct way
         form.protocol("WM_DELETE_WINDOW", lambda: self.OnGraphGeneratorFormClose(form))
         graphGeneratorFormObject.Run()
-        numNodes = graphGeneratorFormObject.GetNumberOfNodes()
-        density = graphGeneratorFormObject.pValue
-        m = g.GenerateMatrix(numNodes,density)
-        self.__windowObject.SetMatrix(m) # Might be redundant
-        self.__window.destroy()
-        self.__windowObject.DisplayWindow(m,0)
+        if not graphGeneratorFormObject.IsDemoModeSelected():
+            numNodes = graphGeneratorFormObject.GetNumberOfNodes()
+            density = graphGeneratorFormObject.pValue
+            m = g.GenerateMatrix(numNodes,density)
+            self.__windowObject.SetMatrix(m) # Might be redundant
+            self.__window.destroy()
+            self.__windowObject.DisplayWindow(m,0)
+        else:
+            matrix = self.__windowObject.GetDemoMatrix()
+            self.__windowObject.SetMatrix(matrix) # Might be redundant
+            self.__window.destroy()
+            self.__windowObject.DisplayWindow(matrix,0)
         
 
     def OnGraphGeneratorFormClose(self, form):
@@ -478,6 +484,15 @@ class Window():
     
     def GetMatrixLength(self) -> int:
         return len(self.__adjMatrix)
+    
+    def GetDemoMatrix(self):
+        return [[0,4,3,7,0,0,0],
+                [4,0,0,1,0,4,0],
+                [3,0,0,3,5,0,0],
+                [7,1,3,0,2,2,7],
+                [0,0,5,2,0,0,2],
+                [0,4,0,2,0,0,4],
+                [0,0,0,7,2,4,0]]
     
     def SetMatrix(self, matrix):
         self.__adjMatrix = matrix

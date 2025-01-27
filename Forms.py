@@ -12,6 +12,7 @@ class GraphGeneratorForm():
     def __init__(self):
         self.numberOfNodes = 5
         self.pValue = 50
+        self.isDemoModeSelected = False
         
         self.root = tk.Tk()
         self.root.title('Graph Form')
@@ -59,8 +60,16 @@ class GraphGeneratorForm():
         self.sliderLabelRight = tk.Label(self.root, text="Highly Connected", font=("Arial", 12))
         self.sliderLabelRight.grid(row=4, column=1)
 
+        style = ttk.Style()
+        style.configure("TCheckbutton", focuscolor="transparent", highlightthickness=0, padding=5, font=("Arial", 12))  # Removing focus borde
+        self.demoCheckBox = ttk.Checkbutton(self.root, text='Demo Mode', onvalue=True, offvalue=False, style="TCheckbutton")
+        self.demoCheckBox.grid(row=5, column=0, columnspan=2, pady=5)
+         # Remove focus highlight (explicitly unfocus the Checkbutton)
+        self.demoCheckBox.focus_set()  # Give focus to some other widget if needed, or leave as is
+        self.demoCheckBox.tk_focusNext().focus_set()
+
         self.submitButton = tk.Button(self.root, text="Submit", command=self.Submit, width=10, height=2)
-        self.submitButton.grid(row=5, column=0, columnspan=2, pady=30)
+        self.submitButton.grid(row=6, column=0, columnspan=2, pady=30)
 
 
         
@@ -78,11 +87,21 @@ class GraphGeneratorForm():
         self.root.mainloop()
 
     def Submit(self):
-        self.numberOfNodes = int(self.numberOfNodesDropdown.get())  # Ensure it's an integer
+        try:
+            self.numberOfNodes = int(self.numberOfNodesDropdown.get())  # Ensure it's an integer
+        except ValueError:
+            print('Not entered number of Nodes using 5')
         self.pValue = self.slider.get()
+        #Getting value selected checkbox
+        self.isDemoModeSelected = self.demoCheckBox.instate(['selected'])
+        print(f"Checkbox selected: {self.isDemoModeSelected}")
         self.root.quit()
         self.root.destroy() 
         print(self.GetNumberOfNodes())
+
+    def IsDemoModeSelected(self)-> bool:
+        return self.isDemoModeSelected
+
 
     def GetNumberOfNodes(self) -> int:
         return self.numberOfNodes
@@ -154,5 +173,5 @@ class SourceNodeInputForm():
         return self.root
 
 if __name__ == "__main__":
-    app =SourceNodeInputForm(7)
+    app = GraphGeneratorForm()
     app.Run()
