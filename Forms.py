@@ -12,7 +12,6 @@ class GraphGeneratorForm():
     def __init__(self):
         self.numberOfNodes = 5
         self.pValue = 50
-
         
         self.root = tk.Tk()
         self.root.title('Graph Form')
@@ -81,14 +80,15 @@ class GraphGeneratorForm():
     def Submit(self):
         self.numberOfNodes = int(self.numberOfNodesDropdown.get())  # Ensure it's an integer
         self.pValue = self.slider.get()
-        
         self.root.quit()
         self.root.destroy() 
         print(self.GetNumberOfNodes())
 
     def GetNumberOfNodes(self) -> int:
         return self.numberOfNodes
-
+    
+    def GetForm(self):
+        return self.root
 
 
 class SourceNodeInputForm():
@@ -149,6 +149,9 @@ class SourceNodeInputForm():
 
     def GetSourceNodeIndex(self) -> int:
         return self.sourceNodeIndex
+    
+    def GetForm(self):
+        return self.root
 
 if __name__ == "__main__":
     app =SourceNodeInputForm(7)

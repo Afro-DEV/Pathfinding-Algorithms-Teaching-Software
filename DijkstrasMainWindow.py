@@ -37,10 +37,15 @@ class AnimationController():
         #Increment Speed up to a max
         if self.__frameDelay > 100:
             self.__frameDelay -= 100
+        else:
+            print('Maximum PlayBack Speed has been reached')
         print(self.__frameDelay)
+
     def DecreaseAnimationSpeed(self):
-        if self.__frameDelay < 1500:
-            self.__frameDelay +=100
+        if self.__frameDelay < 2500:
+            self.__frameDelay +=500
+        else:
+            print('Minimum Playback speed has been reached')
         print(self.__frameDelay)
 
     def JumpToEndOfAnimation(self):
@@ -63,6 +68,7 @@ class Animator():
         self.__isRunning: bool = False
         self.__animationStarted: bool = False
         self.__removeBlankSpaceTrueFlag: bool = True
+        self.__numNodes = len(self.__nodeReferences)
 
     def UpdateDistancesTableUI(self, distances):
         #Removing placeholder blank space row in distances table
@@ -74,6 +80,8 @@ class Animator():
         self.__tableData.append(newRow)
         if self.__distancesTable:
             self.__distancesTable.remove()
+        
+      
     
         self.__distancesTable = self.__axs[1].table(
         cellText=self.__tableData,
@@ -90,6 +98,35 @@ class Animator():
         
         self.__fig.canvas.draw()
         #self.__distancesTable.plt.remove()
+
+    def ClearTable(self):
+        print('clear')
+        # columnLabels = [NODELABELS[i] for i in range(self.__numNodes)]
+        # blankSpaceRow = [[None] * len(columnLabels)]
+        # if self.__distancesTable:
+        #     self.__distancesTable.remove()
+        # distancesTable = self.__axs[1].table(cellText=blankSpaceRow,
+        #                            colLabels=columnLabels,
+        #                             loc='center',
+        #                             cellLoc='center',
+        #                             edges='closed',
+        #                             bbox = [0,0.1,1,0.4])
+        # distancesTable.auto_set_font_size(False)
+        # distancesTable.set_fontsize(14)
+
+        self.__distancesTable.remove()
+        columnLabels = [NODELABELS[i] for i in range(self.__numNodes)]
+        blankSpaceRow = [[None] * len(columnLabels)]
+        self.__distancesTable = self.__axs[1].table(cellText=blankSpaceRow,
+                                    colLabels=columnLabels,
+                                    loc='center',
+                                    cellLoc='center',
+                                    edges='closed',
+                                    bbox = [0,0.1,1,0.4])
+        self.__distancesTable.auto_set_font_size(False)
+        self.__distancesTable.set_fontsize(14)
+        #self.__axs[1].set_axis_off()
+        
 
     def HighlightEdgesOfNode(self, currentIndex) -> None:
         for edge in self.__edgeReferences[currentIndex]:
@@ -123,6 +160,13 @@ class Animator():
         self.__nodeReferences[id].set(color = colour)
         self.__fig.canvas.draw()
 
+    # def RestartAnimation(self, windowObject):
+    #     windowObject: Window = windowObject
+    #     self.__restartFlag = True
+    #     m = windowObject.GetMatrix()
+    #     AnimateDijkstras(m, windowObject.GetSourceNode(), self)
+
+
     def GetFigure(self):
         return self.__fig
     
@@ -147,9 +191,12 @@ class Animator():
     def SetAnimationStarted(self):
         self.__animationStarted = True
 
+
 class TopBar():
     def __init__(self, window, windowObject):
         self.__window = window
+        self.__windowObject: Window = windowObject
+        self.__isGraphGeneratorFormRunning: bool = False
         buttonHeight = 2
         butttonWidth = 8
 
@@ -164,18 +211,31 @@ class TopBar():
         self.__graphGeneratorButton.pack(side=tk.RIGHT)
 
         
-        self.__windowObject: Window = windowObject
+        
         #self.__topBarFrame.pack_propagate(False)
     
     def GenerateNewGraphClick(self):
-        graphGeneratorForm = GraphGeneratorForm()
-        graphGeneratorForm.Run()
-        numNodes = graphGeneratorForm.GetNumberOfNodes()
-        density = graphGeneratorForm.pValue
+        if self.__isGraphGeneratorFormRunning:
+            tk.messagebox.showwarning("Warning", "The form is already open.")
+            return
+        self.__isGraphGeneratorFormRunning = True
+        graphGeneratorFormObject = GraphGeneratorForm()
+        form = graphGeneratorFormObject.GetForm()
+        #Ensuring when the window is closed via the cross in the top right corner it is handled in the correct way
+        form.protocol("WM_DELETE_WINDOW", lambda: self.OnGraphGeneratorFormClose(form))
+        graphGeneratorFormObject.Run()
+        numNodes = graphGeneratorFormObject.GetNumberOfNodes()
+        density = graphGeneratorFormObject.pValue
         m = g.GenerateMatrix(numNodes,density)
         self.__windowObject.SetMatrix(m) # Might be redundant
         self.__window.destroy()
         self.__windowObject.DisplayWindow(m,0)
+        
+
+    def OnGraphGeneratorFormClose(self, form):
+        self.__isGraphGeneratorFormRunning = False
+        form.destroy()
+
         
     def QuitButtonClick(self):
         self.__window.destroy()
@@ -184,8 +244,9 @@ class BottomBar():
     def __init__(self, window, animator: Animator, windowObject):
         self.__window = window
         self.__windowObject: Window = windowObject
+        self.__isSourceNodeInputFormRunning: bool = False
         buttonHeight = 2
-        butttonWidth = 8
+        buttonWidth = 8
 
         self.__animationController: AnimationController = animator.GetAnimationController()
         self.__animator = animator
@@ -197,21 +258,21 @@ class BottomBar():
         #Left Spacer
         tk.Frame(self.__bottomBarFrame).pack(side=tk.LEFT, expand=True)
 
-        self.__slowDownButton = tk.Button(self.__bottomBarFrame, text="Slow Down", height=buttonHeight, width=butttonWidth, command= self.__animationController.DecreaseAnimationSpeed, padx=10)
+        self.__slowDownButton = tk.Button(self.__bottomBarFrame, text="Slow Down", height=buttonHeight, width=buttonWidth, command= self.__animationController.DecreaseAnimationSpeed, padx=10)
         self.__slowDownButton.pack(side=tk.LEFT,  padx=10)
 
-        self.__pauseButton = tk.Button(self.__bottomBarFrame, text="Play", height=buttonHeight, width=butttonWidth, command= self.TogglePauseAnimation, padx=10)
-        self.__pauseButton.pack(side=tk.LEFT, padx=10)
+        self.__pausePlayButton = tk.Button(self.__bottomBarFrame, text="Play", height=buttonHeight, width=buttonWidth, command= self.EnablePausePlayFunctionality, padx=10)
+        self.__pausePlayButton.pack(side=tk.LEFT, padx=10)
         #self.__pauseButton.place(relx = 0.5, rely = 0.5, anchor = 'center')
 
-        self.__speedUpButton = tk.Button(self.__bottomBarFrame, text="Speed Up", height=buttonHeight, width=butttonWidth, command= self.__animationController.IncreaseAnimationSpeed, padx=10)
+        self.__speedUpButton = tk.Button(self.__bottomBarFrame, text="Speed Up", height=buttonHeight, width=buttonWidth, command= self.__animationController.IncreaseAnimationSpeed, padx=10)
         self.__speedUpButton.pack(side=tk.LEFT,  padx=10)
         #self.__fastForwardButton.place(relx = 0.7, rely = 0.7, anchor = 'center')
 
-        self.__restartButton = tk.Button(self.__bottomBarFrame, text="Restart", height=buttonHeight, width=butttonWidth, command= self.RestartAnimation, padx=10)
+        self.__restartButton = tk.Button(self.__bottomBarFrame, text="Restart", height=buttonHeight, width=buttonWidth, command= self.RestartAnimation, padx=10)
         self.__restartButton.pack(side=tk.LEFT,  padx=10)
 
-        self.__jumpToEndButton = tk.Button(self.__bottomBarFrame, text="Jump To End", height=buttonHeight, width=butttonWidth, command= self.__animationController.JumpToEndOfAnimation, padx=10)
+        self.__jumpToEndButton = tk.Button(self.__bottomBarFrame, text="Jump To End", height=buttonHeight, width=buttonWidth, command= self.__animationController.JumpToEndOfAnimation, padx=10)
         self.__jumpToEndButton.pack(side=tk.LEFT,  padx=10)
 
         #Right Spacer
@@ -224,30 +285,41 @@ class BottomBar():
     def RestartAnimation(self):
         self.__window.destroy()
         self.__windowObject.DisplayWindow(self.__windowObject.GetMatrix(),0)
+        # self.__animator.ClearTable()
+        # self.__animator.DehighlightAllNodes()
+        # AnimateDijkstras(self.__windowObject.GetMatrix(), 0, self.__animator)
 
     def DebouncedTogglePauseAnimation(self):
         currentTime = time.time()
         if currentTime - self.__lastClickTime > 0.2:  # 200ms debounce
             self.__lastClickTime = currentTime
-            self.TogglePauseAnimation()
+            self.EnablePausePlayFunctionality()
     
-    def TogglePauseAnimation(self):
-        if not self.GetHasAnimationStarted():
-            sourceNodeInputForm = SourceNodeInputForm(self.__windowObject.GetMatrixLength())
-            sourceNodeInputForm.Run()
+    def EnablePausePlayFunctionality(self):
+        if not self.__animator.GetHasAnimationStarted():
+            #If animation not initiallised allow user to enter source node and run animation
+            if self.__isSourceNodeInputFormRunning:
+                return
+            self.__isSourceNodeInputFormRunning = True
+            sourceNodeInputFormObject = SourceNodeInputForm(self.__windowObject.GetMatrixLength())
+            form = sourceNodeInputFormObject.GetForm()
+
+            #Ensuring when the window is closed via the cross in the top right corner it is handled in the correct way
+            form.protocol("WM_DELETE_WINDOW", lambda: self.OnSourceNodeInputFormClose(form))
+            sourceNodeInputFormObject.Run()
             #Window.DisplayDataStrucutures(self.__windowObject.GetAxis()[1],self.__windowObject.GetMatrixLength(),  sourceNodeInputForm.GetSourceNodeIndex())
             self.__animator.SetAnimationStarted()
-            self.__windowObject.SetSourceNode(sourceNodeInputForm.GetSourceNodeIndex())
+            self.__windowObject.SetSourceNode(sourceNodeInputFormObject.GetSourceNodeIndex())
             self.__animationController.SetAnimationSpeed(1000)
             AnimateDijkstras(self.__windowObject.GetMatrix(), self.__windowObject.GetSourceNode(), self.__animator)
             
         self.__animationController.PauseAnimation()
         new_text = "Resume" if self.__animationController.IsPaused() else "Pause"
-        self.__pauseButton.config(text=new_text)
+        self.__pausePlayButton.config(text=new_text)
     
-    def GetHasAnimationStarted(self):
-        return self.__animator.GetHasAnimationStarted()
-
+    def OnSourceNodeInputFormClose(self, form):
+        self.__isSourceNodeInputFormRunning = False
+        form.destroy()
 
 class Window():
     def __init__(self):
@@ -260,8 +332,7 @@ class Window():
                 [0,4,0,2,0,0,4],
                 [0,0,0,7,2,4,0]]
         self.__sourceNode = 0
-        numNodes = len(self.__adjMatrix)
-        sourceNodeIndex = 0
+        #Unpacking the fig and axis object from subplots then storing it in a single variable fig and axis
         figAndAxis = fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
         self.__fig = figAndAxis[0]
         self.__axs = figAndAxis[1]
@@ -270,10 +341,10 @@ class Window():
         #nodeReference, edgeReferences = self.DisplayGraph(self.__demoGraph, axs[0])
         self.DisplayWindow(self.__adjMatrix, self.__sourceNode)
     
-    def DisplayDataStrucutures(self, axs, numNodes, sourceNodeIndex):
+    def DisplayDataStrucutures(self, axs, numNodes):
         columnLabels = [NODELABELS[i] for i in range(numNodes)]
-        initialDistances = [float('inf')]* numNodes
-        initialDistances[sourceNodeIndex] = 0
+        # initialDistances = [float('inf')]* numNodes
+        # initialDistances[sourceNodeIndex] = 0
         blankSpaceRow = [[None] * len(columnLabels)]
         axs.set_title('Data Structures', fontsize=self.TITLE_FONT_SIZE)
         #axs[1].set_axis_off()
@@ -281,7 +352,7 @@ class Window():
         nodesToOptimiseText = axs.text(0.5, 0.7, 'P[]', fontsize=20, ha='center', va='center', wrap=True)
         #Fix This part
         #data = [[distance if distance != float('inf') else '∞' for distance in initialDistances]]
-        data = [['∞' for distance in initialDistances]]
+        #data = [['∞' for distance in initialDistances]]
         distancesTable = axs.table(cellText=blankSpaceRow,
                                     colLabels=columnLabels,
                                     loc='center',
@@ -365,13 +436,13 @@ class Window():
         fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
         #Getting references to UI elements
         nodeReference, edgeReferences = self.DisplayGraph(adjacencyMatrix, axs[0])
-        visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = self.DisplayDataStrucutures(axs[1], numNodes, self.__sourceNode)
+        visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = self.DisplayDataStrucutures(axs[1], numNodes)
         
         animator = Animator(nodeReference, edgeReferences, visitedNodesText, nodesToBeVisitedText , distancesTable, tableData, axs, fig)
 
         window = tk.Tk()
         #For laptop turn code below off
-        window.geometry("1800x1000")
+        #window.geometry("1800x1000")
         
         window.title("Dijkstra's demonstration")
         
@@ -427,13 +498,13 @@ class Window():
 def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  animator: Animator) -> None:
     numNodes = len(adjacencyMatrix)
     window = animator.GetFigure().canvas.get_tk_widget().master 
-
+    
 
 
 
     distances = [float('inf')] * numNodes
     distances[sourceNodeIndex] = 0
-
+    animator.UpdateDistancesTableUI(distances)
     animator.SetNodeColour(sourceNodeIndex, 'lightgreen')
 
     nodesToBeVisited: list[Node] = PriorityQueue()
