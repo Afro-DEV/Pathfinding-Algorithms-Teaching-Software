@@ -392,7 +392,7 @@ class Window():
 
     def DisplayGraph(self, adjacencyMatrix: list[list[int]], axs) :
         numNodes: int = len(adjacencyMatrix)
-        nodeReferecnce = {}
+        nodeReferences = {}
         edgeReferences = [[] for i in range(numNodes)]
         edgeLabels = []
         lablePositions = []
@@ -404,7 +404,7 @@ class Window():
             #How to alter properties of value
             #node  = plt.scatter(x, y, s=300, color='skyblue', zorder=3)
             node = axs.scatter(x, y, s=300, color='skyblue', zorder=3)
-            nodeReferecnce[i] = node
+            nodeReferences[i] = node
             axs.text(x, y, NODELABELS[i], fontsize=12, ha='center', va='center')
             
         #Plotting the edges
@@ -435,7 +435,7 @@ class Window():
         axs.set_title('Dijkstras Demonstration', fontsize= self.TITLE_FONT_SIZE)
         axs.set_axis_off()
         #plt.show()
-        return nodeReferecnce, edgeReferences
+        return nodeReferences, edgeReferences
     
     def DisplayWindow(self, adjacencyMatrix: list[list[int]], sourceNodeIndex: int) -> None:
         numNodes: int = len(adjacencyMatrix)
