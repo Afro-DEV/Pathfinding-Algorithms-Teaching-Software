@@ -18,7 +18,4 @@ if __name__ == "__main__":
     ox.settings.cache_folder = "Interactive Map Demonstration/Networks/Network Cache"
     networkFileGenerator = NetworkFileGenerator()
     
-    graph = ox.load_graphml(filepath="Interactive Map Demonstration/Networks/NewYorkNetwork.graphml")
-    fig, ax = ox.plot_graph(graph, node_size=0, edge_color='w', bgcolor='k', show=False)
-    plt.show()
     
