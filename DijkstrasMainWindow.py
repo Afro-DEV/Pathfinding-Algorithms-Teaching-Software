@@ -5,7 +5,6 @@ from DataStructures import Node, PriorityQueue
 from Forms import SourceNodeInputForm, GraphGeneratorForm
 import generatingmatix as g
 import random
-from adjustText import adjust_text #Must be installed
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import time
@@ -227,10 +226,10 @@ class TopBar():
         if not graphGeneratorFormObject.IsDemoModeSelected():
             numNodes = graphGeneratorFormObject.GetNumberOfNodes()
             density = graphGeneratorFormObject.pValue
-            m = g.GenerateMatrix(numNodes,density)
-            self.__windowObject.SetMatrix(m) # Might be redundant
+            matrix = g.GenerateMatrix(numNodes,density)
+            self.__windowObject.SetMatrix(matrix) # Might be redundant
             self.__window.destroy()
-            self.__windowObject.DisplayWindow(m,0)
+            self.__windowObject.DisplayWindow(matrix,0)
         else:
             matrix = self.__windowObject.GetDemoMatrix()
             self.__windowObject.SetMatrix(matrix) # Might be redundant
@@ -369,7 +368,7 @@ class Window():
         distancesTable.set_fontsize(14)
         axs.set_axis_off()
         #distancesTable.auto_set_column_width(col=list(range(len(columnLabels))))
-        
+   
         return visitedNodesText, nodesToOptimiseText, distancesTable, blankSpaceRow
     def GetAngles(self, numNodes: int) -> list[float]:
         #tau is 2pi
@@ -395,7 +394,7 @@ class Window():
         nodeReferences = {}
         edgeReferences = [[] for i in range(numNodes)]
         edgeLabels = []
-        lablePositions = []
+        labelPositions = []
         #plt.figure(figsize=(8,8))
         coordinates = self.CircularLayout(numNodes)
         
@@ -416,7 +415,6 @@ class Window():
                     x_mid = (x_Coords[0] + x_Coords[1]) / 2
                     y_mid = (y_Coords[0] + y_Coords[1]) / 2
 
-                    # b =plt.plot(x_Coords, y_Coords, color='grey')
                     edge, = axs.plot(x_Coords, y_Coords, color='grey')
                     edgeReferences[i].append(edge)
                     edgeReferences[j].append(edge)
@@ -427,15 +425,25 @@ class Window():
                     else:
                         offset_x = 0.05 if abs(x_Coords[0] - x_Coords[1]) > abs(y_Coords[0] - y_Coords[1]) else 0 
                         offset_y = 0 if abs(x_Coords[0] - x_Coords[1]) > abs(y_Coords[0] - y_Coords[1]) else 0.05
-                        #Adding random jitter in addition to offset
-                        label_x = x_mid + offset_x + random.uniform(-0.02, 0.02)
-                        label_y = y_mid + offset_y + random.uniform(-0.02, 0.02)
+                        #Initially placing edge weight label in the middle of the edge
+                        label_x, label_y = self.ResolveEdgeLabelOverlap(x_mid, y_mid, labelPositions)
+                        labelPositions.append((label_x, label_y))
                     edgeLabels.append(axs.text(label_x, label_y, str([adjacencyMatrix[i][j]])[1:-1], fontsize=14, ha='center', va='center',))
-        adjust_text(edgeLabels, ax=axs)
         axs.set_title('Dijkstras Demonstration', fontsize= self.TITLE_FONT_SIZE)
         axs.set_axis_off()
         #plt.show()
         return nodeReferences, edgeReferences
+    
+    def ResolveEdgeLabelOverlap(self, x: float, y: float, label_positions: list[tuple[float, float]], min_distance=0.1) -> tuple[float, float]:
+        for existing_x, existing_y in label_positions:
+            distance = math.sqrt((x - existing_x) ** 2 + (y - existing_y) ** 2)
+            if distance < min_distance:
+                # Adjust the position to resolve the overlap
+                x += random.uniform(-min_distance, min_distance)
+                y += random.uniform(-min_distance, min_distance)
+                # Check again with updated position (recursively)
+                return self.ResolveEdgeLabelOverlap(x, y, label_positions, min_distance)
+        return x, y
     
     def DisplayWindow(self, adjacencyMatrix: list[list[int]], sourceNodeIndex: int) -> None:
         numNodes: int = len(adjacencyMatrix)
