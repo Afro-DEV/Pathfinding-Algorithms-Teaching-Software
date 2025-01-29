@@ -3,7 +3,7 @@ import math
 from Utilities import sin, cos
 from DataStructures import Node, PriorityQueue
 from Forms import SourceNodeInputForm, GraphGeneratorForm
-import generatingmatix as g
+import GeneratingAdjacencyMatrix as g
 import random
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg

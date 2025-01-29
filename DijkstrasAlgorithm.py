@@ -1,5 +1,5 @@
 from DataStructures import Node, PriorityQueue
-import generatingmatix as g
+import GeneratingAdjacencyMatrix as g
 
 nodeLabels = {i: chr(65+i) for i in range(11)}
 def dijkstras(sourceNodeIndex, adjacencyMatrix):
