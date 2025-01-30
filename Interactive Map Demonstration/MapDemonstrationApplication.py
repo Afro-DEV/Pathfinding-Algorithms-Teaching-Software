@@ -67,30 +67,88 @@ class MinHeap:
     def __init__(self):
         #REmeber min will always be top of heapq
         self.__heap = []
-    
-    def GetLeftChild(self):
-        ...
-    
-    def GetRightChild(self):
-        ...
-        
-    def Insert(self):
-        ...
-    
-    def HeapifyUp(self):
-        ...
 
-    def HeapifyDown(self):
-        ...
+    def Insert(self, item):
+        self.__heap.append(item)
+        index = len(self.__heap)-1
+        self.HeapifyUp(index)
     
+    def HeapifyUp(self, index):
+        if self.HasParent(index) and self.Parent(index)> self.__heap[index]:
+            self.Swap(self.GetParentIndex(index), index)
+            index = self.GetParentIndex(index)
+            #Recursively heapify the index up the Binary tree until it is in the correct position
+            self.HeapifyUp(index)
+
+    def HeapifyDown(self, index):
+        smallest = index
+        if self.HasLeftChild(index) and self.__heap[smallest] > self.LeftChild(index):
+            smallest = self.GetLeftChildIndex(index)
+        if self.HasRightChild(index) and self.__heap[smallest] > self.RightChild(index):
+            smallest = self.GetRightChildIndex(index)
+        
+        #If this true left or right child of index is smaller than node we are currently at
+        if(smallest!= index):
+            self.Swap(index, smallest)
+            #Recursively move down the tree moving the index to the correct place on tree
+            self.HeapifyDown(smallest)
+
+    def RemoveMinValue(self):
+        if self.IsEmpty():
+            raise('Empty Heap')
+        data = self.__heap[0]
+        #Replacing last value in the heap with the first value
+        self.__heap[0] = self.__heap[-1]
+        self.__heap.pop() #Removing last element
+        #We Traverse down the tree from top to bottom so index will always be 0
+        self.HeapifyDown(0)
+        return data
+
+    #HELPER FUNCTIONS 
+
     def Peek(self):
-        if not self.IsEmpty():
-            return self.__heap[0]
-        else:
-            return 'Empty Heap'
+        if self.IsEmpty():
+            raise('Empty Heap')
+        return self.__heap[0]
+
+    def Parent(self, index):
+        return self.__heap[self.GetParentIndex(index)]
+
+    def LeftChild(self, index):
+        return self.__heap[self.GetLeftChildIndex(index)]
+    
+    def RightChild(self, index):
+        return self.__heap[self.GetRightChildIndex(index)]
+
+    def GetLeftChildIndex(self, index):
+        return 2* index + 1
+        
+    
+    def GetRightChildIndex(self, index):
+        return 2* index + 2
+    
+    def GetParentIndex(self, index):
+        return (index-1)//2
+
+    def HasLeftChild(self, index):
+        return self.GetLeftChildIndex(index) < len(self.__heap)
+
+    def HasRightChild(self, index):
+        return self.GetRightChildIndex(index) < len(self.__heap)
+
+    def HasParent(self, index):
+        return self.GetParentIndex(index) >=0
+
+    def Swap(self, index1, index2):
+        temp = self.__heap[index1]
+        self.__heap[index1] = self.__heap[index2]
+        self.__heap[index2] = temp
 
     def IsEmpty(self):
         return len(self.__heap) == 0
+
+    def OutputHeap(self):
+        print(self.__heap)
 
 def EuclideanDistance(graph, node1, node2):
     coordinateNode1 = NodeToCordiante(graph,node1)
@@ -125,10 +183,23 @@ def AStar(graph, startNode, endNode):
 if __name__ == "__main__":
     # window = MapDemonstrationWindow()
     # window.DisplayNetwork()
-    graph =  ox.load_graphml(filepath="Interactive Map Demonstration/Networks/LondonNetwork.graphml")
-    startCoords = (51.5017, -0.1419)  
-    endCoords = (51.53, -0.15)
-    startNode = ox.distance.nearest_nodes(graph, startCoords[1], startCoords[0])
-    endNode = ox.distance.nearest_nodes(graph, endCoords[1], endCoords[0])
 
-    AStar(graph, startNode, endNode)
+    # graph =  ox.load_graphml(filepath="Interactive Map Demonstration/Networks/LondonNetwork.graphml")
+    # startCoords = (51.5017, -0.1419)  
+    # endCoords = (51.53, -0.15)
+    # startNode = ox.distance.nearest_nodes(graph, startCoords[1], startCoords[0])
+    # endNode = ox.distance.nearest_nodes(graph, endCoords[1], endCoords[0])
+
+    # AStar(graph, startNode, endNode)
+    heap = MinHeap()
+    heap.Insert(20)
+    heap.Insert(8)
+    heap.Insert(15)
+    heap.Insert(30)
+    heap.Insert(5)
+    heap.Insert(10)
+    heap.Insert(0)
+    heap.RemoveMinValue( )
+    heap.OutputHeap()
+
+    
