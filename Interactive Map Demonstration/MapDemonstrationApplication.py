@@ -63,6 +63,34 @@ class MapDemonstrationWindow():
     def GetGraph(self):
         return self.graph
 
+class MinHeap:
+    def __init__(self):
+        #REmeber min will always be top of heapq
+        self.__heap = []
+    
+    def GetLeftChild(self):
+        ...
+    
+    def GetRightChild(self):
+        ...
+        
+    def Insert(self):
+        ...
+    
+    def HeapifyUp(self):
+        ...
+
+    def HeapifyDown(self):
+        ...
+    
+    def Peek(self):
+        if not self.IsEmpty():
+            return self.__heap[0]
+        else:
+            return 'Empty Heap'
+
+    def IsEmpty(self):
+        return len(self.__heap) == 0
 
 def EuclideanDistance(graph, node1, node2):
     coordinateNode1 = NodeToCordiante(graph,node1)
@@ -70,15 +98,27 @@ def EuclideanDistance(graph, node1, node2):
     distanceLatitude = abs(coordinateNode1[0]-coordinateNode2[0])
     distanceLongitude = abs(coordinateNode1[1] - coordinateNode2[1])
     distance = math.sqrt(distanceLatitude**2 + distanceLongitude**2)
-    print(distance)
+    return distance
 
 def NodeToCordiante(graph, node):
     return graph.nodes[node]['x'], graph.nodes[node]['y']
 
 def AStar(graph, startNode, endNode):
     
-    openSet = {}
-    cameFrom = []
+    openSet = []
+    cameFrom = {}# Used to track the path
+    ...
+    #Initialising g and f  for every node to be infinity
+    g_score = {node: float('inf') for node in graph.nodes}
+    f_score = {node: float('inf') for node in graph.nodes}
+    g_score[startNode] = 0
+    heuristicEstimate = EuclideanDistance(graph, startNode, endNode)
+    f_score[startNode] = g_score[startNode] + heuristicEstimate
+    print(f_score) 
+
+    while len(openSet) > 0:
+        ...
+
     EuclideanDistance(graph, startNode, endNode)
 
 
