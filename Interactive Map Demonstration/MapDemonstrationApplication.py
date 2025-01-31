@@ -120,14 +120,14 @@ class MinHeap:
     def RightChild(self, index):
         return self.__heap[self.GetRightChildIndex(index)]
 
-    def GetLeftChildIndex(self, index):
+    def GetLeftChildIndex(self, index) -> int:
         return 2* index + 1
         
     
-    def GetRightChildIndex(self, index):
+    def GetRightChildIndex(self, index) -> int:
         return 2* index + 2
     
-    def GetParentIndex(self, index):
+    def GetParentIndex(self, index) -> int:
         return (index-1)//2
 
     def HasLeftChild(self, index):
@@ -146,6 +146,9 @@ class MinHeap:
 
     def IsEmpty(self):
         return len(self.__heap) == 0
+    
+    def GetHeap(self):
+        return self.__heap
 
     def OutputHeap(self):
         print(self.__heap)
@@ -161,36 +164,65 @@ def EuclideanDistance(graph, node1, node2):
 def NodeToCordiante(graph, node):
     return graph.nodes[node]['x'], graph.nodes[node]['y']
 
-def AStar(graph, startNode, endNode):
-    
-    openSet = []
+def AStar(graph: nx.MultiDiGraph, startNode, endNode):
+    print(startNode)
+    openList = MinHeap()
+    closedList = set()
     cameFrom = {}# Used to track the path
-    ...
     #Initialising g and f  for every node to be infinity
     g_score = {node: float('inf') for node in graph.nodes}
     f_score = {node: float('inf') for node in graph.nodes}
     g_score[startNode] = 0
     heuristicEstimate = EuclideanDistance(graph, startNode, endNode)
     f_score[startNode] = g_score[startNode] + heuristicEstimate
-    print(f_score) 
+    openList.Insert((f_score[startNode], startNode))
+    #openList.OutputHeap()
 
-    while len(openSet) > 0:
-        ...
+    while not openList.IsEmpty():
+        currentNodeAndFval = openList.RemoveMinValue()
+        currentNode = currentNodeAndFval[1]
+        if currentNode == endNode:
+            return g_score[endNode]
+        closedList.add(currentNode)
 
-    EuclideanDistance(graph, startNode, endNode)
+        for neighbourNode in graph.neighbors(currentNode):
+            if neighbourNode in closedList:
+                continue
+            distance = graph[currentNode][neighbourNode][0]['length'] 
+            estimateGScore = distance + g_score[currentNode]
+
+            if estimateGScore < g_score[neighbourNode]:
+                g_score[neighbourNode] = estimateGScore
+                f_score[neighbourNode] = g_score[neighbourNode] + EuclideanDistance(graph, neighbourNode, endNode)
+
+            if not neighbourNode in openList.GetHeap():
+                neighbourNodeAndFVal = (f_score[neighbourNode], neighbourNode)
+                openList.Insert(neighbourNodeAndFVal)
+            elif estimateGScore >= g_score[neighbourNode]:
+                #This is not a better route than we already have
+                continue
+            
+    
+    return 'No path found'
+
+def GetFScore():
+    ...
 
 
 if __name__ == "__main__":
     # window = MapDemonstrationWindow()
     # window.DisplayNetwork()
 
-    # graph =  ox.load_graphml(filepath="Interactive Map Demonstration/Networks/LondonNetwork.graphml")
-    # startCoords = (51.5017, -0.1419)  
-    # endCoords = (51.53, -0.15)
-    # startNode = ox.distance.nearest_nodes(graph, startCoords[1], startCoords[0])
-    # endNode = ox.distance.nearest_nodes(graph, endCoords[1], endCoords[0])
+    graph =  ox.load_graphml(filepath="Interactive Map Demonstration/Networks/LondonNetwork.graphml")
+    startCoords = (51.5017, -0.1419)  
+    endCoords = (51.53, -0.15)
+    startNode = ox.distance.nearest_nodes(graph, startCoords[1], startCoords[0])
+    endNode = ox.distance.nearest_nodes(graph, endCoords[1], endCoords[0])
+    length = nx.shortest_path_length(graph, startNode, endNode, weight='length')
 
-    # AStar(graph, startNode, endNode)
+    print(f"Actual length is {length}")
+
+    print(f"My length found is {AStar(graph, startNode, endNode)}")
     heap = MinHeap()
     heap.Insert(20)
     heap.Insert(8)
@@ -200,6 +232,6 @@ if __name__ == "__main__":
     heap.Insert(10)
     heap.Insert(0)
     heap.RemoveMinValue( )
-    heap.OutputHeap()
+    #heap.OutputHeap()
 
     
