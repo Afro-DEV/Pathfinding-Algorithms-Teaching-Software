@@ -164,8 +164,17 @@ def EuclideanDistance(graph, node1, node2):
 def NodeToCordiante(graph, node):
     return graph.nodes[node]['x'], graph.nodes[node]['y']
 
-def AStar(graph: nx.MultiDiGraph, startNode, endNode):
-    print(startNode)
+def GetPath(cameFrom, currentNode, startNode):
+    path = []
+    while currentNode in cameFrom:
+        path.append(currentNode)
+        currentNode = cameFrom[currentNode]
+    path.append(startNode)
+    #Could use stack?
+    return path[::-1] #Return reversed path
+
+
+def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     openList = MinHeap()
     closedList = set()
     cameFrom = {}# Used to track the path
@@ -173,8 +182,8 @@ def AStar(graph: nx.MultiDiGraph, startNode, endNode):
     g_score = {node: float('inf') for node in graph.nodes}
     f_score = {node: float('inf') for node in graph.nodes}
     g_score[startNode] = 0
-    heuristicEstimate = EuclideanDistance(graph, startNode, endNode)
-    f_score[startNode] = g_score[startNode] + heuristicEstimate
+    initialHeuristicEstimate = EuclideanDistance(graph, startNode, endNode)
+    f_score[startNode] = g_score[startNode] + initialHeuristicEstimate
     openList.Insert((f_score[startNode], startNode))
     #openList.OutputHeap()
 
@@ -182,7 +191,8 @@ def AStar(graph: nx.MultiDiGraph, startNode, endNode):
         currentNodeAndFval = openList.RemoveMinValue()
         currentNode = currentNodeAndFval[1]
         if currentNode == endNode:
-            return g_score[endNode]
+            path = GetPath(cameFrom, currentNode, startNode)
+            return path
         closedList.add(currentNode)
 
         for neighbourNode in graph.neighbors(currentNode):
@@ -192,26 +202,23 @@ def AStar(graph: nx.MultiDiGraph, startNode, endNode):
             estimateGScore = distance + g_score[currentNode]
 
             if estimateGScore < g_score[neighbourNode]:
+                cameFrom[neighbourNode] = currentNode
                 g_score[neighbourNode] = estimateGScore
                 f_score[neighbourNode] = g_score[neighbourNode] + EuclideanDistance(graph, neighbourNode, endNode)
 
-            if not neighbourNode in openList.GetHeap():
-                neighbourNodeAndFVal = (f_score[neighbourNode], neighbourNode)
-                openList.Insert(neighbourNodeAndFVal)
-            elif estimateGScore >= g_score[neighbourNode]:
-                #This is not a better route than we already have
-                continue
+                if  neighbourNode not in openList.GetHeap():
+                    neighbourNodeAndFVal = (f_score[neighbourNode], neighbourNode)
+                    openList.Insert(neighbourNodeAndFVal)
+                elif estimateGScore >= g_score[neighbourNode]:
+                    #This is not a better route than we already have
+                    continue
             
     
     return 'No path found'
 
-def GetFScore():
-    ...
-
-
 if __name__ == "__main__":
-    # window = MapDemonstrationWindow()
-    # window.DisplayNetwork()
+    window = MapDemonstrationWindow()
+    window.DisplayNetwork()
 
     graph =  ox.load_graphml(filepath="Interactive Map Demonstration/Networks/LondonNetwork.graphml")
     startCoords = (51.5017, -0.1419)  
@@ -221,8 +228,18 @@ if __name__ == "__main__":
     length = nx.shortest_path_length(graph, startNode, endNode, weight='length')
 
     print(f"Actual length is {length}")
+    fig, ax = plt.subplots(figsize=(10, 10))
+    ox.plot_graph(graph, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray")
+    path = AStar(graph, startNode, endNode)
+    #Gett cordinates of nodes on the path
+    path_x = [graph.nodes[node]['x'] for node in path]
+    path_y = [graph.nodes[node]['y'] for node in path]
+    ax.plot(path_x, path_y, linewidth=2, color="red", label="A* Shortest Path")
+    plt.legend()
+    plt.show()
 
-    print(f"My length found is {AStar(graph, startNode, endNode)}")
+
+
     heap = MinHeap()
     heap.Insert(20)
     heap.Insert(8)
