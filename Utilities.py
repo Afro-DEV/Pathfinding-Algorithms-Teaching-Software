@@ -1,6 +1,6 @@
 import math
 from functools import reduce
-upperLimitOfExpansion = 100
+UPPER_LIMIT_OF_EXPANSION = 100
 def factorial(num: int) -> int:
     '''Returns factorial of number'''
     
@@ -10,16 +10,19 @@ def factorial(num: int) -> int:
 def cos(x: float) -> float:
     '''Returns cosine of angle via maclaurin expanision'''
 
-    negativeTerms = reduce(lambda x,y: x+y,[-(x**i)/factorial(i) for i in range(2,upperLimitOfExpansion,4)])
-    positiveTerms = reduce(lambda x,y: x+y,[(x**i)/factorial(i) for i in range(4,upperLimitOfExpansion,4)])
+    negativeTerms = reduce(lambda x,y: x+y,[-(x**i)/factorial(i) for i in range(2,UPPER_LIMIT_OF_EXPANSION,4)])
+    positiveTerms = reduce(lambda x,y: x+y,[(x**i)/factorial(i) for i in range(4,UPPER_LIMIT_OF_EXPANSION,4)])
     return 1 + negativeTerms + positiveTerms
 
 def sin(x: float) -> float:
     '''Returns sine of angle via maclaurin expanision'''
 
-    negativeTerms = reduce(lambda x,y: x+y,[-(x**i)/factorial(i) for i in range(3,upperLimitOfExpansion,4)])
-    positiveTerms = reduce(lambda x,y: x+y,[(x**i)/factorial(i) for i in range(5,upperLimitOfExpansion,4)])
+    negativeTerms = reduce(lambda x,y: x+y,[-(x**i)/factorial(i) for i in range(3,UPPER_LIMIT_OF_EXPANSION,4)])
+    positiveTerms = reduce(lambda x,y: x+y,[(x**i)/factorial(i) for i in range(5,UPPER_LIMIT_OF_EXPANSION,4)])
     return x + negativeTerms + positiveTerms
+
+def ConvertDegreesToRadians(x: float):
+    return x * math.pi/180
 
 def IdToCharacter(id):
     return chr(id+65) 
@@ -29,10 +32,6 @@ def CharacterToId(char):
 
 if __name__ == '__main__':
     print([i for i in range(3,20,4)])
-    pi = math.pi
-    
-    print(cos(pi))
-    print(sin(pi))
 
     print(IdToCharacter(0))
     print(CharacterToId('A '))

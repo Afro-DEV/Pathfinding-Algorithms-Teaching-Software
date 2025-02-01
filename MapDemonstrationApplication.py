@@ -2,7 +2,7 @@ import osmnx as ox
 import networkx as nx
 import matplotlib.pyplot as plt
 import math
-#from Utilities import sin,cos
+from Utilities import sin,cos, ConvertDegreesToRadians
 class MapDemonstrationWindow():
     def __init__(self):
         self.graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
@@ -162,18 +162,18 @@ def HaverSineDistance(graph, node1,  node2):
     lat2 = coordinateNode2[0]
     lon2 = coordinateNode2[1]
 
-    lat1 = math.radians(lat1)
-    lon1 = math.radians(lon1)
-    lat2 = math.radians(lat2)
-    lon2 = math.radians(lon2)
+    lat1 = ConvertDegreesToRadians(lat1)
+    lon1 = ConvertDegreesToRadians(lon1)
+    lat2 = ConvertDegreesToRadians(lat2)
+    lon2 = ConvertDegreesToRadians(lon2)
     
     # Haversine formula
     dlat = lat2 - lat1
     dlon = lon2 - lon1
-    a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
+    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
     c = 2 * math.asin(math.sqrt(a))
     
-    # Radius of Earth in kilometers. Use 3956 for miles
+    # Radius of Earth in kilometers
     r = 6371.0
     
     # Calculate the result
@@ -204,7 +204,7 @@ def GetPath(cameFrom, currentNode, startNode):
 
 def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     openList = MinHeap()
-    closedList = set()
+    closedSet = set()
     cameFrom = {}# Used to track the path
     #Initialising g and f  for every node to be infinity
     g_score = {node: float('inf') for node in graph.nodes}
@@ -222,10 +222,10 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
             path = GetPath(cameFrom, currentNode, startNode)
             print(f"path foun dis {g_score[endNode]}")
             return path
-        closedList.add(currentNode)
+        closedSet.add(currentNode)
 
         for neighbourNode in graph.neighbors(currentNode):
-            if neighbourNode in closedList:
+            if neighbourNode in closedSet:
                 continue
             distance = graph[currentNode][neighbourNode][0]['length'] 
             estimateGScore = distance + g_score[currentNode]
@@ -245,8 +245,8 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     return 'No path found'
 
 if __name__ == "__main__":
-    window = MapDemonstrationWindow()
-    window.DisplayNetwork()
+    # window = MapDemonstrationWindow()
+    # window.DisplayNetwork()
 
     graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
     startCoords = (51.5017, -0.1419)  
@@ -257,7 +257,8 @@ if __name__ == "__main__":
 
     print(f"Actual length is {length}")
     fig, ax = plt.subplots(figsize=(10, 10))
-    ox.plot_graph(graph, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray")
+    ox.plot_graph(graph, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray",bgcolor='black')
+    ax.set_facecolor('black')
     path = AStar(graph, startNode, endNode)
     #Gett cordinates of nodes on the path
     path_x = [graph.nodes[node]['x'] for node in path]
@@ -266,17 +267,6 @@ if __name__ == "__main__":
     plt.legend()
     plt.show()
 
-
-
-    heap = MinHeap()
-    heap.Insert(20)
-    heap.Insert(8)
-    heap.Insert(15)
-    heap.Insert(30)
-    heap.Insert(5)
-    heap.Insert(10)
-    heap.Insert(0)
-    heap.RemoveMinValue( )
     #heap.OutputHeap()
 
     
