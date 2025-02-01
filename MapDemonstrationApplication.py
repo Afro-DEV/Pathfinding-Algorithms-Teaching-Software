@@ -2,6 +2,7 @@ import osmnx as ox
 import networkx as nx
 import matplotlib.pyplot as plt
 import math
+import matplotlib.animation as animation
 from Utilities import sin,cos, ConvertDegreesToRadians
 class MapDemonstrationWindow():
     def __init__(self):
@@ -213,15 +214,17 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     initialHeuristicEstimate = HaverSineDistance(graph, startNode, endNode)
     f_score[startNode] = g_score[startNode] + initialHeuristicEstimate
     openList.Insert((f_score[startNode], startNode))
+    exploredNodes = []
     #openList.OutputHeap()
 
     while not openList.IsEmpty():
         currentNodeAndFval = openList.RemoveMinValue()
         currentNode = currentNodeAndFval[1]
+        exploredNodes.append(currentNode)
         if currentNode == endNode:
             path = GetPath(cameFrom, currentNode, startNode)
             print(f"path foun dis {g_score[endNode]}")
-            return path
+            return path, exploredNodes
         closedSet.add(currentNode)
 
         for neighbourNode in graph.neighbors(currentNode):
@@ -241,32 +244,62 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
                     openList.Insert(neighbourNodeAndFVal)
                 
             
+    #No path found
+    return [], exploredNodes
+
+def animate_astar(graph, start_coord, end_coord, skip_factor=20, interval=1):
+    G = ox.load_graphml("Networks/LondonNetwork.graphml")
+    start_node = ox.nearest_nodes(G, start_coord[1], start_coord[0])
+    end_node = ox.nearest_nodes(G, end_coord[1], end_coord[0])
     
-    return 'No path found'
+    path, explored_nodes = AStar(G, start_node, end_node)
+    explored_nodes = explored_nodes[::skip_factor]
+    
+    fig, ax = plt.subplots(figsize=(10, 10))
+    ox.plot_graph(G, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray")
+    explored_points, = ax.plot([], [], 'o', color='lightblue', markersize=3, label="Explored Nodes")
+    current_point, = ax.plot([], [], 'o', color='orange', markersize=6, label="Current Node")
+    shortest_path_line, = ax.plot([], [], '-', color='red', linewidth=2, label="Shortest Path")
+    
+    def update(num):
+        if num < len(explored_nodes):
+            current = explored_nodes[num]
+            x, y = G.nodes[current]['x'], G.nodes[current]['y']
+            explored_x = [G.nodes[n]['x'] for n in explored_nodes[:num]]
+            explored_y = [G.nodes[n]['y'] for n in explored_nodes[:num]]
+            explored_points.set_data(explored_x, explored_y)
+            current_point.set_data([x], [y])
+        elif num >= len(explored_nodes):
+            path_x = [G.nodes[n]['x'] for n in path]
+            path_y = [G.nodes[n]['y'] for n in path]
+            shortest_path_line.set_data(path_x, path_y)
+        return explored_points, current_point, shortest_path_line
+    
+    ani = animation.FuncAnimation(fig, update, frames=len(explored_nodes) + len(path), interval=interval, repeat=False)
+    plt.legend()
+    plt.show()
 
 if __name__ == "__main__":
     # window = MapDemonstrationWindow()
     # window.DisplayNetwork()
 
-    graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
-    startCoords = (51.5017, -0.1419)  
-    endCoords = (51.53, -0.15)
-    startNode = ox.distance.nearest_nodes(graph, startCoords[1], startCoords[0])
-    endNode = ox.distance.nearest_nodes(graph, endCoords[1], endCoords[0])
-    length = nx.shortest_path_length(graph, startNode, endNode, weight='length')
+    # graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
+    # startCoords = (51.5017, -0.1419)  
+    # endCoords = (51.53, -0.15)
+    # startNode = ox.distance.nearest_nodes(graph, startCoords[1], startCoords[0])
+    # endNode = ox.distance.nearest_nodes(graph, endCoords[1], endCoords[0])
+    # length = nx.shortest_path_length(graph, startNode, endNode, weight='length')
 
-    print(f"Actual length is {length}")
-    fig, ax = plt.subplots(figsize=(10, 10))
-    ox.plot_graph(graph, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray",bgcolor='black')
-    ax.set_facecolor('black')
-    path = AStar(graph, startNode, endNode)
-    #Gett cordinates of nodes on the path
-    path_x = [graph.nodes[node]['x'] for node in path]
-    path_y = [graph.nodes[node]['y'] for node in path]
-    ax.plot(path_x, path_y, linewidth=2, color="red", label="A* Shortest Path")
-    plt.legend()
-    plt.show()
+    # print(f"Actual length is {length}")
+    # fig, ax = plt.subplots(figsize=(10, 10))
+    # ox.plot_graph(graph, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray",bgcolor='black')
+    # ax.set_facecolor('black')
+    # path = AStar(graph, startNode, endNode)
+    # #Gett cordinates of nodes on the path
+    # path_x = [graph.nodes[node]['x'] for node in path]
+    # path_y = [graph.nodes[node]['y'] for node in path]
+    # ax.plot(path_x, path_y, linewidth=2, color="red", label="A* Shortest Path")
+    # plt.legend()
+    # plt.show()
 
-    #heap.OutputHeap()
-
-    
+    animate_astar("Networks/LondonNetwork.graphml", (51.5017, -0.1419), (51.53, -0.15))
