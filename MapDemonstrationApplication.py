@@ -5,7 +5,7 @@ import math
 #from Utilities import sin,cos
 class MapDemonstrationWindow():
     def __init__(self):
-        self.graph =  ox.load_graphml(filepath="Interactive Map Demonstration/Networks/LondonNetwork.graphml")
+        self.graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
         self.startCoords = (51.5017, -0.1419)  
         self.endCoords = (51.53, -0.15)
         self.click_coords = []
@@ -248,7 +248,7 @@ if __name__ == "__main__":
     window = MapDemonstrationWindow()
     window.DisplayNetwork()
 
-    graph =  ox.load_graphml(filepath="Interactive Map Demonstration/Networks/LondonNetwork.graphml")
+    graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
     startCoords = (51.5017, -0.1419)  
     endCoords = (51.53, -0.15)
     startNode = ox.distance.nearest_nodes(graph, startCoords[1], startCoords[0])
