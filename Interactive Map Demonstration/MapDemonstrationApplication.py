@@ -2,6 +2,7 @@ import osmnx as ox
 import networkx as nx
 import matplotlib.pyplot as plt
 import math
+#from Utilities import sin,cos
 class MapDemonstrationWindow():
     def __init__(self):
         self.graph =  ox.load_graphml(filepath="Interactive Map Demonstration/Networks/LondonNetwork.graphml")
@@ -153,6 +154,33 @@ class MinHeap:
     def OutputHeap(self):
         print(self.__heap)
 
+def HaverSineDistance(graph, node1,  node2):
+    coordinateNode1 = NodeToCordiante(graph,node1)
+    coordinateNode2 = NodeToCordiante(graph, node2)
+    lat1 = coordinateNode1[0]
+    lon1 = coordinateNode1[1]
+    lat2 = coordinateNode2[0]
+    lon2 = coordinateNode2[1]
+
+    lat1 = math.radians(lat1)
+    lon1 = math.radians(lon1)
+    lat2 = math.radians(lat2)
+    lon2 = math.radians(lon2)
+    
+    # Haversine formula
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
+    c = 2 * math.asin(math.sqrt(a))
+    
+    # Radius of Earth in kilometers. Use 3956 for miles
+    r = 6371.0
+    
+    # Calculate the result
+    distance = c * r
+    
+    return distance
+
 def EuclideanDistance(graph, node1, node2):
     coordinateNode1 = NodeToCordiante(graph,node1)
     coordinateNode2 = NodeToCordiante(graph, node2)
@@ -182,7 +210,7 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     g_score = {node: float('inf') for node in graph.nodes}
     f_score = {node: float('inf') for node in graph.nodes}
     g_score[startNode] = 0
-    initialHeuristicEstimate = EuclideanDistance(graph, startNode, endNode)
+    initialHeuristicEstimate = HaverSineDistance(graph, startNode, endNode)
     f_score[startNode] = g_score[startNode] + initialHeuristicEstimate
     openList.Insert((f_score[startNode], startNode))
     #openList.OutputHeap()
@@ -192,6 +220,7 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
         currentNode = currentNodeAndFval[1]
         if currentNode == endNode:
             path = GetPath(cameFrom, currentNode, startNode)
+            print(f"path foun dis {g_score[endNode]}")
             return path
         closedList.add(currentNode)
 
@@ -204,14 +233,13 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
             if estimateGScore < g_score[neighbourNode]:
                 cameFrom[neighbourNode] = currentNode
                 g_score[neighbourNode] = estimateGScore
-                f_score[neighbourNode] = g_score[neighbourNode] + EuclideanDistance(graph, neighbourNode, endNode)
+                f_score[neighbourNode] = g_score[neighbourNode] + HaverSineDistance(graph, neighbourNode, endNode)
 
+                #
                 if  neighbourNode not in openList.GetHeap():
                     neighbourNodeAndFVal = (f_score[neighbourNode], neighbourNode)
                     openList.Insert(neighbourNodeAndFVal)
-                elif estimateGScore >= g_score[neighbourNode]:
-                    #This is not a better route than we already have
-                    continue
+                
             
     
     return 'No path found'
