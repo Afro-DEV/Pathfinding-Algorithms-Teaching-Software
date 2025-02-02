@@ -226,7 +226,7 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
         if currentNode == endNode:
             path = GetPath(cameFrom, currentNode, startNode)
             print(f"path foun dis {g_score[endNode]}")
-            return path, exploredNodes, exploredEdges
+            return path,  exploredEdges
         closedSet.add(currentNode)
 
         for neighbourNode in graph.neighbors(currentNode):
@@ -245,47 +245,35 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
                 
             
     #No path found
-    return [], exploredNodes, exploredEdges
+    return [],  exploredEdges
 
-def animate_astar(graph, start_coord, end_coord, skip_factor=5, edge_skip_factor = 5, interval=0.5):
+def animate_astar(graph, start_coord, end_coord, edge_skip_factor = 20, interval=0.5):
     G = ox.load_graphml("Networks/LondonNetwork.graphml")
     start_node = ox.nearest_nodes(G, start_coord[1], start_coord[0])
     end_node = ox.nearest_nodes(G, end_coord[1], end_coord[0])
     
-    path, explored_nodes, explored_edges = AStar(G, start_node, end_node)
-    explored_nodes = explored_nodes[::skip_factor]
-    #explored_edges = explored_edges[::edge_skip_factor]
+    path,  explored_edges = AStar(G, start_node, end_node)
     fig, ax = plt.subplots(figsize=(10, 10))
     ox.plot_graph(G, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray")
-    explored_points, = ax.plot([], [], 'o', color='lightblue', markersize=3, label="Explored Nodes")
-    #current_point, = ax.plot([], [], 'o', color='orange', markersize=6, label="Current Node")
     shortest_path_line, = ax.plot([], [], '-', color='red', linewidth=2, label="Shortest Path")
     explored_edges_lines, = ax.plot([], [], '-', color='blue', linewidth=1, label="Visited Edges")
     
     #Num corresponds to the frame number
     def update(num):
-        if num < len(explored_nodes):
-            current = explored_nodes[num]
-            x, y = G.nodes[current]['x'], G.nodes[current]['y']
-            explored_x = [G.nodes[n]['x'] for n in explored_nodes[:num]]
-            explored_y = [G.nodes[n]['y'] for n in explored_nodes[:num]]
-            explored_points.set_data(explored_x, explored_y)
-            #current_point.set_data([x], [y])
+        edge_x = []
+        edge_y = []
+        for edge in explored_edges[:num* edge_skip_factor]:
+            edge_x.extend([G.nodes[edge[0]]['x'], G.nodes[edge[1]]['x'], None])
+            edge_y.extend([G.nodes[edge[0]]['y'], G.nodes[edge[1]]['y'], None])
+        explored_edges_lines.set_data(edge_x, edge_y)
 
-            edge_x = []
-            edge_y = []
-            for edge in explored_edges[:num* edge_skip_factor]:
-                edge_x.extend([G.nodes[edge[0]]['x'], G.nodes[edge[1]]['x'], None])
-                edge_y.extend([G.nodes[edge[0]]['y'], G.nodes[edge[1]]['y'], None])
-            explored_edges_lines.set_data(edge_x, edge_y)
-
-        elif num >= len(explored_nodes):
+        if num >= len(explored_edges) // edge_skip_factor:
             path_x = [G.nodes[n]['x'] for n in path]
             path_y = [G.nodes[n]['y'] for n in path]
             shortest_path_line.set_data(path_x, path_y)
-        return explored_points,  shortest_path_line, explored_edges_lines
+        return   shortest_path_line, explored_edges_lines
     
-    ani = animation.FuncAnimation(fig, update, frames=len(explored_nodes) + len(path), interval=interval, repeat=False)
+    ani = animation.FuncAnimation(fig, update, frames=len(explored_edges) // edge_skip_factor + len(path), interval=interval, repeat=False)
     plt.legend()
     plt.show()
 
