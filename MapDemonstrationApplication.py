@@ -17,15 +17,19 @@ class MapDemonstrationWindow():
     def OnClick(self, event):
         x_Coord = event.xdata
         y_Coord = event.ydata
-        if x_Coord and y_Coord: #Ensuring valid clicks
+        if x_Coord and y_Coord and len(self.click_coords) < 2: #Ensuring valid clicks
             self.click_coords.append((x_Coord, y_Coord))
+            self.HighlightPoints()
 
-        print(f"Click {len(self.click_coords)}: ({y_Coord}, {x_Coord})")
+        if len(self.click_coords) == 2:
+            print('Now begin animating')
+            plt.close()
+            animate_astar(self.graph, self.click_coords[0], self.click_coords[1])
+
+        
 
         # If two points are clicked, highlight them
-        self.HighlightPoints()
-
-    
+        
     def HighlightPoints(self):
         # Clear the previous plot
         self.ax.clear()
@@ -35,12 +39,12 @@ class MapDemonstrationWindow():
         # If the first click exists, highlight the first point
         if len(self.click_coords) >= 1:
             (x_Coord1, y_Coord1) = self.click_coords[0]
-            self.ax.scatter(x_Coord1, y_Coord1, c='r', s=100, marker='.')  # First point in red
+            self.ax.scatter(x_Coord1, y_Coord1, c='g', s=100, marker='.')  # First point in red
 
         # If the second click exists, highlight the second point
         if len(self.click_coords) >= 2:
             (x_Coord2, y_Coord2) = self.click_coords[1]
-            self.ax.scatter(x_Coord2, y_Coord2, c='g', s=100, marker='.')  
+            self.ax.scatter(x_Coord2, y_Coord2, c='r', s=100, marker='.')  
 
         # Redraw the figure to show the updated plot
         plt.draw()
@@ -225,7 +229,7 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
         exploredNodes.append(currentNode)
         if currentNode == endNode:
             path = GetPath(cameFrom, currentNode, startNode)
-            print(f"path foun dis {g_score[endNode]}")
+            print(f"path found is  {g_score[endNode]}")
             return path,  exploredEdges
         closedSet.add(currentNode)
 
@@ -249,14 +253,17 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
 
 #Interval corresponds to delay in ms between frames.
 def animate_astar(graph, start_coord, end_coord, edgeSkipFactor = 20, interval=0.5):
-    G = ox.load_graphml("Networks/LondonNetwork.graphml")
-    startNode = ox.nearest_nodes(G, start_coord[1], start_coord[0])
-    endNode = ox.nearest_nodes(G, end_coord[1], end_coord[0])
+    G = graph
+    startNode = ox.nearest_nodes(G, start_coord[0], start_coord[1])
+    endNode = ox.nearest_nodes(G, end_coord[0], end_coord[1])
     
     path,  exploredEdges = AStar(G, startNode, endNode)
     #Intitialising plot
     fig, ax = plt.subplots(figsize=(10, 10))
     ox.plot_graph(G, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray")
+
+    startNodeMarker, = ax.plot(G.nodes[startNode]['x'], G.nodes[startNode]['y'], 'go', markersize=4, label="Start Node")
+    endNodeMarker, = ax.plot(G.nodes[endNode]['x'], G.nodes[endNode]['y'], 'ro', markersize=8, label="End Node")
     shortestPathLine, = ax.plot([], [], '-', color='red', linewidth=3, label="Shortest Path")
     exploredEdgesLine, = ax.plot([], [], '-', color='blue', linewidth=1, label="Visited Edges")
     
@@ -275,16 +282,17 @@ def animate_astar(graph, start_coord, end_coord, edgeSkipFactor = 20, interval=0
             path_x = [G.nodes[n]['x'] for n in path]
             path_y = [G.nodes[n]['y'] for n in path]
             shortestPathLine.set_data(path_x, path_y)
-        return   shortestPathLine, exploredEdgesLine
+        return shortestPathLine, exploredEdgesLine
     
     #Number of frames set to the number the amount of edges we will be highlighting and the length of the path.
-    ani = animation.FuncAnimation(fig, update, frames=len(exploredEdges) // edgeSkipFactor + len(path), interval=interval, repeat=False)
+    global anim # To prevent garbage collector from deleting anim
+    anim = animation.FuncAnimation(fig, update, frames=len(exploredEdges) // edgeSkipFactor + len(path), interval=interval, repeat=False)
     plt.legend()
     plt.show()
 
 if __name__ == "__main__":
-    # window = MapDemonstrationWindow()
-    # window.DisplayNetwork()
+    window = MapDemonstrationWindow()
+    window.DisplayNetwork()
 
     # graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
     # startCoords = (51.5017, -0.1419)  
@@ -305,4 +313,4 @@ if __name__ == "__main__":
     # plt.legend()
     # plt.show()
 
-    animate_astar("Networks/LondonNetwork.graphml", (51.5017, -0.1419), (51.53, -0.15))
+    #animate_astar(ox.load_graphml(filepath="Networks/LondonNetwork.graphml"), (51.5017, -0.1419), (51.53, -0.15))
