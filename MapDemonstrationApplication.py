@@ -207,6 +207,8 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     openList = MinHeap()
     closedSet = set()
     cameFrom = {}# Used to track the path
+    exploredNodes = []
+    exploredEdges = []
     #Initialising g and f  for every node to be infinity
     g_score = {node: float('inf') for node in graph.nodes}
     f_score = {node: float('inf') for node in graph.nodes}
@@ -214,7 +216,7 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     initialHeuristicEstimate = HaverSineDistance(graph, startNode, endNode)
     f_score[startNode] = g_score[startNode] + initialHeuristicEstimate
     openList.Insert((f_score[startNode], startNode))
-    exploredNodes = []
+   
     #openList.OutputHeap()
 
     while not openList.IsEmpty():
@@ -224,7 +226,7 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
         if currentNode == endNode:
             path = GetPath(cameFrom, currentNode, startNode)
             print(f"path foun dis {g_score[endNode]}")
-            return path, exploredNodes
+            return path, exploredNodes, exploredEdges
         closedSet.add(currentNode)
 
         for neighbourNode in graph.neighbors(currentNode):
@@ -237,30 +239,30 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
                 cameFrom[neighbourNode] = currentNode
                 g_score[neighbourNode] = estimateGScore
                 f_score[neighbourNode] = g_score[neighbourNode] + HaverSineDistance(graph, neighbourNode, endNode)
-
-                #
-                if  neighbourNode not in openList.GetHeap():
-                    neighbourNodeAndFVal = (f_score[neighbourNode], neighbourNode)
-                    openList.Insert(neighbourNodeAndFVal)
+                neighbourNodeAndFVal = (f_score[neighbourNode], neighbourNode)
+                exploredEdges.append((currentNode, neighbourNode))
+                openList.Insert(neighbourNodeAndFVal)
                 
             
     #No path found
-    return [], exploredNodes
+    return [], exploredNodes, exploredEdges
 
-def animate_astar(graph, start_coord, end_coord, skip_factor=20, interval=1):
+def animate_astar(graph, start_coord, end_coord, skip_factor=5, edge_skip_factor = 5, interval=0.5):
     G = ox.load_graphml("Networks/LondonNetwork.graphml")
     start_node = ox.nearest_nodes(G, start_coord[1], start_coord[0])
     end_node = ox.nearest_nodes(G, end_coord[1], end_coord[0])
     
-    path, explored_nodes = AStar(G, start_node, end_node)
+    path, explored_nodes, explored_edges = AStar(G, start_node, end_node)
     explored_nodes = explored_nodes[::skip_factor]
-    
+    #explored_edges = explored_edges[::edge_skip_factor]
     fig, ax = plt.subplots(figsize=(10, 10))
     ox.plot_graph(G, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray")
     explored_points, = ax.plot([], [], 'o', color='lightblue', markersize=3, label="Explored Nodes")
-    current_point, = ax.plot([], [], 'o', color='orange', markersize=6, label="Current Node")
+    #current_point, = ax.plot([], [], 'o', color='orange', markersize=6, label="Current Node")
     shortest_path_line, = ax.plot([], [], '-', color='red', linewidth=2, label="Shortest Path")
+    explored_edges_lines, = ax.plot([], [], '-', color='blue', linewidth=1, label="Visited Edges")
     
+    #Num corresponds to the frame number
     def update(num):
         if num < len(explored_nodes):
             current = explored_nodes[num]
@@ -268,12 +270,20 @@ def animate_astar(graph, start_coord, end_coord, skip_factor=20, interval=1):
             explored_x = [G.nodes[n]['x'] for n in explored_nodes[:num]]
             explored_y = [G.nodes[n]['y'] for n in explored_nodes[:num]]
             explored_points.set_data(explored_x, explored_y)
-            current_point.set_data([x], [y])
+            #current_point.set_data([x], [y])
+
+            edge_x = []
+            edge_y = []
+            for edge in explored_edges[:num* edge_skip_factor]:
+                edge_x.extend([G.nodes[edge[0]]['x'], G.nodes[edge[1]]['x'], None])
+                edge_y.extend([G.nodes[edge[0]]['y'], G.nodes[edge[1]]['y'], None])
+            explored_edges_lines.set_data(edge_x, edge_y)
+
         elif num >= len(explored_nodes):
             path_x = [G.nodes[n]['x'] for n in path]
             path_y = [G.nodes[n]['y'] for n in path]
             shortest_path_line.set_data(path_x, path_y)
-        return explored_points, current_point, shortest_path_line
+        return explored_points,  shortest_path_line, explored_edges_lines
     
     ani = animation.FuncAnimation(fig, update, frames=len(explored_nodes) + len(path), interval=interval, repeat=False)
     plt.legend()
