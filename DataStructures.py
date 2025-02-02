@@ -112,3 +112,93 @@ class PriorityQueue():
 
     def GetQueue(self) -> list[Node]:
         return self.__queue
+    
+class MinHeap:
+    def __init__(self):
+        #REmeber min will always be top of heapq
+        self.__heap = []
+
+    def Insert(self, item):
+        self.__heap.append(item)
+        index = len(self.__heap)-1
+        self.HeapifyUp(index)
+    
+    def HeapifyUp(self, index):
+        if self.HasParent(index) and self.Parent(index)> self.__heap[index]:
+            self.Swap(self.GetParentIndex(index), index)
+            index = self.GetParentIndex(index)
+            #Recursively heapify the index up the Binary tree until it is in the correct position
+            self.HeapifyUp(index)
+
+    def HeapifyDown(self, index):
+        smallest = index
+        if self.HasLeftChild(index) and self.__heap[smallest] > self.LeftChild(index):
+            smallest = self.GetLeftChildIndex(index)
+        if self.HasRightChild(index) and self.__heap[smallest] > self.RightChild(index):
+            smallest = self.GetRightChildIndex(index)
+        
+        #If this true left or right child of index is smaller than node we are currently at
+        if(smallest!= index):
+            self.Swap(index, smallest)
+            #Recursively move down the tree moving the index to the correct place on tree
+            self.HeapifyDown(smallest)
+
+    def RemoveMinValue(self):
+        if self.IsEmpty():
+            raise('Empty Heap')
+        data = self.__heap[0]
+        #Replacing last value in the heap with the first value
+        self.__heap[0] = self.__heap[-1]
+        self.__heap.pop() #Removing last element
+        #We Traverse down the tree from top to bottom so index will always be 0
+        self.HeapifyDown(0)
+        return data
+
+    #HELPER FUNCTIONS 
+
+    def Peek(self):
+        if self.IsEmpty():
+            raise('Empty Heap')
+        return self.__heap[0]
+
+    def Parent(self, index):
+        return self.__heap[self.GetParentIndex(index)]
+
+    def LeftChild(self, index):
+        return self.__heap[self.GetLeftChildIndex(index)]
+    
+    def RightChild(self, index):
+        return self.__heap[self.GetRightChildIndex(index)]
+
+    def GetLeftChildIndex(self, index) -> int:
+        return 2* index + 1
+        
+    
+    def GetRightChildIndex(self, index) -> int:
+        return 2* index + 2
+    
+    def GetParentIndex(self, index) -> int:
+        return (index-1)//2
+
+    def HasLeftChild(self, index):
+        return self.GetLeftChildIndex(index) < len(self.__heap)
+
+    def HasRightChild(self, index):
+        return self.GetRightChildIndex(index) < len(self.__heap)
+
+    def HasParent(self, index):
+        return self.GetParentIndex(index) >=0
+
+    def Swap(self, index1, index2):
+        temp = self.__heap[index1]
+        self.__heap[index1] = self.__heap[index2]
+        self.__heap[index2] = temp
+
+    def IsEmpty(self):
+        return len(self.__heap) == 0
+    
+    def GetHeap(self):
+        return self.__heap
+
+    def OutputHeap(self):
+        print(self.__heap)
