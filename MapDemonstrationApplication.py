@@ -155,7 +155,7 @@ class MinHeap:
     def OutputHeap(self):
         print(self.__heap)
 
-def HaverSineDistance(graph, node1,  node2):
+def HaverSineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
     coordinateNode1 = NodeToCordiante(graph,node1)
     coordinateNode2 = NodeToCordiante(graph, node2)
     lat1 = coordinateNode1[0]
@@ -193,7 +193,7 @@ def EuclideanDistance(graph, node1, node2):
 def NodeToCordiante(graph, node):
     return graph.nodes[node]['x'], graph.nodes[node]['y']
 
-def GetPath(cameFrom, currentNode, startNode):
+def GetPath(cameFrom, currentNode, startNode) -> list:
     path = []
     while currentNode in cameFrom:
         path.append(currentNode)
@@ -247,33 +247,38 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     #No path found
     return [],  exploredEdges
 
-def animate_astar(graph, start_coord, end_coord, edge_skip_factor = 20, interval=0.5):
+#Interval corresponds to delay in ms between frames.
+def animate_astar(graph, start_coord, end_coord, edgeSkipFactor = 20, interval=0.5):
     G = ox.load_graphml("Networks/LondonNetwork.graphml")
-    start_node = ox.nearest_nodes(G, start_coord[1], start_coord[0])
-    end_node = ox.nearest_nodes(G, end_coord[1], end_coord[0])
+    startNode = ox.nearest_nodes(G, start_coord[1], start_coord[0])
+    endNode = ox.nearest_nodes(G, end_coord[1], end_coord[0])
     
-    path,  explored_edges = AStar(G, start_node, end_node)
+    path,  exploredEdges = AStar(G, startNode, endNode)
+    #Intitialising plot
     fig, ax = plt.subplots(figsize=(10, 10))
     ox.plot_graph(G, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray")
-    shortest_path_line, = ax.plot([], [], '-', color='red', linewidth=2, label="Shortest Path")
-    explored_edges_lines, = ax.plot([], [], '-', color='blue', linewidth=1, label="Visited Edges")
+    shortestPathLine, = ax.plot([], [], '-', color='red', linewidth=3, label="Shortest Path")
+    exploredEdgesLine, = ax.plot([], [], '-', color='blue', linewidth=1, label="Visited Edges")
     
-    #Num corresponds to the frame number
+    #Updates animation frame by frame
     def update(num):
         edge_x = []
         edge_y = []
-        for edge in explored_edges[:num* edge_skip_factor]:
+        #Highlighting explored Edges. 
+        for edge in exploredEdges[:num* edgeSkipFactor]: # Highlighting 'edgeSkipFactor' edges per frame
             edge_x.extend([G.nodes[edge[0]]['x'], G.nodes[edge[1]]['x'], None])
             edge_y.extend([G.nodes[edge[0]]['y'], G.nodes[edge[1]]['y'], None])
-        explored_edges_lines.set_data(edge_x, edge_y)
+        exploredEdgesLine.set_data(edge_x, edge_y)
 
-        if num >= len(explored_edges) // edge_skip_factor:
+        #If the number of the frame is greater than total explored Edges then all edges processed and we can display shortest path
+        if num >= len(exploredEdges) // edgeSkipFactor:
             path_x = [G.nodes[n]['x'] for n in path]
             path_y = [G.nodes[n]['y'] for n in path]
-            shortest_path_line.set_data(path_x, path_y)
-        return   shortest_path_line, explored_edges_lines
+            shortestPathLine.set_data(path_x, path_y)
+        return   shortestPathLine, exploredEdgesLine
     
-    ani = animation.FuncAnimation(fig, update, frames=len(explored_edges) // edge_skip_factor + len(path), interval=interval, repeat=False)
+    #Number of frames set to the number the amount of edges we will be highlighting and the length of the path.
+    ani = animation.FuncAnimation(fig, update, frames=len(exploredEdges) // edgeSkipFactor + len(path), interval=interval, repeat=False)
     plt.legend()
     plt.show()
 
