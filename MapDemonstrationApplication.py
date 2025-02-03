@@ -222,44 +222,43 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     #No path found
     return [],  exploredEdges, None
 
-#Interval corresponds to delay in ms between frames.
-def animate_astar(graph, start_coord, end_coord, edgeSkipFactor = 20, interval=0.5):
-    G = graph
-    startNode = ox.nearest_nodes(G, start_coord[0], start_coord[1])
-    endNode = ox.nearest_nodes(G, end_coord[0], end_coord[1])
-    
-    path,  exploredEdges = AStar(G, startNode, endNode)
-    #Intitialising plot
-    fig, ax = plt.subplots(figsize=(10, 10))
-    ox.plot_graph(G, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray")
+def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
+    nodesToBeVisited = MinHeap()
+    visitedNodes = set()
+    cameFrom = {}
+    exploredEdges = []
+    distances = {node: float('inf') for node in graph.nodes}
+    distances[startNode] = 0
+    nodesToBeVisited.Insert((distances[startNode], startNode))
 
-    startNodeMarker, = ax.plot(G.nodes[startNode]['x'], G.nodes[startNode]['y'], 'go', markersize=10, label="Start Node")
-    endNodeMarker, = ax.plot(G.nodes[endNode]['x'], G.nodes[endNode]['y'], 'ro', markersize=2, label="End Node")
-    shortestPathLine, = ax.plot([], [], '-', color='red', linewidth=3, label="Shortest Path")
-    exploredEdgesLine, = ax.plot([], [], '-', color='blue', linewidth=1, label="Visited Edges")
-    
-    #Updates animation frame by frame
-    def update(num):
-        edge_x = []
-        edge_y = []
-        #Highlighting explored Edges. 
-        for edge in exploredEdges[:num* edgeSkipFactor]: # Highlighting 'edgeSkipFactor' edges per frame
-            edge_x.extend([G.nodes[edge[0]]['x'], G.nodes[edge[1]]['x'], None])
-            edge_y.extend([G.nodes[edge[0]]['y'], G.nodes[edge[1]]['y'], None])
-        exploredEdgesLine.set_data(edge_x, edge_y)
+    while not nodesToBeVisited.IsEmpty():
+        currentNodeAndDistance = nodesToBeVisited.RemoveMinValue()
+        currentNode = currentNodeAndDistance[1]
+        if currentNode == endNode:
+            path = GetPath(cameFrom, currentNode, startNode)
+            lengthOfPath = distances[endNode]
+            print(f'This is the length {lengthOfPath}')
+            return path,  exploredEdges, lengthOfPath
+        visitedNodes.add(currentNode)
 
-        #If the number of the frame is greater than total explored Edges then all edges processed and we can display shortest path
-        if num >= len(exploredEdges) // edgeSkipFactor:
-            path_x = [G.nodes[n]['x'] for n in path]
-            path_y = [G.nodes[n]['y'] for n in path]
-            shortestPathLine.set_data(path_x, path_y)
-        return shortestPathLine, exploredEdgesLine
-    
-    #Number of frames set to the number the amount of edges we will be highlighting and the length of the path.
-    global anim # To prevent garbage collector from deleting anim
-    anim = animation.FuncAnimation(fig, update, frames=len(exploredEdges) // edgeSkipFactor + len(path), interval=interval, repeat=False)
-    plt.legend()
-    plt.show()
+        for neighbourNode in graph.neighbors(currentNode):
+            if neighbourNode in visitedNodes:
+                continue
+            currentDistance = distances[currentNode] + graph[currentNode][neighbourNode][0]['length']
+            if currentDistance < distances[neighbourNode]:
+                cameFrom[neighbourNode] = currentNode
+                distances[neighbourNode] = currentDistance
+                neighbourNodeAndDistance = (distances[neighbourNode], neighbourNode)
+                exploredEdges.append((currentNode, neighbourNode))
+                nodesToBeVisited.Insert(neighbourNodeAndDistance)            
+
+    #No path found
+    return [], exploredEdges, None
+                
+
+
+
+
 
 if __name__ == "__main__":
     window = MapDemonstrationWindow("Networks/LondonNetwork.graphml")
