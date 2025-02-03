@@ -172,6 +172,63 @@ class SourceNodeInputForm():
     def GetForm(self):
         return self.root
 
+class NetworkSettingsInputForm():
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title('Map Demonstration Form')
+        baseHeight = 300
+        baseWidth = 400
+        adjustedHeight, adjustedWidth = NormaliseFormSizeOnScaling(self.root, baseHeight, baseWidth)#
+
+        self.root.columnconfigure(0, weight=1)
+        self.root.columnconfigure(1, weight=1)
+        
+        self.titleLabel = tk.Label(self.root, text="Map Demonstration Form", font=("Arial", 16, "bold"))
+        self.titleLabel.grid(row=0, column=0, columnspan=2, pady=20)
+
+        self.numberOfNodesLabel = tk.Label(self.root, text="Select Road Network", font=("Arial", 12))
+        self.numberOfNodesLabel.grid(row=1,column=0, padx=10, pady=5, sticky="e")
+
+        self.selectNetworkVar = tk.StringVar()
+        self.selectNetworkVar.set("London")
+        self.networkOptions = ['London', 'New York', 'Amsterdam']
+
+        self.networkDropdown = ttk.Combobox(self.root, textvariable=self.selectNetworkVar, values=self.networkOptions, state="readonly",font=("Arial", 12))
+        self.networkDropdown.grid(row=1, column=1, padx=10, pady=10, sticky="w")
+
+        self.algorithmLabel = tk.Label(self.root, text="Select Algorithm to be used", font=("Arial", 12))
+        self.algorithmLabel.grid(row=2, column=0, padx=10, pady=5, sticky="e")
+
+        self.selectAlgorithmVar = tk.StringVar()
+        self.selectAlgorithmVar.set('A-Star')
+        self.algorithmOptions = ['A-Star', 'Dijkstras']
+
+        self.algorithmDropdown = ttk.Combobox(self.root, textvariable=self.selectAlgorithmVar, values=self.algorithmOptions, state="readonly",font=("Arial", 12))
+        self.algorithmDropdown.grid(row=2, column=1, padx=10, pady=10, sticky="w")
+
+        self.distanceInMilesCheckBoxLabel = tk.Label(self.root, text='Select for distance in miles. Unchecked leaves distance in Kilometres.', font=("Arial", 12))
+        self.distanceInMilesCheckBoxLabel.grid(row=3,column=0, rowspan=2)
+
+        style = ttk.Style()
+        style.configure("TCheckbutton", focuscolor="transparent", highlightthickness=0, padding=5, font=("Arial", 12))  # Removing focus borde
+        self.distanceInMilesCheckBox = ttk.Checkbutton(self.root, text='Miles', onvalue=True, offvalue=False, style="TCheckbutton")
+        self.distanceInMilesCheckBox.grid(row=3, column=1,  pady=5)
+         # Remove focus highlight (explicitly unfocus the Checkbutton)
+        self.distanceInMilesCheckBox.focus_set()  # Give focus to some other widget if needed, or leave as is
+        self.distanceInMilesCheckBox.tk_focusNext().focus_set()
+
+        self.submitButton = tk.Button(self.root, text="Submit", command=self.Submit, width=10, height=2)
+        self.submitButton.grid(row=5, column=0, columnspan=2, pady=30)
+
+
+    def Submit(self):
+        print('Submit')
+
+
+        
+    def Run(self):
+        self.root.mainloop()
+
 if __name__ == "__main__":
-    app = GraphGeneratorForm()
+    app = NetworkSettingsInputForm()
     app.Run()
