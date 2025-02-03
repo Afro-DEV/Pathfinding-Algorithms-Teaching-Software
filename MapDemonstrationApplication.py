@@ -5,6 +5,7 @@ import math
 import matplotlib.animation as animation
 from DataStructures import MinHeap
 from Utilities import sin,cos, ConvertDegreesToRadians
+from tkinter import messagebox
 
 class MapDemonstrationWindow():
     def __init__(self, filepath):
@@ -78,6 +79,7 @@ class NetworkAnimator():
         self.anim = None
         self.fig = figAndAxis[0]
         self.ax = figAndAxis[1]
+        #self.fig.canvas.mpl_connect("draw_event", lambda: self.on_animation_complete())
         self.StartAnimation()
     
     def StartAnimation(self):
@@ -85,11 +87,13 @@ class NetworkAnimator():
         startNode = ox.nearest_nodes(G, self.startCoord[0], self.startCoord[1])
         endNode = ox.nearest_nodes(G, self.endCoord[0], self.endCoord[1])
         
-        path,  exploredEdges = AStar(G, startNode, endNode)
+        path,  exploredEdges, lengthOfPath = AStar(G, startNode, endNode)
+        self.lengthOfPath = lengthOfPath
+        numberOfFrames = len(exploredEdges) // self.edgeSkipFactor + len(path)
         #Intitialising plot
         #fig, ax = plt.subplots(figsize=(10, 10))
         ax= self.ax
-        fig = self.fig
+        fig = self.fig 
         ox.plot_graph(G, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray")
 
         startNodeMarker, = ax.plot(G.nodes[startNode]['x'], G.nodes[startNode]['y'], 'go', markersize=6, label="Start Node")
@@ -98,27 +102,37 @@ class NetworkAnimator():
         exploredEdgesLine, = ax.plot([], [], '-', color='blue', linewidth=1, label="Visited Edges")
         
         #Updates animation frame by frame
-        def update(num):
+        def update(frameNum):
             edge_x = []
             edge_y = []
             #Highlighting explored Edges. 
-            for edge in exploredEdges[:num* self.edgeSkipFactor]: # Highlighting 'edgeSkipFactor' edges per frame
+            for edge in exploredEdges[:frameNum* self.edgeSkipFactor]: # Highlighting 'edgeSkipFactor' edges per frame
                 edge_x.extend([G.nodes[edge[0]]['x'], G.nodes[edge[1]]['x'], None])
                 edge_y.extend([G.nodes[edge[0]]['y'], G.nodes[edge[1]]['y'], None])
             exploredEdgesLine.set_data(edge_x, edge_y)
 
             #If the number of the frame is greater than total explored Edges then all edges processed and we can display shortest path
-            if num >= len(exploredEdges) // self.edgeSkipFactor:
+            if frameNum >= len(exploredEdges) // self.edgeSkipFactor:
                 path_x = [G.nodes[n]['x'] for n in path]
                 path_y = [G.nodes[n]['y'] for n in path]
                 shortestPathLine.set_data(path_x, path_y)
+
+            if frameNum == numberOfFrames - 1:
+                self.on_animation_complete()
+            
+                
+
             return shortestPathLine, exploredEdgesLine
         
         #Number of frames set to the number the amount of edges we will be highlighting and the length of the path.
-        self.anim = animation.FuncAnimation(fig, update, frames=len(exploredEdges) // self.edgeSkipFactor + len(path), interval=self.interval, repeat=False)
+        self.anim = animation.FuncAnimation(fig, update, frames=numberOfFrames, interval=self.interval, repeat=False)
         plt.legend()
+        print('hi')
         #plt.show()
 
+    def on_animation_complete(self):
+        print('Animation Complete')
+        messagebox.showinfo(title='Length Of Path', message=f"The length of path found is {round(self.lengthOfPath,1)} metres")
 def HaverSineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
     coordinateNode1 = NodeToCordiante(graph,node1)
     coordinateNode2 = NodeToCordiante(graph, node2)
@@ -186,8 +200,8 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
         currentNode = currentNodeAndFval[1]
         if currentNode == endNode:
             path = GetPath(cameFrom, currentNode, startNode)
-            print(f"path found is  {g_score[endNode]}")
-            return path,  exploredEdges
+            lengthOfPath = g_score[endNode]
+            return path,  exploredEdges, lengthOfPath
         closedSet.add(currentNode)
 
         for neighbourNode in graph.neighbors(currentNode):
@@ -206,7 +220,7 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
                 
             
     #No path found
-    return [],  exploredEdges
+    return [],  exploredEdges, None
 
 #Interval corresponds to delay in ms between frames.
 def animate_astar(graph, start_coord, end_coord, edgeSkipFactor = 20, interval=0.5):
