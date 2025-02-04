@@ -199,6 +199,9 @@ class MinHeap:
     
     def GetHeap(self):
         return self.__heap
+    
+    def GetHeapLength(self):
+        return len(self.__heap)
 
     def OutputHeap(self):
         print(self.__heap)

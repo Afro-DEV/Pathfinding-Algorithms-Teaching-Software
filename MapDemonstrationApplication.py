@@ -127,7 +127,7 @@ class NetworkAnimator():
         #Number of frames set to the number the amount of edges we will be highlighting and the length of the path.
         self.anim = animation.FuncAnimation(fig, update, frames=numberOfFrames, interval=self.interval, repeat=False)
         plt.legend()
-        print('hi')
+        
         #plt.show()
 
     def on_animation_complete(self):
@@ -201,6 +201,7 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
         if currentNode == endNode:
             path = GetPath(cameFrom, currentNode, startNode)
             lengthOfPath = g_score[endNode]
+            nodesAccessed = openList.GetHeapLength()
             return path,  exploredEdges, lengthOfPath
         closedSet.add(currentNode)
 
@@ -263,16 +264,19 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
 if __name__ == "__main__":
     window = MapDemonstrationWindow("Networks/LondonNetwork.graphml")
     window.DisplayNetwork()
-
+    # figax = plt.subplots(figsize=(10, 10))
     # graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
     # startCoords = (51.5017, -0.1419)  
     # endCoords = (51.53, -0.15)
+    # x  = NetworkAnimator(graph, startCoords, endCoords, figax)
+
+    
+    
     # startNode = ox.distance.nearest_nodes(graph, startCoords[1], startCoords[0])
     # endNode = ox.distance.nearest_nodes(graph, endCoords[1], endCoords[0])
     # length = nx.shortest_path_length(graph, startNode, endNode, weight='length')
 
     # print(f"Actual length is {length}")
-    # fig, ax = plt.subplots(figsize=(10, 10))
     # ox.plot_graph(graph, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray",bgcolor='black')
     # ax.set_facecolor('black')
     # path = AStar(graph, startNode, endNode)
