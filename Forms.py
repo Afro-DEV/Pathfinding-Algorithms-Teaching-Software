@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 from Utilities import CharacterToId, IdToCharacter
+from MapDemonstrationApplication import MapDemonstrationWindow
 
 def NormaliseFormSizeOnScaling(root, baseHeight: int, baseWidth: int) -> tuple[int,int]:
     '''Normalise the size of form based on Screen Scaling'''
@@ -175,7 +176,7 @@ class NetworkSettingsInputForm():
     def __init__(self):
         self.algorithmSelected = None
         self.networkSelected = None
-        self.isMilesUnitSelected = False
+        self.useMiles = False
 
 
         self.root = tk.Tk()
@@ -196,7 +197,7 @@ class NetworkSettingsInputForm():
 
         self.selectNetworkVar = tk.StringVar()
         self.selectNetworkVar.set("London")
-        self.networkOptions = ['London', 'New York', 'Amsterdam']
+        self.networkOptions = ['London', 'NewYork', 'Amsterdam']
 
         self.networkDropdown = ttk.Combobox(self.root, textvariable=self.selectNetworkVar, values=self.networkOptions, state="readonly",font=("Arial", 12))
         self.networkDropdown.grid(row=1, column=1, padx=10, pady=10, sticky="w")
@@ -236,7 +237,9 @@ class NetworkSettingsInputForm():
 
 
     def Submit(self):
-        self.isMilesUnitSelected = self.distanceInMilesCheckBox.instate(['selected'])
+        self.useMiles = self.distanceInMilesCheckBox.instate(['selected'])
+        a = MapDemonstrationWindow(filepath=f"Networks/{self.networkSelected}Network.graphml", algorithm=self.algorithmSelected, useMiles=self.useMiles)
+        a.DisplayNetwork()
 
 
         

@@ -4,12 +4,18 @@ import matplotlib.pyplot as plt
 import math
 import matplotlib.animation as animation
 from DataStructures import MinHeap
-from Utilities import sin,cos, ConvertDegreesToRadians
+from Utilities import sin,cos, ConvertDegreesToRadians, ConvertKilometresToMiles
 from tkinter import messagebox
 
+PATH_FINDING_ALGORITHMS = {'A-Star': 0, 'Dijkstras':1}
 class MapDemonstrationWindow():
-    def __init__(self, filepath):
+    def __init__(self, filepath, algorithm, useMiles):
         self.graph =  ox.load_graphml(filepath=filepath)
+        try:
+            self.algorithmId = PATH_FINDING_ALGORITHMS[algorithm]
+        except:
+            raise('Unexpected value passed for algorithmId')
+        self.useMiles = useMiles
         self.click_coords = []
         self.figAndAxis = plt.subplots()
         self.fig = self.figAndAxis[0]
@@ -27,7 +33,7 @@ class MapDemonstrationWindow():
             #plt.close()
             #animate_astar(self.graph, self.click_coords[0], self.click_coords[1])
             self.ax.clear()
-            animator = NetworkAnimator(self.graph,self.click_coords[0], self.click_coords[1], self.figAndAxis)
+            animator = NetworkAnimator(self.graph,self.click_coords[0], self.click_coords[1], self.algorithmId, self.useMiles, self.figAndAxis)
             self.fig.canvas.draw_idle()
         
 
@@ -69,10 +75,12 @@ class MapDemonstrationWindow():
         return self.graph
 
 class NetworkAnimator():
-    def __init__(self, graph, startCoord, endCoord, figAndAxis,  edgeSkipFactor = 20, interval = 0.5):
+    def __init__(self, graph, startCoord, endCoord, algorithmId, useMiles, figAndAxis, edgeSkipFactor = 20, interval = 0.5):
         self.graph = graph
         self.startCoord = startCoord
         self.endCoord = endCoord
+        self.algorithmId = algorithmId
+        self.useMiles = useMiles
         self.edgeSkipFactor = edgeSkipFactor
         self.interval = interval
         #Used to hold the FuncAnimation Object
@@ -86,9 +94,21 @@ class NetworkAnimator():
         G = self.graph
         startNode = ox.nearest_nodes(G, self.startCoord[0], self.startCoord[1])
         endNode = ox.nearest_nodes(G, self.endCoord[0], self.endCoord[1])
+        match self.algorithmId:
+            #Each case pre computes pathfinding algorithm before running to get the path, explored edges and length of path
+            case 0:
+                path,  exploredEdges, lengthOfPath = AStar(G, startNode, endNode)
+                print('Using A-Star')
+            case 1:
+                path,  exploredEdges, lengthOfPath = Dijkstra(G, startNode, endNode)
+                print('Using Dijkstras')
+            case _: # If does not match any use AStar
+                path,  exploredEdges, lengthOfPath = AStar(G, startNode, endNode)
         
-        path,  exploredEdges, lengthOfPath = AStar(G, startNode, endNode)
-        self.lengthOfPath = lengthOfPath
+        #Converting to Kilometres
+        self.lengthOfPath = round(lengthOfPath / 1000, 1)
+        if self.useMiles:
+            self.lengthOfPath = ConvertKilometresToMiles(self.lengthOfPath)
         numberOfFrames = len(exploredEdges) // self.edgeSkipFactor + len(path)
         #Intitialising plot
         #fig, ax = plt.subplots(figsize=(10, 10))
@@ -132,7 +152,8 @@ class NetworkAnimator():
 
     def on_animation_complete(self):
         print('Animation Complete')
-        messagebox.showinfo(title='Length Of Path', message=f"The length of path found is {round(self.lengthOfPath,1)} metres")
+        messagebox.showinfo(title='Length Of Path', 
+                            message=f"The length of path found is {round(self.lengthOfPath,1)} {"Miles" if self.useMiles else "Kilometres"}")#Conditionally show Miles or kilometres
 def HaverSineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
     coordinateNode1 = NodeToCordiante(graph,node1)
     coordinateNode2 = NodeToCordiante(graph, node2)
