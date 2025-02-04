@@ -94,7 +94,6 @@ class GraphGeneratorForm():
         self.pValue = self.slider.get()
         #Getting value selected checkbox
         self.isDemoModeSelected = self.demoCheckBox.instate(['selected'])
-        print(f"Checkbox selected: {self.isDemoModeSelected}")
         self.root.quit()
         self.root.destroy() 
         print(self.GetNumberOfNodes())
@@ -132,11 +131,11 @@ class SourceNodeInputForm():
         self.entry.pack(pady=5)
 
         
-        self.submitButton = tk.Button(self.root, text="Submit", command=self.submit)
+        self.submitButton = tk.Button(self.root, text="Submit", command=self.Submit)
         self.submitButton.pack(pady=10)
 
         self.sourceNodeIndex = None
-    def submit(self):
+    def Submit(self):
         userInput = self.entry.get()
         userInput = userInput.upper()
         if userInput.strip() == "":
@@ -174,11 +173,17 @@ class SourceNodeInputForm():
 
 class NetworkSettingsInputForm():
     def __init__(self):
+        self.algorithmSelected = None
+        self.networkSelected = None
+        self.isMilesUnitSelected = False
+
+
         self.root = tk.Tk()
         self.root.title('Map Demonstration Form')
         baseHeight = 300
         baseWidth = 400
         adjustedHeight, adjustedWidth = NormaliseFormSizeOnScaling(self.root, baseHeight, baseWidth)#
+        self.root.geometry(f"{adjustedWidth}x{adjustedHeight}")
 
         self.root.columnconfigure(0, weight=1)
         self.root.columnconfigure(1, weight=1)
@@ -195,6 +200,7 @@ class NetworkSettingsInputForm():
 
         self.networkDropdown = ttk.Combobox(self.root, textvariable=self.selectNetworkVar, values=self.networkOptions, state="readonly",font=("Arial", 12))
         self.networkDropdown.grid(row=1, column=1, padx=10, pady=10, sticky="w")
+        self.networkDropdown.bind("<<ComboboxSelected>>", self.OnSelectedNetwork)
 
         self.algorithmLabel = tk.Label(self.root, text="Select Algorithm to be used", font=("Arial", 12))
         self.algorithmLabel.grid(row=2, column=0, padx=10, pady=5, sticky="e")
@@ -205,8 +211,9 @@ class NetworkSettingsInputForm():
 
         self.algorithmDropdown = ttk.Combobox(self.root, textvariable=self.selectAlgorithmVar, values=self.algorithmOptions, state="readonly",font=("Arial", 12))
         self.algorithmDropdown.grid(row=2, column=1, padx=10, pady=10, sticky="w")
+        self.algorithmDropdown.bind("<<ComboboxSelected>>", self.OnSelectedAlgorithm)
 
-        self.distanceInMilesCheckBoxLabel = tk.Label(self.root, text='Select for distance in miles. Unchecked leaves distance in Kilometres.', font=("Arial", 12))
+        self.distanceInMilesCheckBoxLabel = tk.Label(self.root, text='Select for distance in miles. Unchecked leaves distance in Kilometres.', font=("Arial", 12), wraplength=300)
         self.distanceInMilesCheckBoxLabel.grid(row=3,column=0, rowspan=2)
 
         style = ttk.Style()
@@ -220,9 +227,16 @@ class NetworkSettingsInputForm():
         self.submitButton = tk.Button(self.root, text="Submit", command=self.Submit, width=10, height=2)
         self.submitButton.grid(row=5, column=0, columnspan=2, pady=30)
 
+    def OnSelectedNetwork(self, event):
+        self.networkSelected = self.selectNetworkVar.get()
+        print(f"Network selected is {self.networkSelected}")
+
+    def OnSelectedAlgorithm(self, event):
+        self.algorithmSelected = self.selectAlgorithmVar.get()
+
 
     def Submit(self):
-        print('Submit')
+        self.isMilesUnitSelected = self.distanceInMilesCheckBox.instate(['selected'])
 
 
         
