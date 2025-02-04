@@ -21,13 +21,16 @@ def sin(x: float) -> float:
     positiveTerms = reduce(lambda x,y: x+y,[(x**i)/factorial(i) for i in range(5,UPPER_LIMIT_OF_EXPANSION,4)])
     return x + negativeTerms + positiveTerms
 
-def ConvertDegreesToRadians(x: float):
+def ConvertDegreesToRadians(x: float) -> float:
     return x * math.pi/180
 
-def IdToCharacter(id):
+def ConvertKilometresToMiles(length: float) -> float:
+    return round(length / 1.609, 1)
+
+def IdToCharacter(id) -> str:
     return chr(id+65) 
 
-def CharacterToId(char):
+def CharacterToId(char) -> int:
     return ord(char) - 65
 
 if __name__ == '__main__':
