@@ -1,4 +1,8 @@
 import tkinter as tk
+from tkinter import messagebox
+import sys
+from DijkstrasMainWindow import Window
+from Forms import NetworkSettingsInputForm
 class MainMenu():
     def __init__(self):
         self.APPLICATION_BUTTON_HEIGHT = 5
@@ -23,7 +27,7 @@ class MainMenu():
                                                           font=("Arial", 12, "bold"),
                                                           command=self.OpenDijkstrasDemonstration)
         
-        self.OpenDijkstrasDemonstrationButton.grid(row=1, column=0, pady=15, padx=5)
+        self.OpenDijkstrasDemonstrationButton.grid(row=1, column=1, pady=15, padx=5)
         
 
         self.OpenMapDemonstrationButton = tk.Button(self.root,
@@ -33,7 +37,7 @@ class MainMenu():
                                                     font=("Arial", 12, "bold"),
                                                     command=self.OpenMapDemonstration)
         
-        self.OpenMapDemonstrationButton.grid(row=1, column=1, pady=15, padx=5)
+        self.OpenMapDemonstrationButton.grid(row=1, column=0, pady=15, padx=5)
 
 
         self.QuitButton = tk.Button(self.root, 
@@ -47,13 +51,19 @@ class MainMenu():
         self.QuitButton.grid(row=2, columnspan=2, pady=25)
 
     def QuitApplication(self):
-        ...
+        sys.exit()
     
     def OpenMapDemonstration(self):
-        ...
+        networkSettingsForm = NetworkSettingsInputForm(self.root)
+        
+        #messagebox.showerror('Error', 'To use this part of the program ensure you have installed the osmnx Libary')
+            
+        
+
     
     def OpenDijkstrasDemonstration(self):
-        ...
+        dijkstrasDemonstrationWindow = Window()
+        dijkstrasDemonstrationWindow.DisplayWindow()
     
     def Run(self):
         self.root.mainloop()

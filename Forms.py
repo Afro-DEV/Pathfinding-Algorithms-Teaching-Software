@@ -2,18 +2,23 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 from Utilities import CharacterToId, IdToCharacter
-from abc import  abstractmethod
+from abc import  abstractmethod, ABC
 from MapDemonstrationApplication import MapDemonstrationWindow
 
-class AbstractForm():
-    def __init__(self):
-        self.root = tk.Tk()
+class AbstractForm(ABC):
+    def __init__(self, parentWindow = None): 
+        if parentWindow: # If we want form to run independently or as the window from a parent window.
+            self.root = tk.Toplevel(parentWindow)
+        else:
+            self.root = tk.Tk()
         baseHeight = 300
         baseWidth = 400
         self.adjustedHeight, self.adjustedWidth = NormaliseFormSizeOnScaling(self.root, baseHeight, baseWidth)
 
     def Run(self):
-        self.root.mainloop()
+        """Only call mainloop() if this is the main window"""
+        if isinstance(self.root, tk.Tk):
+            self.root.mainloop()
 
     def GetForm(self):
         return self.root
@@ -183,12 +188,11 @@ class SourceNodeInputForm(AbstractForm):
     
 
 class NetworkSettingsInputForm(AbstractForm):
-    def __init__(self):
-        AbstractForm.__init__(self)
+    def __init__(self, parentWindow):
+        super().__init__(parentWindow)  # Pass parent to AbstractForm by calling AbstractForm initialisng method.
         self.algorithmSelected = None
         self.networkSelected = None
         self.useMiles = False
-
 
         
         self.root.title('Map Demonstration Form')
@@ -243,6 +247,7 @@ class NetworkSettingsInputForm(AbstractForm):
 
     def OnSelectedAlgorithm(self, event):
         self.algorithmSelected = self.selectAlgorithmVar.get()
+        print(f"Algorithm selected is {self.algorithmSelected}")
 
     def GetNetworkSelectedFilePath(self, networkSelected):
         #Parameterised File path
@@ -250,8 +255,12 @@ class NetworkSettingsInputForm(AbstractForm):
 
 
     def Submit(self):
+        self.networkSelected = self.selectNetworkVar.get()
+        self.algorithmSelected = self.selectAlgorithmVar.get()
         self.useMiles = self.distanceInMilesCheckBox.instate(['selected'])
         networkFilePath = self.GetNetworkSelectedFilePath(self.networkSelected)
+        print(f"DEBUG: Submitting with Network={self.networkSelected}, Algorithm={self.algorithmSelected}, UseMiles={self.useMiles}")
+
         a = MapDemonstrationWindow(filepath=networkFilePath, algorithm=self.algorithmSelected, useMiles=self.useMiles)
         a.DisplayNetwork()
 
