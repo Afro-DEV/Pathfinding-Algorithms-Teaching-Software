@@ -2,20 +2,38 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 from Utilities import CharacterToId, IdToCharacter
+from abc import  abstractmethod
 from MapDemonstrationApplication import MapDemonstrationWindow
+
+class AbstractForm():
+    def __init__(self):
+        self.root = tk.Tk()
+        baseHeight = 300
+        baseWidth = 400
+        self.adjustedHeight, self.adjustedWidth = NormaliseFormSizeOnScaling(self.root, baseHeight, baseWidth)
+
+    def Run(self):
+        self.root.mainloop()
+
+    def GetForm(self):
+        return self.root
+
+    @abstractmethod
+    def Submit(self):
+        pass
 
 def NormaliseFormSizeOnScaling(root, baseHeight: int, baseWidth: int) -> tuple[int,int]:
     '''Normalise the size of form based on Screen Scaling'''
     scaling = root.tk.call('tk', 'scaling')
     return int(baseHeight*scaling), int(baseWidth* scaling)
 
-class GraphGeneratorForm():
+class GraphGeneratorForm(AbstractForm):
     def __init__(self):
+        AbstractForm.__init__(self)
         self.numberOfNodes = 5
         self.pValue = 50
         self.isDemoModeSelected = False
         
-        self.root = tk.Tk()
         self.root.title('Graph Form')
 
 
@@ -84,8 +102,6 @@ class GraphGeneratorForm():
     def OnSelectedPValue(self, event):
         self.pValue = self.slider.get()
      
-    def Run(self):
-        self.root.mainloop()
 
     def Submit(self):
         try:
@@ -106,21 +122,19 @@ class GraphGeneratorForm():
     def GetNumberOfNodes(self) -> int:
         return self.numberOfNodes
     
-    def GetForm(self):
-        return self.root
 
 
-class SourceNodeInputForm():
+class SourceNodeInputForm(AbstractForm):
     def __init__(self, numNodes):
-        self.root = tk.Tk()
+        AbstractForm.__init__(self)
         self.root.title('Form')
         # Normalize the size based on screen scaling
         scaling = self.root.tk.call('tk', 'scaling')
         baseHeight = 125
         baseWidth = 170
-        adjustedHeight, adjustedWidth = NormaliseFormSizeOnScaling(self.root, baseHeight, baseWidth)
+        self.adjustedHeight, self.adjustedWidth = NormaliseFormSizeOnScaling(self.root, baseHeight, baseWidth)
 
-        self.root.geometry(f"{adjustedWidth}x{adjustedHeight}")
+        self.root.geometry(f"{self.adjustedWidth}x{self.adjustedHeight}")
         #self.root.title("Source Node Input Form")
         self.numNodes = numNodes
 
@@ -163,28 +177,23 @@ class SourceNodeInputForm():
             messagebox.showerror("Unexpected Error", "Please try again")
            
     
-    def Run(self):
-        self.root.mainloop()
 
     def GetSourceNodeIndex(self) -> int:
         return self.sourceNodeIndex
     
-    def GetForm(self):
-        return self.root
 
-class NetworkSettingsInputForm():
+class NetworkSettingsInputForm(AbstractForm):
     def __init__(self):
+        AbstractForm.__init__(self)
         self.algorithmSelected = None
         self.networkSelected = None
         self.useMiles = False
 
 
-        self.root = tk.Tk()
+        
         self.root.title('Map Demonstration Form')
-        baseHeight = 300
-        baseWidth = 400
-        adjustedHeight, adjustedWidth = NormaliseFormSizeOnScaling(self.root, baseHeight, baseWidth)#
-        self.root.geometry(f"{adjustedWidth}x{adjustedHeight}")
+        
+        self.root.geometry(f"{self.adjustedWidth}x{self.adjustedHeight}")
 
         self.root.columnconfigure(0, weight=1)
         self.root.columnconfigure(1, weight=1)
@@ -235,16 +244,18 @@ class NetworkSettingsInputForm():
     def OnSelectedAlgorithm(self, event):
         self.algorithmSelected = self.selectAlgorithmVar.get()
 
+    def GetNetworkSelectedFilePath(self, networkSelected):
+        #Parameterised File path
+        return f"Networks/{networkSelected}Network.graphml"
+
 
     def Submit(self):
         self.useMiles = self.distanceInMilesCheckBox.instate(['selected'])
-        a = MapDemonstrationWindow(filepath=f"Networks/{self.networkSelected}Network.graphml", algorithm=self.algorithmSelected, useMiles=self.useMiles)
+        networkFilePath = self.GetNetworkSelectedFilePath(self.networkSelected)
+        a = MapDemonstrationWindow(filepath=networkFilePath, algorithm=self.algorithmSelected, useMiles=self.useMiles)
         a.DisplayNetwork()
 
 
-        
-    def Run(self):
-        self.root.mainloop()
 
 if __name__ == "__main__":
     app = NetworkSettingsInputForm()
