@@ -66,7 +66,7 @@ class MapDemonstrationWindow():
         # ax.scatter(self.endCoords[1], self.endCoords[0], c='g', s=100, marker='x') #End node
         # ox.plot_graph_route(self.graph, shortestPath, route_linewidth=4, route_color='r', orig_dest_size=100, ax=ax)
        
-
+        #Event listener waiting for a button press 
         cid = self.fig.canvas.mpl_connect('button_press_event',  self.OnClick)
         plt.show()
 
@@ -91,20 +91,22 @@ class NetworkAnimator():
         self.StartAnimation()
     
     def StartAnimation(self):
-        G = self.graph
-        startNode = ox.nearest_nodes(G, self.startCoord[0], self.startCoord[1])
-        endNode = ox.nearest_nodes(G, self.endCoord[0], self.endCoord[1])
+        GRAPH = self.graph
+        startNode = ox.nearest_nodes(GRAPH, self.startCoord[0], self.startCoord[1])
+        endNode = ox.nearest_nodes(GRAPH, self.endCoord[0], self.endCoord[1])
+        highlightingEdgeColour = None
         match self.algorithmId:
             #Each case pre computes pathfinding algorithm before running to get the path, explored edges and length of path
             case 0:
-                path,  exploredEdges, lengthOfPath = AStar(G, startNode, endNode)
+                path,  exploredEdges, lengthOfPath = AStar(GRAPH, startNode, endNode)
                 print('Using A-Star')
+                highlightingEdgeColour = 'blue'
             case 1:
-                path,  exploredEdges, lengthOfPath = Dijkstra(G, startNode, endNode)
+                path,  exploredEdges, lengthOfPath = Dijkstra(GRAPH, startNode, endNode)
+                highlightingEdgeColour = 'orange'
                 print('Using Dijkstras')
             case _: # If does not match any use AStar
-                path,  exploredEdges, lengthOfPath = AStar(G, startNode, endNode)
-        
+                path,  exploredEdges, lengthOfPath = AStar(GRAPH, startNode, endNode)
         #Converting to Kilometres
         self.lengthOfPath = round(lengthOfPath / 1000, 1)
         if self.useMiles:
@@ -114,12 +116,12 @@ class NetworkAnimator():
         #fig, ax = plt.subplots(figsize=(10, 10))
         ax= self.ax
         fig = self.fig 
-        ox.plot_graph(G, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray")
+        ox.plot_graph(GRAPH, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray")
 
-        startNodeMarker, = ax.plot(G.nodes[startNode]['x'], G.nodes[startNode]['y'], 'go', markersize=6, label="Start Node")
-        endNodeMarker, = ax.plot(G.nodes[endNode]['x'], G.nodes[endNode]['y'], 'ro', markersize=6, label="End Node")
+        startNodeMarker, = ax.plot(GRAPH.nodes[startNode]['x'], GRAPH.nodes[startNode]['y'], 'go', markersize=6, label="Start Node")
+        endNodeMarker, = ax.plot(GRAPH.nodes[endNode]['x'], GRAPH.nodes[endNode]['y'], 'ro', markersize=6, label="End Node")
         shortestPathLine, = ax.plot([], [], '-', color='red', linewidth=3, label="Shortest Path")
-        exploredEdgesLine, = ax.plot([], [], '-', color='blue', linewidth=1, label="Visited Edges")
+        exploredEdgesLine, = ax.plot([], [], '-', color=highlightingEdgeColour, linewidth=1, label="Visited Edges")
         
         #Updates animation frame by frame
         def update(frameNum):
@@ -127,14 +129,14 @@ class NetworkAnimator():
             edge_y = []
             #Highlighting explored Edges. 
             for edge in exploredEdges[:frameNum* self.edgeSkipFactor]: # Highlighting 'edgeSkipFactor' edges per frame
-                edge_x.extend([G.nodes[edge[0]]['x'], G.nodes[edge[1]]['x'], None])
-                edge_y.extend([G.nodes[edge[0]]['y'], G.nodes[edge[1]]['y'], None])
+                edge_x.extend([GRAPH.nodes[edge[0]]['x'], GRAPH.nodes[edge[1]]['x'], None])
+                edge_y.extend([GRAPH.nodes[edge[0]]['y'], GRAPH.nodes[edge[1]]['y'], None])
             exploredEdgesLine.set_data(edge_x, edge_y)
 
             #If the number of the frame is greater than total explored Edges then all edges processed and we can display shortest path
             if frameNum >= len(exploredEdges) // self.edgeSkipFactor:
-                path_x = [G.nodes[n]['x'] for n in path]
-                path_y = [G.nodes[n]['y'] for n in path]
+                path_x = [GRAPH.nodes[n]['x'] for n in path]
+                path_y = [GRAPH.nodes[n]['y'] for n in path]
                 shortestPathLine.set_data(path_x, path_y)
 
             if frameNum == numberOfFrames - 1:
