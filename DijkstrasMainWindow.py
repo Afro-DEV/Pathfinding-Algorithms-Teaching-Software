@@ -67,7 +67,6 @@ class Animator():
         self.__isRunning: bool = False
         self.__animationStarted: bool = False
         self.__removeBlankSpaceTrueFlag: bool = True
-        self.__numNodes = len(self.__nodeReferences)
 
     def UpdateDistancesTableUI(self, distances):
         #Removing placeholder blank space row in distances table
@@ -98,35 +97,7 @@ class Animator():
         self.__fig.canvas.draw()
         #self.__distancesTable.plt.remove()
 
-    def ClearTable(self):
-        print('clear')
-        # columnLabels = [NODELABELS[i] for i in range(self.__numNodes)]
-        # blankSpaceRow = [[None] * len(columnLabels)]
-        # if self.__distancesTable:
-        #     self.__distancesTable.remove()
-        # distancesTable = self.__axs[1].table(cellText=blankSpaceRow,
-        #                            colLabels=columnLabels,
-        #                             loc='center',
-        #                             cellLoc='center',
-        #                             edges='closed',
-        #                             bbox = [0,0.1,1,0.4])
-        # distancesTable.auto_set_font_size(False)
-        # distancesTable.set_fontsize(14)
-
-        self.__distancesTable.remove()
-        columnLabels = [NODELABELS[i] for i in range(self.__numNodes)]
-        blankSpaceRow = [[None] * len(columnLabels)]
-        self.__distancesTable = self.__axs[1].table(cellText=blankSpaceRow,
-                                    colLabels=columnLabels,
-                                    loc='center',
-                                    cellLoc='center',
-                                    edges='closed',
-                                    bbox = [0,0.1,1,0.4])
-        self.__distancesTable.auto_set_font_size(False)
-        self.__distancesTable.set_fontsize(14)
-        #self.__axs[1].set_axis_off()
-        
-
+    
     def HighlightEdgesOfNode(self, currentIndex) -> None:
         for edge in self.__edgeReferences[currentIndex]:
             edge.set(color='red', linewidth=2)
@@ -158,12 +129,6 @@ class Animator():
     def SetNodeColour(self, id, colour):
         self.__nodeReferences[id].set(color = colour)
         self.__fig.canvas.draw()
-
-    # def RestartAnimation(self, windowObject):
-    #     windowObject: Window = windowObject
-    #     self.__restartFlag = True
-    #     m = windowObject.GetMatrix()
-    #     AnimateDijkstras(m, windowObject.GetSourceNode(), self)
 
 
     def GetFigure(self):
@@ -494,22 +459,26 @@ class BottomBar():
             #If animation not initiallised allow user to enter source node and run animation
             if self.__isSourceNodeInputFormRunning:
                 return
-            self.__isSourceNodeInputFormRunning = True
-            sourceNodeInputFormObject = SourceNodeInputForm(self.__windowObject.GetMatrixLength())
-            form = sourceNodeInputFormObject.GetForm()
-
-            #Ensuring when the window is closed via the cross in the top right corner it is handled in the correct way
-            form.protocol("WM_DELETE_WINDOW", lambda: self.OnSourceNodeInputFormClose(form))
-            sourceNodeInputFormObject.Run()
-            #Window.DisplayDataStrucutures(self.__windowObject.GetAxis()[1],self.__windowObject.GetMatrixLength(),  sourceNodeInputForm.GetSourceNodeIndex())
+            sourceNode = self.GetSourceNodeIndexFromForm()
             self.__animator.SetAnimationStarted()
-            self.__windowObject.SetSourceNode(sourceNodeInputFormObject.GetSourceNodeIndex())
+            self.__windowObject.SetSourceNode(sourceNode)
             self.__animationController.SetAnimationSpeed(1000)
             AnimateDijkstras(self.__windowObject.GetMatrix(), self.__windowObject.GetSourceNode(), self.__animator)
             
         self.__animationController.PauseAnimation()
         new_text = "Resume" if self.__animationController.IsPaused() else "Pause"
         self.__pausePlayButton.config(text=new_text)
+
+    def GetSourceNodeIndexFromForm(self) -> int:
+        self.__isSourceNodeInputFormRunning = True
+        sourceNodeInputFormObject = SourceNodeInputForm(self.__windowObject.GetMatrixLength())
+        form = sourceNodeInputFormObject.GetForm()
+
+        #Ensuring when the window is closed via the cross in the top right corner it is handled in the correct way
+        form.protocol("WM_DELETE_WINDOW", lambda: self.OnSourceNodeInputFormClose(form))
+        sourceNodeInputFormObject.Run()
+        sourceNode = sourceNodeInputFormObject.GetSourceNodeIndex()
+        return sourceNode
     
     def OnSourceNodeInputFormClose(self, form):
         self.__isSourceNodeInputFormRunning = False
