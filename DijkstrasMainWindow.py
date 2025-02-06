@@ -190,6 +190,195 @@ class Animator():
     def SetAnimationStarted(self):
         self.__animationStarted = True
 
+class Window():
+    def __init__(self):
+        self.TITLE_FONT_SIZE = 20
+        self.__adjMatrix = [[0,4,3,7,0,0,0],
+                [4,0,0,1,0,4,0],
+                [3,0,0,3,5,0,0],
+                [7,1,3,0,2,2,7],
+                [0,0,5,2,0,0,2],
+                [0,4,0,2,0,0,4],
+                [0,0,0,7,2,4,0]]
+        self.__sourceNode = 0
+        #Unpacking the fig and axis object from subplots then storing it in a single variable fig and axis
+        figAndAxis = fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
+        self.__fig = figAndAxis[0]
+        self.__axs = figAndAxis[1]
+        
+        #visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = self.DisplayDataStrucutures(axs[1], numNodes, sourceNodeIndex)
+        #nodeReference, edgeReferences = self.DisplayGraph(self.__demoGraph, axs[0])
+        self.DisplayWindow(self.__adjMatrix, self.__sourceNode)
+    
+    def DisplayDataStrucutures(self, axs, numNodes):
+        columnLabels = [NODELABELS[i] for i in range(numNodes)]
+        # initialDistances = [float('inf')]* numNodes
+        # initialDistances[sourceNodeIndex] = 0
+        blankSpaceRow = [[None] * len(columnLabels)]
+        axs.set_title('Data Structures', fontsize=self.TITLE_FONT_SIZE)
+        #axs[1].set_axis_off()
+        visitedNodesText =axs.text(0.5, 0.8, 'S{}', fontsize=20, ha='center', va='center', wrap=True)
+        nodesToOptimiseText = axs.text(0.5, 0.7, 'P[]', fontsize=20, ha='center', va='center', wrap=True)
+        #Fix This part
+        #data = [[distance if distance != float('inf') else '∞' for distance in initialDistances]]
+        #data = [['∞' for distance in initialDistances]]
+        distancesTable = axs.table(cellText=blankSpaceRow,
+                                    colLabels=columnLabels,
+                                    loc='center',
+                                    cellLoc='center',
+                                    edges='closed',
+                                    bbox = [0,0.1,1,0.4])
+        distancesTable.auto_set_font_size(False)
+        distancesTable.set_fontsize(14)
+        axs.set_axis_off()
+        #distancesTable.auto_set_column_width(col=list(range(len(columnLabels))))
+   
+        return visitedNodesText, nodesToOptimiseText, distancesTable, blankSpaceRow
+    def GetAngles(self, numNodes: int) -> list[float]:
+        #tau is 2pi
+        #Make your own pi function
+        step = math.tau / numNodes
+        angles = [i * step for i in range(numNodes)]
+        return angles
+
+
+    def CircularLayout(self, numNodes: int) -> dict[int, tuple[float,float]]:
+        radius = 1
+        angles = self.GetAngles(numNodes)
+        coordinates = {}
+        for i,angle in enumerate(angles):
+            x_Coord = radius * cos(angle) 
+            y_Coord = radius * sin(angle) 
+            coordinates[i] = (x_Coord, y_Coord)
+        return coordinates
+
+
+    def DisplayGraph(self, adjacencyMatrix: list[list[int]], axs) :
+        numNodes: int = len(adjacencyMatrix)
+        nodeReferences = {}
+        edgeReferences = [[] for i in range(numNodes)]
+        edgeLabels = []
+        labelPositions = []
+        #plt.figure(figsize=(8,8))
+        coordinates = self.CircularLayout(numNodes)
+        
+        
+        for i, (x, y) in coordinates.items():
+            #How to alter properties of value
+            #node  = plt.scatter(x, y, s=300, color='skyblue', zorder=3)
+            node = axs.scatter(x, y, s=300, color='skyblue', zorder=3)
+            nodeReferences[i] = node
+            axs.text(x, y, NODELABELS[i], fontsize=12, ha='center', va='center')
+            
+        #Plotting the edges
+        for i in range(numNodes):
+            for j in range(i+1, numNodes):
+                if adjacencyMatrix[i][j] !=0:  
+                    x_Coords = [coordinates[i][0], coordinates[j][0]]
+                    y_Coords = [coordinates[i][1], coordinates[j][1]]
+                    #MR R FIX? 45 + 55 /100
+                    x_mid = (x_Coords[0] + x_Coords[1])/2
+                    y_mid = (y_Coords[0] + y_Coords[1])/2
+
+                    edge, = axs.plot(x_Coords, y_Coords, color='grey')
+                    edgeReferences[i].append(edge)
+                    edgeReferences[j].append(edge)
+                    if numNodes == 2:
+                    # For two nodes, place label exactly at the midpoint
+                        label_x = x_mid
+                        label_y = y_mid
+                    else:
+                        offset_x = 0.05 if abs(x_Coords[0] - x_Coords[1]) > abs(y_Coords[0] - y_Coords[1]) else 0 
+                        offset_y = 0 if abs(x_Coords[0] - x_Coords[1]) > abs(y_Coords[0] - y_Coords[1]) else 0.05
+                        #Initially placing edge weight label in the middle of the edge
+                        label_x, label_y = self.ResolveEdgeLabelOverlap(x_mid, y_mid, labelPositions)
+                        labelPositions.append((label_x, label_y))
+                    edgeLabels.append(axs.text(label_x, label_y, str([adjacencyMatrix[i][j]])[1:-1], fontsize=14, ha='center', va='center',))
+        axs.set_title('Dijkstras Demonstration', fontsize= self.TITLE_FONT_SIZE)
+        axs.set_axis_off()
+        #plt.show()
+        return nodeReferences, edgeReferences
+    
+    def ResolveEdgeLabelOverlap(self, x: float, y: float, label_positions: list[tuple[float, float]], min_distance=0.1) -> tuple[float, float]:
+        for existing_x, existing_y in label_positions:
+            distance = math.sqrt((x - existing_x) ** 2 + (y - existing_y) ** 2)
+            if distance < min_distance:
+                # Adjust the position to resolve the overlap
+                x += random.uniform(-min_distance, min_distance)
+                y += random.uniform(-min_distance, min_distance)
+                # Check again with updated position (recursively)
+                return self.ResolveEdgeLabelOverlap(x, y, label_positions, min_distance)
+        return x, y
+    
+    def DisplayWindow(self, adjacencyMatrix: list[list[int]], sourceNodeIndex: int) -> None:
+        numNodes: int = len(adjacencyMatrix)
+        fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
+        #Getting references to UI elements
+        nodeReference, edgeReferences = self.DisplayGraph(adjacencyMatrix, axs[0])
+        visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = self.DisplayDataStrucutures(axs[1], numNodes)
+        
+        animator = Animator(nodeReference, edgeReferences, visitedNodesText, nodesToBeVisitedText , distancesTable, tableData, axs, fig)
+
+        window = tk.Tk()
+        #For laptop turn code below off
+        #window.geometry("1800x1000")
+        
+        window.title("Dijkstra's demonstration")
+        
+        topBar = TopBar(window, self)
+        
+        bottomBar = BottomBar(window, animator, self)
+        GraphFrame = tk.Frame(master=window, width=700, height=250)
+        GraphFrame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)   
+
+         
+        #GraphFrame.pack_propagate(False)
+        canvas = FigureCanvasTkAgg(fig, master=GraphFrame)
+        canvasWidget = canvas.get_tk_widget()  # Get the Tkinter widget
+        canvasWidget.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        #tk.Button(window, text="Update", height=10).pack()
+        
+        
+        
+        #sourceNodeInputForm = SourceNodeInputForm(numNodes)
+        # sourceNodeInputForm.Run()
+        # sourceNodeIndex = sourceNodeInputForm.GetSourceNodeIndex()
+        #self.StartAnimation(adjacencyMatrix, sourceNodeIndex,   animator)
+        
+        window.mainloop()
+        
+        plt.tight_layout()
+
+    def GetAxis(self):
+        return self.__axs
+
+    def GetMatrix(self):
+        return self.__adjMatrix
+    
+    def GetMatrixLength(self) -> int:
+        return len(self.__adjMatrix)
+    
+    def GetDemoMatrix(self):
+        return [[0,4,3,7,0,0,0],
+                [4,0,0,1,0,4,0],
+                [3,0,0,3,5,0,0],
+                [7,1,3,0,2,2,7],
+                [0,0,5,2,0,0,2],
+                [0,4,0,2,0,0,4],
+                [0,0,0,7,2,4,0]]
+    
+    def SetMatrix(self, matrix):
+        self.__adjMatrix = matrix
+    
+    def GetSourceNode(self):
+        return self.__sourceNode
+    
+    def SetSourceNode(self, sourceNode):
+        self.__sourceNode = sourceNode
+
+    def StartAnimation(self,adjacencyMatrix, sourceNodeIndex,   animator):
+        AnimateDijkstras( adjacencyMatrix, sourceNodeIndex,   animator)
+
 
 class TopBar():
     def __init__(self, window, windowObject):
@@ -326,193 +515,6 @@ class BottomBar():
         self.__isSourceNodeInputFormRunning = False
         form.destroy()
 
-class Window():
-    def __init__(self):
-        self.TITLE_FONT_SIZE = 20
-        self.__adjMatrix = [[0,4,3,7,0,0,0],
-                [4,0,0,1,0,4,0],
-                [3,0,0,3,5,0,0],
-                [7,1,3,0,2,2,7],
-                [0,0,5,2,0,0,2],
-                [0,4,0,2,0,0,4],
-                [0,0,0,7,2,4,0]]
-        self.__sourceNode = 0
-        #Unpacking the fig and axis object from subplots then storing it in a single variable fig and axis
-        figAndAxis = fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
-        self.__fig = figAndAxis[0]
-        self.__axs = figAndAxis[1]
-        
-        #visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = self.DisplayDataStrucutures(axs[1], numNodes, sourceNodeIndex)
-        #nodeReference, edgeReferences = self.DisplayGraph(self.__demoGraph, axs[0])
-        self.DisplayWindow(self.__adjMatrix, self.__sourceNode)
-    
-    def DisplayDataStrucutures(self, axs, numNodes):
-        columnLabels = [NODELABELS[i] for i in range(numNodes)]
-        # initialDistances = [float('inf')]* numNodes
-        # initialDistances[sourceNodeIndex] = 0
-        blankSpaceRow = [[None] * len(columnLabels)]
-        axs.set_title('Data Structures', fontsize=self.TITLE_FONT_SIZE)
-        #axs[1].set_axis_off()
-        visitedNodesText =axs.text(0.5, 0.8, 'S{}', fontsize=20, ha='center', va='center', wrap=True)
-        nodesToOptimiseText = axs.text(0.5, 0.7, 'P[]', fontsize=20, ha='center', va='center', wrap=True)
-        #Fix This part
-        #data = [[distance if distance != float('inf') else '∞' for distance in initialDistances]]
-        #data = [['∞' for distance in initialDistances]]
-        distancesTable = axs.table(cellText=blankSpaceRow,
-                                    colLabels=columnLabels,
-                                    loc='center',
-                                    cellLoc='center',
-                                    edges='closed',
-                                    bbox = [0,0.1,1,0.4])
-        distancesTable.auto_set_font_size(False)
-        distancesTable.set_fontsize(14)
-        axs.set_axis_off()
-        #distancesTable.auto_set_column_width(col=list(range(len(columnLabels))))
-   
-        return visitedNodesText, nodesToOptimiseText, distancesTable, blankSpaceRow
-    def GetAngles(self, numNodes: int) -> list[float]:
-        #tau is 2pi
-        #Make your own pi function
-        step = math.tau / numNodes
-        angles = [i * step for i in range(numNodes)]
-        return angles
-
-
-    def CircularLayout(self, numNodes: int) -> dict[int, tuple[float,float]]:
-        radius = 1
-        angles = self.GetAngles(numNodes)
-        coordinates = {}
-        for i,angle in enumerate(angles):
-            x_Coord = radius * cos(angle) 
-            y_Coord = radius * sin(angle) 
-            coordinates[i] = (x_Coord, y_Coord)
-        return coordinates
-
-
-    def DisplayGraph(self, adjacencyMatrix: list[list[int]], axs) :
-        numNodes: int = len(adjacencyMatrix)
-        nodeReferences = {}
-        edgeReferences = [[] for i in range(numNodes)]
-        edgeLabels = []
-        labelPositions = []
-        #plt.figure(figsize=(8,8))
-        coordinates = self.CircularLayout(numNodes)
-        
-        
-        for i, (x, y) in coordinates.items():
-            #How to alter properties of value
-            #node  = plt.scatter(x, y, s=300, color='skyblue', zorder=3)
-            node = axs.scatter(x, y, s=300, color='skyblue', zorder=3)
-            nodeReferences[i] = node
-            axs.text(x, y, NODELABELS[i], fontsize=12, ha='center', va='center')
-            
-        #Plotting the edges
-        for i in range(numNodes):
-            for j in range(i+1, numNodes):
-                if adjacencyMatrix[i][j] !=0:  
-                    x_Coords = [coordinates[i][0], coordinates[j][0]]
-                    y_Coords = [coordinates[i][1], coordinates[j][1]]
-                    x_mid = (x_Coords[0] + x_Coords[1]) / 2
-                    y_mid = (y_Coords[0] + y_Coords[1]) / 2
-
-                    edge, = axs.plot(x_Coords, y_Coords, color='grey')
-                    edgeReferences[i].append(edge)
-                    edgeReferences[j].append(edge)
-                    if numNodes == 2:
-                    # For two nodes, place label exactly at the midpoint
-                        label_x = x_mid
-                        label_y = y_mid
-                    else:
-                        offset_x = 0.05 if abs(x_Coords[0] - x_Coords[1]) > abs(y_Coords[0] - y_Coords[1]) else 0 
-                        offset_y = 0 if abs(x_Coords[0] - x_Coords[1]) > abs(y_Coords[0] - y_Coords[1]) else 0.05
-                        #Initially placing edge weight label in the middle of the edge
-                        label_x, label_y = self.ResolveEdgeLabelOverlap(x_mid, y_mid, labelPositions)
-                        labelPositions.append((label_x, label_y))
-                    edgeLabels.append(axs.text(label_x, label_y, str([adjacencyMatrix[i][j]])[1:-1], fontsize=14, ha='center', va='center',))
-        axs.set_title('Dijkstras Demonstration', fontsize= self.TITLE_FONT_SIZE)
-        axs.set_axis_off()
-        #plt.show()
-        return nodeReferences, edgeReferences
-    
-    def ResolveEdgeLabelOverlap(self, x: float, y: float, label_positions: list[tuple[float, float]], min_distance=0.1) -> tuple[float, float]:
-        for existing_x, existing_y in label_positions:
-            distance = math.sqrt((x - existing_x) ** 2 + (y - existing_y) ** 2)
-            if distance < min_distance:
-                # Adjust the position to resolve the overlap
-                x += random.uniform(-min_distance, min_distance)
-                y += random.uniform(-min_distance, min_distance)
-                # Check again with updated position (recursively)
-                return self.ResolveEdgeLabelOverlap(x, y, label_positions, min_distance)
-        return x, y
-    
-    def DisplayWindow(self, adjacencyMatrix: list[list[int]], sourceNodeIndex: int) -> None:
-        numNodes: int = len(adjacencyMatrix)
-        fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
-        #Getting references to UI elements
-        nodeReference, edgeReferences = self.DisplayGraph(adjacencyMatrix, axs[0])
-        visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = self.DisplayDataStrucutures(axs[1], numNodes)
-        
-        animator = Animator(nodeReference, edgeReferences, visitedNodesText, nodesToBeVisitedText , distancesTable, tableData, axs, fig)
-
-        window = tk.Tk()
-        #For laptop turn code below off
-        #window.geometry("1800x1000")
-        
-        window.title("Dijkstra's demonstration")
-        
-        topBar = TopBar(window, self)
-        
-        bottomBar = BottomBar(window, animator, self)
-        GraphFrame = tk.Frame(master=window, width=700, height=250)
-        GraphFrame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)   
-
-         
-        #GraphFrame.pack_propagate(False)
-        canvas = FigureCanvasTkAgg(fig, master=GraphFrame)
-        canvasWidget = canvas.get_tk_widget()  # Get the Tkinter widget
-        canvasWidget.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        #tk.Button(window, text="Update", height=10).pack()
-        
-        
-        
-        #sourceNodeInputForm = SourceNodeInputForm(numNodes)
-        # sourceNodeInputForm.Run()
-        # sourceNodeIndex = sourceNodeInputForm.GetSourceNodeIndex()
-        #self.StartAnimation(adjacencyMatrix, sourceNodeIndex,   animator)
-        
-        window.mainloop()
-        
-        plt.tight_layout()
-
-    def GetAxis(self):
-        return self.__axs
-
-    def GetMatrix(self):
-        return self.__adjMatrix
-    
-    def GetMatrixLength(self) -> int:
-        return len(self.__adjMatrix)
-    
-    def GetDemoMatrix(self):
-        return [[0,4,3,7,0,0,0],
-                [4,0,0,1,0,4,0],
-                [3,0,0,3,5,0,0],
-                [7,1,3,0,2,2,7],
-                [0,0,5,2,0,0,2],
-                [0,4,0,2,0,0,4],
-                [0,0,0,7,2,4,0]]
-    
-    def SetMatrix(self, matrix):
-        self.__adjMatrix = matrix
-    
-    def GetSourceNode(self):
-        return self.__sourceNode
-    
-    def SetSourceNode(self, sourceNode):
-        self.__sourceNode = sourceNode
-
-    def StartAnimation(self,adjacencyMatrix, sourceNodeIndex,   animator):
-        AnimateDijkstras( adjacencyMatrix, sourceNodeIndex,   animator)
 
 
         
