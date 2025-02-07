@@ -210,7 +210,7 @@ class NetworkSettingsInputForm(AbstractForm):
 
         self.selectNetworkVar = tk.StringVar()
         self.selectNetworkVar.set("London")
-        self.networkOptions = ['London', 'NewYork', 'Amsterdam']
+        self.networkOptions = ['London', 'NewYork', 'Paris']
 
         self.networkDropdown = ttk.Combobox(self.root, textvariable=self.selectNetworkVar, values=self.networkOptions, state="readonly",font=("Arial", 12))
         self.networkDropdown.grid(row=1, column=1, padx=10, pady=10, sticky="w")
