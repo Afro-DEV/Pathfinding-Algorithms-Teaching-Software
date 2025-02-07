@@ -146,13 +146,13 @@ class MinHeap:
     def RemoveMinValue(self):
         if self.IsEmpty():
             raise('Empty Heap')
-        data = self.__heap[0]
+        minValue = self.__heap[0]
         #Replacing last value in the heap with the first value
         self.__heap[0] = self.__heap[-1]
         self.__heap.pop() #Removing last element
         #We Traverse down the tree from top to bottom so index will always be 0
         self.HeapifyDown(0)
-        return data
+        return minValue
 
     #HELPER FUNCTIONS 
 

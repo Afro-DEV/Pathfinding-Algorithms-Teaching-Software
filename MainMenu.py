@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
 import sys
-import importlib
 from DijkstrasMainWindow import Window
 class MainMenuWindow():
     def __init__(self):
@@ -69,7 +68,7 @@ class MainMenuWindow():
     
     def OpenMapDemonstration(self):
         if not MainMenuWindow.CheckOSMNXInstalled(): # Dont open Map demonstration if OSMNX package is not installed.
-            messagebox.showerror('Error', 'To use this part of the program ensure you have installed the OSMNX Libary')
+            messagebox.showerror('Error', 'To use this part of the program ensure you have installed the OSMNX library')
             return
         from Forms import NetworkSettingsInputForm
         networkSettingsForm = NetworkSettingsInputForm(self.root)
