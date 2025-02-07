@@ -154,8 +154,9 @@ class NetworkAnimator():
 
     def on_animation_complete(self):
         print('Animation Complete')
+        units = 'Miles' if self.useMiles else 'Kilometres'
         messagebox.showinfo(title='Length Of Path', 
-                            message=f"The length of path found is {round(self.lengthOfPath,1)} {"Miles" if self.useMiles else "Kilometres"}")#Conditionally show Miles or kilometres
+                            message=f"The length of path found is {round(self.lengthOfPath,1)} {units}")#Conditionally show Miles or kilometres
 def HaverSineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
     coordinateNode1 = NodeToCordiante(graph,node1)
     coordinateNode2 = NodeToCordiante(graph, node2)
