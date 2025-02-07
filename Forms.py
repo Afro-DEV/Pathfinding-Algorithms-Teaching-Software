@@ -255,16 +255,18 @@ class NetworkSettingsInputForm(AbstractForm):
 
 
     def Submit(self):
+        from MainMenu import MainMenuWindow
+        
         self.networkSelected = self.selectNetworkVar.get()
         self.algorithmSelected = self.selectAlgorithmVar.get()
         self.useMiles = self.distanceInMilesCheckBox.instate(['selected'])
         networkFilePath = self.GetNetworkSelectedFilePath(self.networkSelected)
         print(f"DEBUG: Submitting with Network={self.networkSelected}, Algorithm={self.algorithmSelected}, UseMiles={self.useMiles}")
-        try:
+        if MainMenuWindow.CheckOSMNXInstalled():
             from MapDemonstrationApplication import MapDemonstrationWindow
             a = MapDemonstrationWindow(filepath=networkFilePath, algorithm=self.algorithmSelected, useMiles=self.useMiles)
             a.DisplayNetwork()
-        except ImportError:
+        else:
             print('OSMNX is not installed')
 
         
