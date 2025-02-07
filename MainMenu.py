@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 import sys
+import importlib
 from DijkstrasMainWindow import Window
-from Forms import NetworkSettingsInputForm
 class MainMenu():
     def __init__(self):
         self.APPLICATION_BUTTON_HEIGHT = 5
@@ -50,13 +50,27 @@ class MainMenu():
         
         self.QuitButton.grid(row=2, columnspan=2, pady=25)
 
+    def CheckOSMNXInstalled(self) -> bool:
+        isInstalled = False
+        try:
+            __import__('osmnx')
+            isInstalled = True
+            return isInstalled
+        except ImportError:
+            print('Sorry to run this part of the program OSMNX must be installed')
+            messagebox.showerror('Error', 'To use this part of the program ensure you have installed the OSMNX Libary')
+
+
+
     def QuitApplication(self):
         sys.exit()
     
     def OpenMapDemonstration(self):
+        if not self.CheckOSMNXInstalled(): # Dont open Map demonstration if OSMNX package is not installed.
+            return
+        from Forms import NetworkSettingsInputForm
         networkSettingsForm = NetworkSettingsInputForm(self.root)
         
-        #messagebox.showerror('Error', 'To use this part of the program ensure you have installed the osmnx Libary')
             
         
 

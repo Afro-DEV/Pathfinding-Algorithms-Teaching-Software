@@ -3,9 +3,9 @@ from tkinter import messagebox
 from tkinter import ttk
 from Utilities import CharacterToId, IdToCharacter
 from abc import  abstractmethod, ABC
-from MapDemonstrationApplication import MapDemonstrationWindow
 
-class AbstractForm(ABC):
+
+class AbstractForm(ABC): # Showing this class has abstract methjods
     def __init__(self, parentWindow = None): 
         if parentWindow: # If we want form to run independently or as the window from a parent window.
             self.root = tk.Toplevel(parentWindow)
@@ -260,9 +260,14 @@ class NetworkSettingsInputForm(AbstractForm):
         self.useMiles = self.distanceInMilesCheckBox.instate(['selected'])
         networkFilePath = self.GetNetworkSelectedFilePath(self.networkSelected)
         print(f"DEBUG: Submitting with Network={self.networkSelected}, Algorithm={self.algorithmSelected}, UseMiles={self.useMiles}")
+        try:
+            from MapDemonstrationApplication import MapDemonstrationWindow
+            a = MapDemonstrationWindow(filepath=networkFilePath, algorithm=self.algorithmSelected, useMiles=self.useMiles)
+            a.DisplayNetwork()
+        except ImportError:
+            print('OSMNX is not installed')
 
-        a = MapDemonstrationWindow(filepath=networkFilePath, algorithm=self.algorithmSelected, useMiles=self.useMiles)
-        a.DisplayNetwork()
+        
 
 
 
