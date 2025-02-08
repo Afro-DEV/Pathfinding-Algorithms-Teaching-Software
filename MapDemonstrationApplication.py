@@ -7,12 +7,15 @@ from DataStructures import MinHeap
 from Utilities import sin,cos, ConvertDegreesToRadians, ConvertKilometresToMiles
 from tkinter import messagebox
 
-PATH_FINDING_ALGORITHMS = {'A-Star': 0, 'Dijkstras':1}
+
+
 class MapDemonstrationWindow():
     def __init__(self, filepath, algorithm, useMiles):
-        self.graph =  ox.load_graphml(filepath=filepath)
+        PATH_FINDING_ALGORITHMS_ID = {'A-Star': 0, 'Dijkstras':1}
+        self.graph =  ox.load_graphml(filepath=filepath)    
+        self.GRAPH_STYLES = {'EdgeColour': "Grey",'EdgeWidth': 0.3,'StartNodeColour': 'limegreen', 'EndNodeColour': '#ff0000', 'NodeSize': 2 }
         try:
-            self.algorithmId = PATH_FINDING_ALGORITHMS[algorithm]
+            self.algorithmId = PATH_FINDING_ALGORITHMS_ID[algorithm]
         except:
             raise('Unexpected value passed for algorithmId')
         self.useMiles = useMiles
@@ -20,6 +23,25 @@ class MapDemonstrationWindow():
         self.figAndAxis = plt.subplots()
         self.fig = self.figAndAxis[0]
         self.ax = self.figAndAxis[1]
+
+    def DisplayNetwork(self):
+        # shortestPath = nx.shortest_path(self.graph, source=self.startNode, target=self.endNode, weight='length')
+        ox.plot_graph(self.graph, 
+                      ax=self.ax, 
+                      show=False,
+                       close=False, 
+                      bgcolor="black",
+                      node_size=self.GRAPH_STYLES['NodeSize'], 
+                      edge_linewidth=self.GRAPH_STYLES['EdgeWidth'],
+                      edge_color=self.GRAPH_STYLES['EdgeColour'])
+        self.ax.set_facecolor('black')
+        # ax.scatter(self.startCoords[1], self.startCoords[0], c='r', s=100, marker='x') # Start node
+        # ax.scatter(self.endCoords[1], self.endCoords[0], c='g', s=100, marker='x') #End node
+        # ox.plot_graph_route(self.graph, shortestPath, route_linewidth=4, route_color='r', orig_dest_size=100, ax=ax)
+       
+        #Event listener waiting for a button press 
+        cid = self.fig.canvas.mpl_connect('button_press_event',  self.OnClick)
+        plt.show()
 
     def OnClick(self, event):
         x_Coord = event.xdata
@@ -33,7 +55,7 @@ class MapDemonstrationWindow():
             #plt.close()
             #animate_astar(self.graph, self.click_coords[0], self.click_coords[1])
             self.ax.clear()
-            animator = NetworkAnimator(self.graph,self.click_coords[0], self.click_coords[1], self.algorithmId, self.useMiles, self.figAndAxis)
+            animator = NetworkAnimator(self.graph,self.click_coords[0], self.click_coords[1], self.algorithmId, self.useMiles, self.figAndAxis, self.GRAPH_STYLES)
             self.fig.canvas.draw_idle()
         
 
@@ -43,40 +65,38 @@ class MapDemonstrationWindow():
         # Clear the previous plot
         self.ax.clear()
 
-        ox.plot_graph(self.graph, ax=self.ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray")
+        ox.plot_graph(self.graph, 
+                      ax=self.ax, 
+                      show=False,
+                       close=False, 
+                      bgcolor="black",
+                      node_size=self.GRAPH_STYLES['NodeSize'], 
+                      edge_linewidth=self.GRAPH_STYLES['EdgeWidth'],
+                      edge_color=self.GRAPH_STYLES['EdgeColour'])
 
         # If the first click exists, highlight the first point
         if len(self.click_coords) >= 1:
             (x_Coord1, y_Coord1) = self.click_coords[0]
-            self.ax.scatter(x_Coord1, y_Coord1, c='g', s=100, marker='.')  # First point in red
+            self.ax.scatter(x_Coord1, y_Coord1, c=self.GRAPH_STYLES['StartNodeColour'], s=100, marker='.')  # First point in green
 
         # If the second click exists, highlight the second point
         if len(self.click_coords) >= 2:
             (x_Coord2, y_Coord2) = self.click_coords[1]
-            self.ax.scatter(x_Coord2, y_Coord2, c='r', s=100, marker='.')  
+            self.ax.scatter(x_Coord2, y_Coord2, c=self.GRAPH_STYLES['EndNodeColour'], s=100, marker='.')  
 
         # Redraw the figure to show the updated plot
         plt.draw()
         
-    def DisplayNetwork(self):
-        # shortestPath = nx.shortest_path(self.graph, source=self.startNode, target=self.endNode, weight='length')
-        ox.plot_graph(self.graph, ax=self.ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray")
-        #self.ax.set_facecolor('black')
-        # ax.scatter(self.startCoords[1], self.startCoords[0], c='r', s=100, marker='x') # Start node
-        # ax.scatter(self.endCoords[1], self.endCoords[0], c='g', s=100, marker='x') #End node
-        # ox.plot_graph_route(self.graph, shortestPath, route_linewidth=4, route_color='r', orig_dest_size=100, ax=ax)
-       
-        #Event listener waiting for a button press 
-        cid = self.fig.canvas.mpl_connect('button_press_event',  self.OnClick)
-        plt.show()
+    
 
     
     def GetGraph(self):
         return self.graph
 
 class NetworkAnimator():
-    def __init__(self, graph, startCoord, endCoord, algorithmId, useMiles, figAndAxis, edgeSkipFactor = 20, interval = 0.5):
+    def __init__(self, graph, startCoord, endCoord, algorithmId, useMiles, figAndAxis, GRAPH_STYLES, edgeSkipFactor = 20, interval = 0.5):
         self.graph = graph
+        self.GRAPH_STYLES = GRAPH_STYLES
         self.startCoord = startCoord
         self.endCoord = endCoord
         self.algorithmId = algorithmId
@@ -100,10 +120,10 @@ class NetworkAnimator():
             case 0:
                 path,  exploredEdges, lengthOfPath = AStar(GRAPH, startNode, endNode)
                 print('Using A-Star')
-                highlightingEdgeColour = 'blue'
+                highlightingEdgeColour = '#2BD9FF'
             case 1:
                 path,  exploredEdges, lengthOfPath = Dijkstra(GRAPH, startNode, endNode)
-                highlightingEdgeColour = 'orange'
+                highlightingEdgeColour = '#FF512B'
                 print('Using Dijkstras')
             case _: # If does not match any use AStar
                 path,  exploredEdges, lengthOfPath = AStar(GRAPH, startNode, endNode)
@@ -116,12 +136,19 @@ class NetworkAnimator():
         #fig, ax = plt.subplots(figsize=(10, 10))
         ax= self.ax
         fig = self.fig 
-        ox.plot_graph(GRAPH, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray")
-
-        startNodeMarker, = ax.plot(GRAPH.nodes[startNode]['x'], GRAPH.nodes[startNode]['y'], 'go', markersize=6, label="Start Node")
-        endNodeMarker, = ax.plot(GRAPH.nodes[endNode]['x'], GRAPH.nodes[endNode]['y'], 'ro', markersize=6, label="End Node")
-        shortestPathLine, = ax.plot([], [], '-', color='red', linewidth=3, label="Shortest Path")
-        exploredEdgesLine, = ax.plot([], [], '-', color=highlightingEdgeColour, linewidth=1, label="Visited Edges")
+        ox.plot_graph(self.graph, 
+                      ax=self.ax, 
+                      show=False,
+                       close=False, 
+                      bgcolor="black",
+                      node_size=self.GRAPH_STYLES['NodeSize'], 
+                      edge_linewidth=self.GRAPH_STYLES['EdgeWidth'],
+                      edge_color=self.GRAPH_STYLES['EdgeColour'])
+                      
+        startNodeMarker, = ax.plot(GRAPH.nodes[startNode]['x'], GRAPH.nodes[startNode]['y'],  'o', color=self.GRAPH_STYLES['StartNodeColour'], markersize=6, zorder =3, label="Start Node")
+        endNodeMarker, = ax.plot(GRAPH.nodes[endNode]['x'], GRAPH.nodes[endNode]['y'], 'o', color=self.GRAPH_STYLES['EndNodeColour'], markersize=6, zorder=3, label="End Node")
+        shortestPathLine, = ax.plot([], [], '-', color='yellow', linewidth=5, label="Shortest Path")
+        exploredEdgesLine, = ax.plot([], [], '-', color=highlightingEdgeColour, linewidth=1, zorder=1, label="Visited Edges")
         
         #Updates animation frame by frame
         def update(frameNum):
@@ -286,7 +313,7 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
 
 
 if __name__ == "__main__":
-    window = MapDemonstrationWindow("Networks/LondonNetwork.graphml")
+    window = MapDemonstrationWindow("Networks/NewYorkNetwork.graphml", algorithm='A-Star', useMiles=True)
     window.DisplayNetwork()
     # figax = plt.subplots(figsize=(10, 10))
     # graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
