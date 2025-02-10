@@ -195,14 +195,14 @@ class NetworkSettingsInputForm(AbstractForm):
         self.useMiles = False
 
         
-        self.root.title('Map Demonstration Form')
+        self.root.title('Road Network Settings')
         
         self.root.geometry(f"{self.adjustedWidth}x{self.adjustedHeight}")
 
         self.root.columnconfigure(0, weight=1)
         self.root.columnconfigure(1, weight=1)
         
-        self.titleLabel = tk.Label(self.root, text="Map Demonstration Form", font=("Arial", 16, "bold"))
+        self.titleLabel = tk.Label(self.root, text="Road Network Settings", font=("Arial", 16, "bold"))
         self.titleLabel.grid(row=0, column=0, columnspan=2, pady=20)
 
         self.numberOfNodesLabel = tk.Label(self.root, text="Select Road Network", font=("Arial", 12))
@@ -264,7 +264,7 @@ class NetworkSettingsInputForm(AbstractForm):
         print(f"DEBUG: Submitting with Network={self.networkSelected}, Algorithm={self.algorithmSelected}, UseMiles={self.useMiles}")
         if MainMenuWindow.CheckOSMNXInstalled():
             from MapDemonstrationApplication import MapDemonstrationWindow
-            a = MapDemonstrationWindow(filepath=networkFilePath, algorithm=self.algorithmSelected, useMiles=self.useMiles)
+            a = MapDemonstrationWindow(self.networkSelected, algorithm=self.algorithmSelected, useMiles=self.useMiles)
             a.DisplayNetwork()
         else:
             print('OSMNX is not installed')
