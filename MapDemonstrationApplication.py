@@ -6,6 +6,7 @@ import matplotlib.animation as animation
 from DataStructures import MinHeap
 from Utilities import sin,cos, ConvertDegreesToRadians, ConvertKilometresToMiles
 from tkinter import messagebox
+import time 
 
 
 
@@ -13,7 +14,11 @@ class MapDemonstrationWindow():
     def __init__(self, filepath, algorithm, useMiles):
         PATH_FINDING_ALGORITHMS_ID = {'A-Star': 0, 'Dijkstras':1}
         self.graph =  ox.load_graphml(filepath=filepath)    
-        self.GRAPH_STYLES = {'EdgeColour': "Grey",'EdgeWidth': 0.3,'StartNodeColour': 'limegreen', 'EndNodeColour': '#ff0000', 'NodeSize': 2 }
+        self.GRAPH_STYLES = {'EdgeColour': "Grey",
+                            'EdgeWidth': 0.3,
+                            'StartNodeColour': 'limegreen',
+                            'EndNodeColour': '#ff0000', 
+                            'NodeSize': 2 }
         try:
             self.algorithmId = PATH_FINDING_ALGORITHMS_ID[algorithm]
         except:
@@ -46,20 +51,32 @@ class MapDemonstrationWindow():
     def OnClick(self, event):
         x_Coord = event.xdata
         y_Coord = event.ydata
-        if x_Coord and y_Coord and len(self.click_coords) < 2: #Ensuring valid clicks
+
+                
+        if self.CheckValidClick(x_Coord, y_Coord) and len(self.click_coords) < 2: #Ensuring valid clicks
+            #If second click cordinate is not far enough away from first click do not add to click coords.
+            if len(self.click_coords) == 1 and not self.CheckIfCoordsAreSpaced(x_Coord, y_Coord): 
+                return 
             self.click_coords.append((x_Coord, y_Coord))
             self.HighlightPoints()
 
-        if len(self.click_coords) == 2:
+        if len(self.click_coords) == 2:# If two points are clicked, highlight them
             print('Now begin animating')
             #plt.close()
             #animate_astar(self.graph, self.click_coords[0], self.click_coords[1])
             self.ax.clear()
             animator = NetworkAnimator(self.graph,self.click_coords[0], self.click_coords[1], self.algorithmId, self.useMiles, self.figAndAxis, self.GRAPH_STYLES)
             self.fig.canvas.draw_idle()
-        
+    
+    def CheckIfCoordsAreSpaced(self, x_Coord, y_Coord):
+        if ox.nearest_nodes(self.graph, x_Coord, y_Coord) == ox.nearest_nodes(self.graph,  self.click_coords[0][0], self.click_coords[0][1]):
+            return False
+        return True
+    
+    def CheckValidClick(self, x_Coord, y_Coord):
+        return x_Coord != None or y_Coord !=None
 
-        # If two points are clicked, highlight them
+        
         
     def HighlightPoints(self):
         # Clear the previous plot
@@ -316,21 +333,25 @@ if __name__ == "__main__":
     window = MapDemonstrationWindow("Networks/NewYorkNetwork.graphml", algorithm='A-Star', useMiles=True)
     window.DisplayNetwork()
     # figax = plt.subplots(figsize=(10, 10))
-    # graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
-    # startCoords = (51.5017, -0.1419)  
-    # endCoords = (51.53, -0.15)
+    graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
+    startCoords = (51.5017, -0.1419)  
+    endCoords = (51.53, -0.15)
     # x  = NetworkAnimator(graph, startCoords, endCoords, figax)
 
     
     
-    # startNode = ox.distance.nearest_nodes(graph, startCoords[1], startCoords[0])
-    # endNode = ox.distance.nearest_nodes(graph, endCoords[1], endCoords[0])
+    startNode = ox.distance.nearest_nodes(graph, startCoords[1], startCoords[0])
+    endNode = ox.distance.nearest_nodes(graph, endCoords[1], endCoords[0])
     # length = nx.shortest_path_length(graph, startNode, endNode, weight='length')
 
     # print(f"Actual length is {length}")
     # ox.plot_graph(graph, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray",bgcolor='black')
     # ax.set_facecolor('black')
-    # path = AStar(graph, startNode, endNode)
+    startTime = time.time()
+    path, exploredEdges, length = Dijkstra(graph, startNode, endNode)
+    endTime = time.time()
+    print(endTime-startTime)
+    print(path)
     # #Gett cordinates of nodes on the path
     # path_x = [graph.nodes[node]['x'] for node in path]
     # path_y = [graph.nodes[node]['y'] for node in path]
