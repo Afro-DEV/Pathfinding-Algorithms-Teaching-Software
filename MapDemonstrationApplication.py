@@ -3,17 +3,23 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import math
 import matplotlib.animation as animation
+import os 
+import time
+from tkinter import messagebox
 from DataStructures import MinHeap
 from Utilities import sin,cos, ConvertDegreesToRadians, ConvertKilometresToMiles
-from tkinter import messagebox
-import time 
+from NetworkGenerator import BaseNetworkGenerator
+ 
 
 
 
 class MapDemonstrationWindow():
-    def __init__(self, filepath, algorithm, useMiles):
+    def __init__(self, network, algorithm, useMiles):
         PATH_FINDING_ALGORITHMS_ID = {'A-Star': 0, 'Dijkstras':1}
-        self.graph =  ox.load_graphml(filepath=filepath)    
+        self.filepath = self.GetNetworkSelectedFilePath(network)
+        if not self.CheckIfFileExists():
+            BaseNetworkGenerator.GenerateAllMissingNetworks()
+        self.graph =  ox.load_graphml(filepath=self.filepath)    
         self.GRAPH_STYLES = {'EdgeColour': "Grey",
                             'EdgeWidth': 0.3,
                             'StartNodeColour': 'limegreen',
@@ -22,12 +28,27 @@ class MapDemonstrationWindow():
         try:
             self.algorithmId = PATH_FINDING_ALGORITHMS_ID[algorithm]
         except:
+            #In case the user manages to write into the dropdown box which should not be possible
             raise('Unexpected value passed for algorithmId')
+            self.algorithmId = 0
         self.useMiles = useMiles
         self.click_coords = []
         self.figAndAxis = plt.subplots()
         self.fig = self.figAndAxis[0]
         self.ax = self.figAndAxis[1]
+
+    def GetNetworkSelectedFilePath(self, networkSelected):
+        #Parameterised File path
+        return f"Networks/{networkSelected}Network.graphml"
+
+
+    def CheckIfFileExists(self):
+        if os.path.exists(self.filepath):
+            return True
+        else:
+            return False
+
+
 
     def DisplayNetwork(self):
         # shortestPath = nx.shortest_path(self.graph, source=self.startNode, target=self.endNode, weight='length')
@@ -330,7 +351,7 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
 
 
 if __name__ == "__main__":
-    window = MapDemonstrationWindow("Networks/NewYorkNetwork.graphml", algorithm='A-Star', useMiles=True)
+    window = MapDemonstrationWindow("NewYork", algorithm='A-Star', useMiles=True)
     window.DisplayNetwork()
     # figax = plt.subplots(figsize=(10, 10))
     graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
