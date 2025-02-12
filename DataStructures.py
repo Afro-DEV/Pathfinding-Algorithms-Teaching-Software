@@ -40,33 +40,7 @@ class PriorityQueue():
                 return
     # If no suitable position is found, append to the end
         self.__queue.append(node)
-        # if self.IsEmpty() == True: 
-        #     self.__queue.append(node)
-        #     return
-        # for item in self.__queue:
-        #     #print(item)
-        #     index = self.__queue.index(item)
-        #     leftList = self.__queue[:index] #
-        #     rightList = self.__queue[index:]
-                    
-        #     if item.GetPriority() > node.GetPriority():
-                
-        #         leftList.append(node)
-        #         self.__queue = leftList + rightList
-                
-        #         return
-        #     elif item.GetPriority() == node.GetPriority():
-        #         print('lko')
-        #         self.OutputQueue()
-        #         #If 2 nodes same priority go in Alphabetical order
-        #         if ord(item.GetLabel())  > ord(node.GetLabel()):
-        #             leftList.append(node)
-        #         else:
-        #             rightList.insert(1, node)
-        #         self.__queue = leftList + rightList
-        #         return
-            
-        # self.__queue.append(node)
+        
                 
 
         
@@ -205,3 +179,28 @@ class MinHeap:
 
     def OutputHeap(self):
         print(self.__heap)
+
+import random
+def GetRandomTuple():
+    return (random.randint(1,10), random.randint(10,30))
+
+if __name__ == '__main__':
+    minheap = MinHeap()
+    minheap.Insert(GetRandomTuple())
+    minheap.Insert(GetRandomTuple())
+    minheap.Insert(GetRandomTuple())
+    minheap.OutputHeap()
+    minheap.RemoveMinValue()
+    minheap.OutputHeap()
+    # minheap.Insert(10)
+    # minheap.Insert(4)
+    # minheap.Insert(9)
+    # minheap.Insert(1)
+    # minheap.Insert(7)
+
+    # minheap.OutputHeap()
+    # minheap.RemoveMinValue()
+    # minheap.OutputHeap()
+
+
+    

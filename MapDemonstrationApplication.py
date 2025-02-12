@@ -246,8 +246,7 @@ def HaverSineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
     
     # Calculate the result
     distance = c * r
-    
-    return distance
+    return abs(distance)
 
 def EuclideanDistance(graph, node1, node2):
     coordinateNode1 = NodeToCordiante(graph,node1)
@@ -275,22 +274,26 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     closedSet = set()
     cameFrom = {}# Used to track the path
     exploredEdges = []
+
     #Initialising g and f  for every node to be infinity
     g_score = {node: float('inf') for node in graph.nodes}
     f_score = {node: float('inf') for node in graph.nodes}
     g_score[startNode] = 0
     initialHeuristicEstimate = HaverSineDistance(graph, startNode, endNode)
+    print(initialHeuristicEstimate)
     f_score[startNode] = g_score[startNode] + initialHeuristicEstimate
     openList.Insert((f_score[startNode], startNode))
-   
-
+    inOpenList = {startNode: f_score[startNode]}
     while not openList.IsEmpty():
-        currentNodeAndFval = openList.RemoveMinValue()
-        currentNode = currentNodeAndFval[1]
+        currentFScore, currentNode = openList.RemoveMinValue()
+        inOpenList.pop(currentNode, None)
+        if currentNode in closedSet:
+            continue
+        #print(currentNode)
         if currentNode == endNode:
             path = GetPath(cameFrom, currentNode, startNode)
             lengthOfPath = g_score[endNode]
-            nodesAccessed = openList.GetHeapLength()
+            print(find_duplicates(openList.GetHeap()))
             return path,  exploredEdges, lengthOfPath
         closedSet.add(currentNode)
 
@@ -303,14 +306,35 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
             if estimateGScore < g_score[neighbourNode]:
                 cameFrom[neighbourNode] = currentNode
                 g_score[neighbourNode] = estimateGScore
-                f_score[neighbourNode] = g_score[neighbourNode] + HaverSineDistance(graph, neighbourNode, endNode)
-                neighbourNodeAndFVal = (f_score[neighbourNode], neighbourNode)
+                f_score[neighbourNode] = estimateGScore + HaverSineDistance(graph, neighbourNode, endNode) * 2
+                if neighbourNode not in inOpenList or f_score[neighbourNode] < inOpenList[neighbourNode]:              
+                    inOpenList[neighbourNode] = f_score[neighbourNode]
+                    openList.Insert((f_score[neighbourNode], neighbourNode))
+
+
                 exploredEdges.append((currentNode, neighbourNode))
-                openList.Insert(neighbourNodeAndFVal)
                 
             
     #No path found
     return [],  exploredEdges, None
+
+
+def find_duplicates(tuples_list):
+    second_value_dict = {}
+    result = []
+
+    for first, second in tuples_list:
+        if second in second_value_dict:
+            second_value_dict[second].append(first)
+        else:
+            second_value_dict[second] = [first]
+    
+    for second, first_list in second_value_dict.items():
+        if len(first_list) > 1:
+            for first in first_list:
+                result.append((first, second))
+    
+    return result
 
 def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     nodesToBeVisited = MinHeap()
@@ -351,28 +375,31 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
 
 
 if __name__ == "__main__":
-    window = MapDemonstrationWindow("NewYork", algorithm='A-Star', useMiles=True)
+    window = MapDemonstrationWindow("NewYork", algorithm='A-Star', useMiles=False)
     window.DisplayNetwork()
+    # window = MapDemonstrationWindow("NewYork", algorithm='Dijkstras', useMiles=True)
+    # window.DisplayNetwork()
+
+
+
+
+
     # figax = plt.subplots(figsize=(10, 10))
-    graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
-    startCoords = (51.5017, -0.1419)  
-    endCoords = (51.53, -0.15)
-    # x  = NetworkAnimator(graph, startCoords, endCoords, figax)
+    # graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
+    # startCoords = (51.5017, -0.1419)  
+    # endCoords = (51.53, -0.15)
+    # # x  = NetworkAnimator(graph, startCoords, endCoords, figax)
 
     
     
-    startNode = ox.distance.nearest_nodes(graph, startCoords[1], startCoords[0])
-    endNode = ox.distance.nearest_nodes(graph, endCoords[1], endCoords[0])
-    # length = nx.shortest_path_length(graph, startNode, endNode, weight='length')
-
-    # print(f"Actual length is {length}")
-    # ox.plot_graph(graph, ax=ax, show=False, close=False, node_size=5, edge_linewidth=0.3, edge_color="gray",bgcolor='black')
-    # ax.set_facecolor('black')
-    startTime = time.time()
-    path, exploredEdges, length = Dijkstra(graph, startNode, endNode)
-    endTime = time.time()
-    print(endTime-startTime)
-    print(path)
+    # startNode = ox.distance.nearest_nodes(graph, startCoords[1], startCoords[0])
+    # endNode = ox.distance.nearest_nodes(graph, endCoords[1], endCoords[0])
+   
+    # startTime = time.time()
+    # path, exploredEdges, length = Dijkstra(graph, startNode, endNode)
+    # endTime = time.time()
+    # print(endTime-startTime)
+    # print(path)
     # #Gett cordinates of nodes on the path
     # path_x = [graph.nodes[node]['x'] for node in path]
     # path_y = [graph.nodes[node]['y'] for node in path]
