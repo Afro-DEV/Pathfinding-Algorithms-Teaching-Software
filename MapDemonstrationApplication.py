@@ -30,7 +30,7 @@ class MapDemonstrationWindow():
         except:
             #In case the user manages to write into the dropdown box which should not be possible
             raise('Unexpected value passed for algorithmId')
-            self.algorithmId = 0
+            
         self.useMiles = useMiles
         self.click_coords = []
         self.figAndAxis = plt.subplots()
@@ -167,6 +167,11 @@ class NetworkAnimator():
                 print('Using Dijkstras')
             case _: # If does not match any use AStar
                 path,  exploredEdges, lengthOfPath = AStar(GRAPH, startNode, endNode)
+                
+        if lengthOfPath == None:
+            messagebox.showinfo('No Path', 'No path was found between Points')
+            return
+        
         #Converting to Kilometres
         self.lengthOfPath = round(lengthOfPath / 1000, 1)
         if self.useMiles:
@@ -233,10 +238,7 @@ def HaversineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
     lat2 = coordinateNode2[0]
     lon2 = coordinateNode2[1]
 
-    lat1 = ConvertDegreesToRadians(lat1)
-    lon1 = ConvertDegreesToRadians(lon1)
-    lat2 = ConvertDegreesToRadians(lat2)
-    lon2 = ConvertDegreesToRadians(lon2)
+    lat1,lon1, lat2, lon2 = map(ConvertDegreesToRadians, [lat1,lon1,lat2,lon2])
     
     # Haversine formula
     distanceLat = lat2 - lat1
@@ -258,7 +260,7 @@ def EuclideanDistance(graph, node1, node2):
     distance = math.sqrt(distanceLatitude**2 + distanceLongitude**2)
     return distance
 
-def NodeToCoordinate(graph, node):
+def NodeToCoordinate(graph, node) -> tuple[float,float]:
     return graph.nodes[node]['x'], graph.nodes[node]['y']
 
 def GetPath(cameFrom, currentNode, startNode) -> list:
@@ -276,7 +278,6 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int , heuristicWeight
     closedSet = set()
     cameFrom = {}# Used to track the path
     exploredEdges = []
-
     #Initialising g and f  for every node to be infinity
     g_score = {node: float('inf') for node in graph.nodes}
     f_score = {node: float('inf') for node in graph.nodes}
@@ -285,15 +286,12 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int , heuristicWeight
     print(initialHeuristicEstimate)
     f_score[startNode] = g_score[startNode] + initialHeuristicEstimate
     openList.Insert((f_score[startNode], startNode))
-    #inOpenList = {startNode: f_score[startNode]}
     while not openList.IsEmpty():
-        currentFScore, currentNode = openList.RemoveMinValue()
-        if currentFScore > f_score[currentNode]:  # Skip outdated entries
-            continue
-        #inOpenList.pop(currentNode, None)
-        if currentNode in closedSet:
-            continue
-        #print(currentNode)
+        _, currentNode = openList.RemoveMinValue()
+        # if currentFScore > f_score[currentNode]:  # Skip outdated entries
+        #     continue
+        # if currentNode in closedSet:
+        #     continue
         if currentNode == endNode:
             path = GetPath(cameFrom, currentNode, startNode)
             lengthOfPath = g_score[endNode]
@@ -305,13 +303,13 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int , heuristicWeight
                 continue
             distance = graph[currentNode][neighbourNode][0]['length']
             currentFScore =  f_score[neighbourNode]
-            estimateGScore = distance + g_score[currentNode]
+            tentativeGScore = distance + g_score[currentNode]
 
-            if estimateGScore < g_score[neighbourNode]:
+            if tentativeGScore < g_score[neighbourNode]:
                 cameFrom[neighbourNode] = currentNode
-                g_score[neighbourNode] = estimateGScore
+                g_score[neighbourNode] = tentativeGScore
                 #Increase heuristic by a multiplier so that is a stronger waiting on which nodes to optimise
-                f_score[neighbourNode] = estimateGScore + HaversineDistance(graph, neighbourNode, endNode) * heuristicWeight
+                f_score[neighbourNode] = tentativeGScore + HaversineDistance(graph, neighbourNode, endNode) * heuristicWeight
             
                 openList.Insert((f_score[neighbourNode], neighbourNode))
 
