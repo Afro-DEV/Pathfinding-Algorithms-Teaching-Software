@@ -466,8 +466,8 @@ class BottomBar():
             AnimateDijkstras(self.__windowObject.GetMatrix(), self.__windowObject.GetSourceNode(), self.__animator)
             
         self.__animationController.PauseAnimation()
-        new_text = "Resume" if self.__animationController.IsPaused() else "Pause"
-        self.__pausePlayButton.config(text=new_text)
+        pauseButtonText = "Resume" if self.__animationController.IsPaused() else "Pause"
+        self.__pausePlayButton.config(text=pauseButtonText)
 
     def GetSourceNodeIndexFromForm(self) -> int:
         self.__isSourceNodeInputFormRunning = True
