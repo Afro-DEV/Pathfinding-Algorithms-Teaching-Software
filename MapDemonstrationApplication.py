@@ -159,6 +159,8 @@ class NetworkAnimator():
                 path,  exploredEdges, lengthOfPath = AStar(GRAPH, startNode, endNode)
                 print('Using A-Star')
                 highlightingEdgeColour = '#2BD9FF'
+                #As A* is a faster algorithm the edgeSkip Factor must be decremented
+                #self.edgeSkipFactor = self.edgeSkipFactor//2
             case 1:
                 path,  exploredEdges, lengthOfPath = Dijkstra(GRAPH, startNode, endNode)
                 highlightingEdgeColour = '#FF512B'
@@ -222,9 +224,10 @@ class NetworkAnimator():
         units = 'Miles' if self.useMiles else 'Kilometres'
         messagebox.showinfo(title='Length Of Path', 
                             message=f"The length of path found is {round(self.lengthOfPath,1)} {units}")#Conditionally show Miles or kilometres
-def HaverSineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
-    coordinateNode1 = NodeToCordiante(graph,node1)
-    coordinateNode2 = NodeToCordiante(graph, node2)
+def HaversineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
+    '''Estimate the distance in Kilometres between 2 points on Earth's surface '''
+    coordinateNode1 = NodeToCoordinate(graph,node1)
+    coordinateNode2 = NodeToCoordinate(graph, node2)
     lat1 = coordinateNode1[0]
     lon1 = coordinateNode1[1]
     lat2 = coordinateNode2[0]
@@ -236,27 +239,26 @@ def HaverSineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
     lon2 = ConvertDegreesToRadians(lon2)
     
     # Haversine formula
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+    distanceLat = lat2 - lat1
+    distanceLon = lon2 - lon1
+    a = sin(distanceLat / 2)**2 + cos(lat1) * cos(lat2) * sin(distanceLon / 2)**2
     c = 2 * math.asin(math.sqrt(a))
     
     # Radius of Earth in kilometers
-    r = 6371.0
+    RADIUS_EARTH = 6371.0
     
-    # Calculate the result
-    distance = c * r
-    return abs(distance)
+    distance = c * RADIUS_EARTH
+    return distance
 
 def EuclideanDistance(graph, node1, node2):
-    coordinateNode1 = NodeToCordiante(graph,node1)
-    coordinateNode2 = NodeToCordiante(graph, node2)
+    coordinateNode1 = NodeToCoordinate(graph,node1)
+    coordinateNode2 = NodeToCoordinate(graph, node2)
     distanceLatitude = abs(coordinateNode1[0]-coordinateNode2[0])
     distanceLongitude = abs(coordinateNode1[1] - coordinateNode2[1])
     distance = math.sqrt(distanceLatitude**2 + distanceLongitude**2)
     return distance
 
-def NodeToCordiante(graph, node):
+def NodeToCoordinate(graph, node):
     return graph.nodes[node]['x'], graph.nodes[node]['y']
 
 def GetPath(cameFrom, currentNode, startNode) -> list:
@@ -269,7 +271,7 @@ def GetPath(cameFrom, currentNode, startNode) -> list:
     return path[::-1] #Return reversed path
 
 
-def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
+def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int , heuristicWeight = 850):
     openList = MinHeap()
     closedSet = set()
     cameFrom = {}# Used to track the path
@@ -279,37 +281,39 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     g_score = {node: float('inf') for node in graph.nodes}
     f_score = {node: float('inf') for node in graph.nodes}
     g_score[startNode] = 0
-    initialHeuristicEstimate = HaverSineDistance(graph, startNode, endNode)
+    initialHeuristicEstimate = HaversineDistance(graph, startNode, endNode)
     print(initialHeuristicEstimate)
     f_score[startNode] = g_score[startNode] + initialHeuristicEstimate
     openList.Insert((f_score[startNode], startNode))
-    inOpenList = {startNode: f_score[startNode]}
+    #inOpenList = {startNode: f_score[startNode]}
     while not openList.IsEmpty():
         currentFScore, currentNode = openList.RemoveMinValue()
-        inOpenList.pop(currentNode, None)
+        if currentFScore > f_score[currentNode]:  # Skip outdated entries
+            continue
+        #inOpenList.pop(currentNode, None)
         if currentNode in closedSet:
             continue
         #print(currentNode)
         if currentNode == endNode:
             path = GetPath(cameFrom, currentNode, startNode)
             lengthOfPath = g_score[endNode]
-            print(find_duplicates(openList.GetHeap()))
             return path,  exploredEdges, lengthOfPath
         closedSet.add(currentNode)
 
         for neighbourNode in graph.neighbors(currentNode):
             if neighbourNode in closedSet:
                 continue
-            distance = graph[currentNode][neighbourNode][0]['length'] 
+            distance = graph[currentNode][neighbourNode][0]['length']
+            currentFScore =  f_score[neighbourNode]
             estimateGScore = distance + g_score[currentNode]
 
             if estimateGScore < g_score[neighbourNode]:
                 cameFrom[neighbourNode] = currentNode
                 g_score[neighbourNode] = estimateGScore
-                f_score[neighbourNode] = estimateGScore + HaverSineDistance(graph, neighbourNode, endNode) * 2
-                if neighbourNode not in inOpenList or f_score[neighbourNode] < inOpenList[neighbourNode]:              
-                    inOpenList[neighbourNode] = f_score[neighbourNode]
-                    openList.Insert((f_score[neighbourNode], neighbourNode))
+                #Increase heuristic by a multiplier so that is a stronger waiting on which nodes to optimise
+                f_score[neighbourNode] = estimateGScore + HaversineDistance(graph, neighbourNode, endNode) * heuristicWeight
+            
+                openList.Insert((f_score[neighbourNode], neighbourNode))
 
 
                 exploredEdges.append((currentNode, neighbourNode))
@@ -319,22 +323,7 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     return [],  exploredEdges, None
 
 
-def find_duplicates(tuples_list):
-    second_value_dict = {}
-    result = []
 
-    for first, second in tuples_list:
-        if second in second_value_dict:
-            second_value_dict[second].append(first)
-        else:
-            second_value_dict[second] = [first]
-    
-    for second, first_list in second_value_dict.items():
-        if len(first_list) > 1:
-            for first in first_list:
-                result.append((first, second))
-    
-    return result
 
 def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     nodesToBeVisited = MinHeap()
@@ -375,7 +364,7 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
 
 
 if __name__ == "__main__":
-    window = MapDemonstrationWindow("NewYork", algorithm='A-Star', useMiles=False)
+    window = MapDemonstrationWindow("Paris", algorithm='A-Star', useMiles=False)
     window.DisplayNetwork()
     # window = MapDemonstrationWindow("NewYork", algorithm='Dijkstras', useMiles=True)
     # window.DisplayNetwork()

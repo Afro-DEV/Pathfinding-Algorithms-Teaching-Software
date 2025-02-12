@@ -119,7 +119,7 @@ class MinHeap:
 
     def RemoveMinValue(self):
         if self.IsEmpty():
-            raise('Empty Heap')
+            raise ValueError('Empty Heap')
         minValue = self.__heap[0]
         #Replacing last value in the heap with the first value
         self.__heap[0] = self.__heap[-1]
@@ -127,6 +127,8 @@ class MinHeap:
         #We Traverse down the tree from top to bottom so index will always be 0
         self.HeapifyDown(0)
         return minValue
+    
+    
 
     #HELPER FUNCTIONS 
 
@@ -186,9 +188,9 @@ def GetRandomTuple():
 
 if __name__ == '__main__':
     minheap = MinHeap()
-    minheap.Insert(GetRandomTuple())
-    minheap.Insert(GetRandomTuple())
-    minheap.Insert(GetRandomTuple())
+    minheap.Insert()
+    minheap.Insert()
+    minheap.Insert((2,1))
     minheap.OutputHeap()
     minheap.RemoveMinValue()
     minheap.OutputHeap()
