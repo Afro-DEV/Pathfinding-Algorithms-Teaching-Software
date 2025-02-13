@@ -17,8 +17,10 @@ class MapDemonstrationWindow():
     def __init__(self, network, algorithm, useMiles):
         PATH_FINDING_ALGORITHMS_ID = {'A-Star': 0, 'Dijkstras':1}
         self.filepath = self.GetNetworkSelectedFilePath(network)
-        if not self.CheckIfFileExists():
+        
+        if not BaseNetworkGenerator.CheckFileExists(self.filepath):
             BaseNetworkGenerator.GenerateAllMissingNetworks()
+
         self.graph =  ox.load_graphml(filepath=self.filepath)    
         self.GRAPH_STYLES = {'EdgeColour': "Grey",
                             'EdgeWidth': 0.3,
@@ -40,14 +42,6 @@ class MapDemonstrationWindow():
     def GetNetworkSelectedFilePath(self, networkSelected):
         #Parameterised File path
         return f"Networks/{networkSelected}Network.graphml"
-
-
-    def CheckIfFileExists(self):
-        if os.path.exists(self.filepath):
-            return True
-        else:
-            return False
-
 
 
     def DisplayNetwork(self):
@@ -362,7 +356,7 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
 
 
 if __name__ == "__main__":
-    window = MapDemonstrationWindow("Paris", algorithm='A-Star', useMiles=False)
+    window = MapDemonstrationWindow("Paris", algorithm='Dijkstras', useMiles=False)
     window.DisplayNetwork()
     # window = MapDemonstrationWindow("NewYork", algorithm='Dijkstras', useMiles=True)
     # window.DisplayNetwork()

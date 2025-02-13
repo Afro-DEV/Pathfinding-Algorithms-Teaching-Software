@@ -13,8 +13,9 @@ class BaseNetworkGenerator:
         graph = ox.graph.graph_from_point(self.centrePoint, dist=self.distance, network_type="drive")
         ox.save_graphml(graph, filepath=self.filepath)
     
-    def CheckNetworkFileExits(self):
-        if os.path.exists(self.filepath):
+    @staticmethod
+    def CheckFileExists(filepath):
+        if os.path.exists(filepath):
             return True
         else:
             return False
@@ -26,7 +27,7 @@ class BaseNetworkGenerator:
         for subclass in cls.__subclasses__(): 
          subClassInstance = subclass() # Instantiate each subclass
          
-         if not subClassInstance.CheckNetworkFileExits():
+         if not BaseNetworkGenerator.CheckFileExists(subClassInstance.filepath):
              subClassInstance.GenerateNetwork()
 
 class NewYorkNetworkGenerator(BaseNetworkGenerator):
