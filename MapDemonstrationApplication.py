@@ -52,9 +52,7 @@ class MapDemonstrationWindow():
     
     def UndoLastClick(self, event):
         if self.click_coords:
-            print('Before Pop', self.click_coords)
             self.click_coords.pop()  # Remove last clicked coordinate
-            print('After Pop', self.click_coords)
             self.HighlightPoints()  
     def GetNetworkSelectedFilePath(self, networkSelected):
         #Parameterised File path
@@ -203,11 +201,15 @@ class NetworkAnimator():
                       node_size=self.GRAPH_STYLES['NodeSize'], 
                       edge_linewidth=self.GRAPH_STYLES['EdgeWidth'],
                       edge_color=self.GRAPH_STYLES['EdgeColour'])
-                      
+        
+        #Adding the key for the graph
         startNodeMarker, = ax.plot(GRAPH.nodes[startNode]['x'], GRAPH.nodes[startNode]['y'],  'o', color=self.GRAPH_STYLES['StartNodeColour'], markersize=6, zorder =3, label="Start Node")
         endNodeMarker, = ax.plot(GRAPH.nodes[endNode]['x'], GRAPH.nodes[endNode]['y'], 'o', color=self.GRAPH_STYLES['EndNodeColour'], markersize=6, zorder=3, label="End Node")
         shortestPathLine, = ax.plot([], [], '-', color='yellow', linewidth=5, label="Shortest Path")
         exploredEdgesLine, = ax.plot([], [], '-', color=highlightingEdgeColour, linewidth=1, zorder=1, label="Visited Edges")
+        ax.legend(loc='best', fontsize='small', frameon=True, title= 'Key')
+
+        #shortestPathLine, = plt.plot([], [], 'y', label="Shortest Path")  
         
         #Updates animation frame by frame
         def update(frameNum):
@@ -219,14 +221,21 @@ class NetworkAnimator():
                 edge_y.extend([GRAPH.nodes[edge[0]]['y'], GRAPH.nodes[edge[1]]['y'], None])
             exploredEdgesLine.set_data(edge_x, edge_y)
 
-            #If the number of the frame is greater than total explored Edges then all edges processed and we can display shortest path
+            #If the number of the frame is greater than total explored Edges then all edges processed and we can display shortest path, reached final frame
             if frameNum >= len(exploredEdges) // self.edgeSkipFactor:
                 path_x = [GRAPH.nodes[n]['x'] for n in path]
                 path_y = [GRAPH.nodes[n]['y'] for n in path]
                 shortestPathLine.set_data(path_x, path_y)
+                # Only trigger message box once
+                if not hasattr(self, "messageShown"):  # Check if message was already shown
+                    self.messageShown = True  # Mark that the message was displayed
+                    plt.draw()  # Ensure UI updates
+                    plt.pause(0.1)  # Small delay to ensure UI refresh
+                    self.OnAnimationComplete()  # Show the message box
+                
 
-            if frameNum == numberOfFrames - 1:
-                self.on_animation_complete()
+            # if frameNum == numberOfFrames - 1:
+            #     self.OnAnimationComplete()
             
                 
 
@@ -234,15 +243,16 @@ class NetworkAnimator():
         
         #Number of frames set to the number the amount of edges we will be highlighting and the length of the path.
         self.anim = animation.FuncAnimation(fig, update, frames=numberOfFrames, interval=self.interval, repeat=False)
-        plt.legend()
+
         
         #plt.show()
 
-    def on_animation_complete(self):
+    def OnAnimationComplete(self):
         print('Animation Complete')
         units = 'Miles' if self.useMiles else 'Kilometres'
         messagebox.showinfo(title='Length Of Path', 
                             message=f"The length of path found is {round(self.lengthOfPath,1)} {units}")#Conditionally show Miles or kilometres
+        
 def HaversineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
     '''Estimate the distance in Kilometres between 2 points on Earth's surface '''
     coordinateNode1 = NodeToCoordinate(graph,node1)
@@ -376,7 +386,7 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
 
 
 if __name__ == "__main__":
-    window = MapDemonstrationWindow("London", algorithm='A-Star', useMiles=False)
+    window = MapDemonstrationWindow("London", algorithm='Dijkstras', useMiles=False)
     window.DisplayNetwork()
     # window = MapDemonstrationWindow("NewYork", algorithm='Dijkstras', useMiles=True)
     # window.DisplayNetwork()
