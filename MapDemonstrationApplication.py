@@ -3,13 +3,12 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import math
 import matplotlib.animation as animation
-import os 
 import time
 from tkinter import messagebox
 from DataStructures import MinHeap
 from Utilities import sin,cos, ConvertDegreesToRadians, ConvertKilometresToMiles
 from NetworkGenerator import BaseNetworkGenerator
- 
+from matplotlib.widgets import Button
 
 
 
@@ -17,7 +16,7 @@ class MapDemonstrationWindow():
     def __init__(self, network, algorithm, useMiles):
         PATH_FINDING_ALGORITHMS_ID = {'A-Star': 0, 'Dijkstras':1}
         self.filepath = self.GetNetworkSelectedFilePath(network)
-        
+
         if not BaseNetworkGenerator.CheckFileExists(self.filepath):
             BaseNetworkGenerator.GenerateAllMissingNetworks()
 
@@ -39,6 +38,24 @@ class MapDemonstrationWindow():
         self.fig = self.figAndAxis[0]
         self.ax = self.figAndAxis[1]
 
+        self.AddUndoButton()
+
+    def AddUndoButton(self):
+        button_ax = self.fig.add_axes([0.8, 0.01, 0.1, 0.05])  # Position of the button
+        self.undoButton = Button(button_ax, 'Undo Click')
+        self.undoButton.on_clicked(self.UndoLastClick)
+
+    def RemoveUndoButton(self):
+        if hasattr(self, 'undoButton'):
+            self.undoButton.ax.set_visible(False)
+            self.fig.canvas.draw_idle() # Refreshing figure to update UI
+    
+    def UndoLastClick(self, event):
+        if self.click_coords:
+            print('Before Pop', self.click_coords)
+            self.click_coords.pop()  # Remove last clicked coordinate
+            print('After Pop', self.click_coords)
+            self.HighlightPoints()  
     def GetNetworkSelectedFilePath(self, networkSelected):
         #Parameterised File path
         return f"Networks/{networkSelected}Network.graphml"
@@ -64,6 +81,8 @@ class MapDemonstrationWindow():
         plt.show()
 
     def OnClick(self, event):
+        if event.inaxes != self.ax:  # Ignore clicks outside the main plot area
+            return
         x_Coord = event.xdata
         y_Coord = event.ydata
 
@@ -80,6 +99,7 @@ class MapDemonstrationWindow():
             #plt.close()
             #animate_astar(self.graph, self.click_coords[0], self.click_coords[1])
             self.ax.clear()
+            self.RemoveUndoButton()
             animator = NetworkAnimator(self.graph,self.click_coords[0], self.click_coords[1], self.algorithmId, self.useMiles, self.figAndAxis, self.GRAPH_STYLES)
             self.fig.canvas.draw_idle()
     
@@ -302,7 +322,7 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int , heuristicWeight
             if tentativeGScore < g_score[neighbourNode]:
                 cameFrom[neighbourNode] = currentNode
                 g_score[neighbourNode] = tentativeGScore
-                #Increase heuristic by a multiplier so that is a stronger waiting on which nodes to optimise
+                #Increase heuristic by a multiplier so that is a stronger weighting on which nodes to optimise
                 f_score[neighbourNode] = tentativeGScore + HaversineDistance(graph, neighbourNode, endNode) * heuristicWeight
             
                 openList.Insert((f_score[neighbourNode], neighbourNode))
@@ -356,7 +376,7 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
 
 
 if __name__ == "__main__":
-    window = MapDemonstrationWindow("Paris", algorithm='Dijkstras', useMiles=False)
+    window = MapDemonstrationWindow("London", algorithm='A-Star', useMiles=False)
     window.DisplayNetwork()
     # window = MapDemonstrationWindow("NewYork", algorithm='Dijkstras', useMiles=True)
     # window.DisplayNetwork()
