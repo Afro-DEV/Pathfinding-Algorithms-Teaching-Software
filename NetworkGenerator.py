@@ -1,12 +1,12 @@
 import osmnx as ox
-import matplotlib.pyplot as plt
-import time
 import os
+
 class BaseNetworkGenerator:
-    def __init__(self, cityName, centrePoint, distance=3000):
+    def __init__(self, cityName, centrePoint, radius=3000):
         self.cityName= cityName
         self.centrePoint = centrePoint
-        self.distance = distance
+        # Radius of circle from centre point that should be included in graph (measured in kilometers)
+        self.radius = radius 
         self.filepath = f"Networks/{self.cityName}Network.graphml" #Parameterised file path 
 
     def GenerateNetwork(self):
