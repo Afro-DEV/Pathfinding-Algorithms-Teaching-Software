@@ -157,7 +157,9 @@ class NetworkAnimator():
         self.anim = None
         self.fig = figAndAxis[0]
         self.ax = figAndAxis[1]
+        self.startTime = time.time()
         #self.fig.canvas.mpl_connect("draw_event", lambda: self.on_animation_complete())
+        
         self.StartAnimation()
     
     def StartAnimation(self):
@@ -165,21 +167,22 @@ class NetworkAnimator():
         startNode = ox.nearest_nodes(GRAPH, self.startCoord[0], self.startCoord[1])
         endNode = ox.nearest_nodes(GRAPH, self.endCoord[0], self.endCoord[1])
         highlightingEdgeColour = None
+        
         match self.algorithmId:
             #Each case pre computes pathfinding algorithm before running to get the path, explored edges and length of path
             case 0:
                 path,  exploredEdges, lengthOfPath = AStar(GRAPH, startNode, endNode)
-                print('Using A-Star')
                 highlightingEdgeColour = '#2BD9FF'
                 #As A* is a faster algorithm the edgeSkip Factor must be decremented
                 #self.edgeSkipFactor = self.edgeSkipFactor//2
             case 1:
                 path,  exploredEdges, lengthOfPath = Dijkstra(GRAPH, startNode, endNode)
                 highlightingEdgeColour = '#FF512B'
-                print('Using Dijkstras')
             case _: # If does not match any use AStar
                 path,  exploredEdges, lengthOfPath = AStar(GRAPH, startNode, endNode)
-                
+        
+        
+        
         if lengthOfPath == None:
             messagebox.showinfo('No Path', 'No path was found between Points')
             return
@@ -249,9 +252,11 @@ class NetworkAnimator():
 
     def OnAnimationComplete(self):
         print('Animation Complete')
-        units = 'Miles' if self.useMiles else 'Kilometres'
+        self.endTime = time.time()
+        timeTook = self.endTime-self.startTime
+        units = 'Miles' if self.useMiles else 'Kilometres' #Conditionally show Miles or kilometres
         messagebox.showinfo(title='Length Of Path', 
-                            message=f"The length of path found is {round(self.lengthOfPath,1)} {units}")#Conditionally show Miles or kilometres
+                            message=f"The length of path found is {round(self.lengthOfPath,1)} {units} and was found in {round(timeTook, 2)}s")
         
 def HaversineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
     '''Estimate the distance in Kilometres between 2 points on Earth's surface '''
@@ -386,7 +391,7 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
 
 
 if __name__ == "__main__":
-    window = MapDemonstrationWindow("London", algorithm='Dijkstras', useMiles=False)
+    window = MapDemonstrationWindow("London", algorithm='A-Star', useMiles=False)
     window.DisplayNetwork()
     # window = MapDemonstrationWindow("NewYork", algorithm='Dijkstras', useMiles=True)
     # window.DisplayNetwork()
@@ -394,14 +399,17 @@ if __name__ == "__main__":
 
 
 
-
+    # GRAPH_STYLES = {'EdgeColour': "Grey",
+    #                         'EdgeWidth': 0.3,
+    #                         'StartNodeColour': 'limegreen',
+    #                         'EndNodeColour': '#ff0000', 
+    #                         'NodeSize': 2 }
     # figax = plt.subplots(figsize=(10, 10))
     # graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
     # startCoords = (51.5017, -0.1419)  
     # endCoords = (51.53, -0.15)
-    # # x  = NetworkAnimator(graph, startCoords, endCoords, figax)
-
-    
+    # x  = NetworkAnimator(graph, startCoords, endCoords,1, True, figax, GRAPH_STYLES)
+    # plt.show()
     
     # startNode = ox.distance.nearest_nodes(graph, startCoords[1], startCoords[0])
     # endNode = ox.distance.nearest_nodes(graph, endCoords[1], endCoords[0])
