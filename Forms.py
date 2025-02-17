@@ -260,12 +260,11 @@ class NetworkSettingsInputForm(AbstractForm):
         self.networkSelected = self.selectNetworkVar.get()
         self.algorithmSelected = self.selectAlgorithmVar.get()
         self.useMiles = self.distanceInMilesCheckBox.instate(['selected'])
-        networkFilePath = self.GetNetworkSelectedFilePath(self.networkSelected)
         print(f"DEBUG: Submitting with Network={self.networkSelected}, Algorithm={self.algorithmSelected}, UseMiles={self.useMiles}")
         if MainMenuWindow.CheckOSMNXInstalled():
             from MapDemonstrationApplication import MapDemonstrationWindow
-            a = MapDemonstrationWindow(self.networkSelected, algorithm=self.algorithmSelected, useMiles=self.useMiles)
-            a.DisplayNetwork()
+            window = MapDemonstrationWindow(self.networkSelected, algorithm=self.algorithmSelected, useMiles=self.useMiles)
+            window.DisplayNetwork()
         else:
             print('OSMNX is not installed')
 
