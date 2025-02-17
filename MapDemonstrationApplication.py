@@ -5,7 +5,7 @@ import math
 import matplotlib.animation as animation
 import time
 from tkinter import messagebox
-from DataStructures import MinHeap
+from DataStructures import MinHeap, Stack
 from Utilities import sin,cos, ConvertDegreesToRadians, ConvertKilometresToMiles
 from NetworkGenerator import BaseNetworkGenerator
 from matplotlib.widgets import Button
@@ -313,12 +313,17 @@ def GetPath(cameFrom, currentNode, startNode) -> list:
     return path[::-1] #Return reversed path
 
 def GetPathLinkedList(endListNode: LinkedListNode) -> list:
+    stack = Stack()
     path = []
     node: LinkedListNode = endListNode  # Start from the last node which is the target node
     while node:
-        path.append(node.GetData())  # Add the node's value
+        stack.Push(node.GetData())  # Add the node's value to stack
         node = node.GetParent()  # Move backwards using the reference
-    return path[::-1]  
+
+    while not stack.IsEmptyStack():
+        path.append(stack.Pop())
+    
+    return path 
 
 
 def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int , heuristicWeight = 850):
@@ -386,7 +391,7 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
         currentNodeAndDistance = nodesToBeVisited.RemoveMinValue()
         currentNode = currentNodeAndDistance[1]
         if currentNode == endNode:
-            path = GetPath(cameFrom, currentNode, startNode)
+            path = GetPathLinkedList(cameFrom[endNode])
             lengthOfPath = distances[endNode]
             print(f'This is the length {lengthOfPath}')
             return path,  exploredEdges, lengthOfPath
@@ -397,7 +402,7 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
                 continue
             currentDistance = distances[currentNode] + graph[currentNode][neighbourNode][0]['length']
             if currentDistance < distances[neighbourNode]:
-                cameFrom[neighbourNode] = currentNode
+                cameFrom[neighbourNode] = LinkedListNode(neighbourNode, parent=cameFrom.get(currentNode))
                 distances[neighbourNode] = currentDistance
                 neighbourNodeAndDistance = (distances[neighbourNode], neighbourNode)
                 exploredEdges.append((currentNode, neighbourNode))
@@ -412,7 +417,7 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
 
 
 if __name__ == "__main__":
-    window = MapDemonstrationWindow("NewYork", algorithm='A-Star', useMiles=False)
+    window = MapDemonstrationWindow("NewYork", algorithm='Dijkstras', useMiles=False)
     window.DisplayNetwork()
     # window = MapDemonstrationWindow("NewYork", algorithm='Dijkstras', useMiles=True)
     # window.DisplayNetwork()
