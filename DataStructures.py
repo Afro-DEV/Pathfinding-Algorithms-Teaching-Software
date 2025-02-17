@@ -1,7 +1,9 @@
 class Node():
-    def __init__(self, label,priority, id, ):
+    def __init__(self, label,priority, id):
         self.__label: str = label
         self.__priority = priority
+        #The Id property is a numerical value corresponding to the label of a Node
+        #E.g A--> 0, B --> 1, C--> 2....
         self.__id: int = id
         
 
@@ -34,7 +36,7 @@ class PriorityQueue():
     
     def Enqueue(self, node: Node) -> None:
         for index, item in enumerate(self.__queue):
-        # Lower priority node goes first if equal then goes in alphabetical order of lael
+        # Lower priority node goes first if equal then goes in alphabetical order of label
             if node.GetPriority() < item.GetPriority() or (node.GetPriority() == item.GetPriority() and node.GetLabel() < item.GetLabel()):
                 self.__queue.insert(index, node)
                 return
@@ -45,11 +47,13 @@ class PriorityQueue():
 
         
     def Peek(self) -> Node:
+        '''Returns value at the  front of the queue without removal.'''
         return self.__queue[0]
              
      
         
     def Dequeue(self) -> None:
+        '''Removes Item at the front of the priority queue'''
         self.__queue.pop(0)
                  
 
@@ -60,7 +64,8 @@ class PriorityQueue():
             return False
 
     def ChangePriority(self, node: Node, priority:int) -> Node:
-        #Insert into correct place delete occurence
+        '''Change Priority of node by removing instance of node and inserting a new
+            instance of the node with the new priority '''
         temp: Node = node
         self.__queue.remove(node)
         temp.SetPriority(priority)
@@ -72,16 +77,16 @@ class PriorityQueue():
         return self.__queue[index]
         
     def OutputQueue(self)-> None:
-        #print(len(self.queue))
         for item in self.__queue:
             print(item.GetNodeData(), end= "")
         print()
 
-    def GetNodeByID(self, index: int) -> Node:
+    def GetNodeByID(self, id: int) -> Node:
+        '''Gets the node object by ID'''
         for node in self.__queue:
-            if node.GetID() == index:
+            if node.GetID() == id:
                 return node
-        #Therefore node has already been visited
+        #Node not in queue
         return None
 
     def GetQueue(self) -> list[Node]:
@@ -89,41 +94,45 @@ class PriorityQueue():
     
 class MinHeap:
     def __init__(self):
-        #REmeber min will always be top of heapq
         self.__heap = []
 
     def Insert(self, item):
         self.__heap.append(item)
         index = len(self.__heap)-1
+        #Moves item up tree to its correct position to maintain the minheap property
         self.HeapifyUp(index)
     
     def HeapifyUp(self, index):
         if self.HasParent(index) and self.Parent(index)> self.__heap[index]:
-            self.Swap(self.GetParentIndex(index), index)
+            self.Swap(self.GetParentIndex(index), index) #If parent is greater than child then incorrect position so swap the parent and child node
             index = self.GetParentIndex(index)
             #Recursively heapify the index up the Binary tree until it is in the correct position
             self.HeapifyUp(index)
 
     def HeapifyDown(self, index):
-        smallest = index
+        smallest = index # Initialise smallest as the index of the current node
+        
+        #Check if left or right child is the smallest node found
         if self.HasLeftChild(index) and self.__heap[smallest] > self.LeftChild(index):
             smallest = self.GetLeftChildIndex(index)
         if self.HasRightChild(index) and self.__heap[smallest] > self.RightChild(index):
             smallest = self.GetRightChildIndex(index)
         
-        #If this true left or right child of index is smaller than node we are currently at
-        if(smallest!= index):
+        #If smallest value is not the current node swap and heapify down the tree
+        if(smallest!= index): #left or right child of current node is smaller than node we are currently at
             self.Swap(index, smallest)
-            #Recursively move down the tree moving the index to the correct place on tree
-            self.HeapifyDown(smallest)
+            #Recursively move down the tree moving the smallest node to the correct place on tree
+            self.HeapifyDown(smallest) #Heapify down from the new position of the current node
 
     def RemoveMinValue(self):
         if self.IsEmpty():
             raise ValueError('Empty Heap')
+        #Store minimum value from root of heap
         minValue = self.__heap[0]
-        #Replacing last value in the heap with the first value
+        #Replace root of the heap with the last element
         self.__heap[0] = self.__heap[-1]
-        self.__heap.pop() #Removing last element
+        self.__heap.pop() #Removing last element from heap
+        #Restore heap property by traversing down from the root
         #We Traverse down the tree from top to bottom so index will always be 0
         self.HeapifyDown(0)
         return minValue
@@ -131,7 +140,6 @@ class MinHeap:
     
 
     #HELPER FUNCTIONS 
-
     def Peek(self):
         if self.IsEmpty():
             raise('Empty Heap')
@@ -166,6 +174,7 @@ class MinHeap:
         return self.GetParentIndex(index) >=0
 
     def Swap(self, index1, index2):
+        '''Swaps the values of the 2 nodes in the heap at the respective indexes.'''
         temp = self.__heap[index1]
         self.__heap[index1] = self.__heap[index2]
         self.__heap[index2] = temp
@@ -182,20 +191,27 @@ class MinHeap:
     def OutputHeap(self):
         print(self.__heap)
 
-import random
-def GetRandomTuple():
-    return (random.randint(1,10), random.randint(10,30))
 
 class Stack():
     def __init__(self):
         self.__stack = []
-        self.__pointer = -1
+        self.__pointer = -1  #Pointer -1 indicates empty stack
 
     def Push(self, data):
+        """
+        Push an item onto the Stack
+
+        :param data: The data to be pushed onto the stack.
+        """
         self.__pointer +=1
         self.__stack.append(data)
     
-    def Pop(self):
+    def Pop(self) -> any:
+        """
+        Pop the top item off the stack.
+
+        :return: The data from the top of the stack.
+        """
         topOfStack = self.__stack[self.__pointer]
         self.__pointer -=1
         return topOfStack
@@ -207,21 +223,9 @@ class Stack():
         return self.__pointer == -1
 
 
-        
-
-def ListReversal(array):
-    stack = Stack()
-    newarr = []
-    for each in array:
-        stack.Push(each)
-    
-    while not stack.IsEmptyStack():
-        newarr.append(stack.Pop())
-    print(newarr)
-
 
 if __name__ == '__main__':
-    ListReversal([3,5,6,7,19])
+    pass
     
     # minheap.Insert(10)
     # minheap.Insert(4)
