@@ -292,6 +292,17 @@ def EuclideanDistance(graph, node1, node2):
 def NodeToCoordinate(graph, node) -> tuple[float,float]:
     return graph.nodes[node]['x'], graph.nodes[node]['y']
 
+class LinkedListNode():
+    def __init__(self, data, parent=None):
+        self.__data = data
+        self.__parent = parent
+    
+    def GetData(self):
+        return self.__data
+    
+    def GetParent(self):
+        return self.__parent 
+
 def GetPath(cameFrom, currentNode, startNode) -> list:
     path = []
     while currentNode in cameFrom:
@@ -300,6 +311,14 @@ def GetPath(cameFrom, currentNode, startNode) -> list:
     path.append(startNode)
     #Could use stack?
     return path[::-1] #Return reversed path
+
+def GetPathLinkedList(endListNode: LinkedListNode) -> list:
+    path = []
+    node: LinkedListNode = endListNode  # Start from the last node which is the target node
+    while node:
+        path.append(node.GetData())  # Add the node's value
+        node = node.GetParent()  # Move backwards using the reference
+    return path[::-1]  
 
 
 def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int , heuristicWeight = 850):
@@ -322,7 +341,8 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int , heuristicWeight
         # if currentNode in closedSet:
         #     continue
         if currentNode == endNode:
-            path = GetPath(cameFrom, currentNode, startNode)
+            #path = GetPath(cameFrom, currentNode, startNode)
+            path = GetPathLinkedList(cameFrom[endNode])
             lengthOfPath = g_score[endNode]
             return path,  exploredEdges, lengthOfPath
         closedSet.add(currentNode)
@@ -335,7 +355,8 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int , heuristicWeight
             tentativeGScore = distance + g_score[currentNode]
 
             if tentativeGScore < g_score[neighbourNode]:
-                cameFrom[neighbourNode] = currentNode
+                #Ensure getting memeory refence to be parent instead of the actual value
+                cameFrom[neighbourNode] = LinkedListNode(neighbourNode, parent=cameFrom.get(currentNode))
                 g_score[neighbourNode] = tentativeGScore
                 #Increase heuristic by a multiplier so that is a stronger weighting on which nodes to optimise
                 f_score[neighbourNode] = tentativeGScore + HaversineDistance(graph, neighbourNode, endNode) * heuristicWeight
@@ -391,7 +412,7 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
 
 
 if __name__ == "__main__":
-    window = MapDemonstrationWindow("London", algorithm='A-Star', useMiles=False)
+    window = MapDemonstrationWindow("NewYork", algorithm='A-Star', useMiles=False)
     window.DisplayNetwork()
     # window = MapDemonstrationWindow("NewYork", algorithm='Dijkstras', useMiles=True)
     # window.DisplayNetwork()
