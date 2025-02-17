@@ -1,16 +1,18 @@
 import time
 import random
 
-def GenerateMatrix(n: int,d: float) -> list[list[int]]:
-    
-    matrix = [[0 for x in range(n)] for y in range(n)]
-    for i in range(n):
-        #matrix[i][i] = 0
-        for j in range(i+1, n):
+def GenerateMatrix(numberOfNodes: int,densityVal: float) -> list[list[int]]:
+    '''
+    Generate an adjacency matrix with random weights of size corresponding to the numberOfNodes param.
+    And connectivity correponding to the densityVal param.
+    '''
+    matrix = [[0 for x in range(numberOfNodes)] for y in range(numberOfNodes)] # Populating an n x n matrix with only zeroes
+    for i in range(numberOfNodes):
+        for j in range(i+1, numberOfNodes):
             pValue = random.random() #Generates random number between 0 and 1
-            if pValue < d/100: # if random number is less than specified density value than 
-                matrix[i][j] = random.randint(2,12)
-                matrix[j][i] = matrix[i][j]
+            if pValue < densityVal/100: # if random number is less than specified density value then we create an edge. 
+                matrix[i][j] = random.randint(2,12) # Assign edge random weighting
+                matrix[j][i] = matrix[i][j] # Update adjacency matrix connection going to the other way to create an undirected edge.
     return matrix
 
 def OutputMatrix(matrix):
