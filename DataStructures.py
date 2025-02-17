@@ -186,14 +186,43 @@ import random
 def GetRandomTuple():
     return (random.randint(1,10), random.randint(10,30))
 
+class Stack():
+    def __init__(self):
+        self.__stack = []
+        self.__pointer = -1
+
+    def Push(self, data):
+        self.__pointer +=1
+        self.__stack.append(data)
+    
+    def Pop(self):
+        topOfStack = self.__stack[self.__pointer]
+        self.__pointer -=1
+        return topOfStack
+    
+    def OutputStack(self):
+        print(self.__stack)
+    
+    def IsEmptyStack(self):
+        return self.__pointer == -1
+
+
+        
+
+def ListReversal(array):
+    stack = Stack()
+    newarr = []
+    for each in array:
+        stack.Push(each)
+    
+    while not stack.IsEmptyStack():
+        newarr.append(stack.Pop())
+    print(newarr)
+
+
 if __name__ == '__main__':
-    minheap = MinHeap()
-    minheap.Insert()
-    minheap.Insert()
-    minheap.Insert((2,1))
-    minheap.OutputHeap()
-    minheap.RemoveMinValue()
-    minheap.OutputHeap()
+    ListReversal([3,5,6,7,19])
+    
     # minheap.Insert(10)
     # minheap.Insert(4)
     # minheap.Insert(9)
