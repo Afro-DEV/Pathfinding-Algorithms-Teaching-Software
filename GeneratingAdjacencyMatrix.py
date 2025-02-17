@@ -1,7 +1,6 @@
 import time
 import random
 
-#Main function I will be using
 def GenerateMatrix(n: int,d: float) -> list[list[int]]:
     
     matrix = [[0 for x in range(n)] for y in range(n)]
@@ -9,9 +8,8 @@ def GenerateMatrix(n: int,d: float) -> list[list[int]]:
         #matrix[i][i] = 0
         for j in range(i+1, n):
             pValue = random.random() #Generates random number between 0 and 1
-            if pValue < d/100: # if we are assigning an edge
-                if  matrix[i][j] == 0:
-                    matrix[i][j] = random.randint(2,12)
+            if pValue < d/100: # if random number is less than specified density value than 
+                matrix[i][j] = random.randint(2,12)
                 matrix[j][i] = matrix[i][j]
     return matrix
 
@@ -31,6 +29,7 @@ if __name__ == "__main__":
     # print(c)
 
     OutputMatrix(c)
+    print(c[0][0])
     #print(type(a))
 
     #print("My program took", time.time() - start_time, "to run")
