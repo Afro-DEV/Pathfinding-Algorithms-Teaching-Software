@@ -49,6 +49,9 @@ class MainMenuWindow():
         
         self.QuitButton.grid(row=2, columnspan=2, pady=25)
 
+        #When window is closed via the window manager it is handled the correct way.
+        self.root.protocol("WM_DELETE_WINDOW", self.QuitApplication)
+
     @staticmethod
     def CheckOSMNXInstalled() -> bool:
         isInstalled = False
