@@ -210,8 +210,10 @@ class Stack():
         """
         Pop the top item off the stack.
 
-        :return: The data from the top of the stack.
+        :return: The data from the top of the stack or Empty Stack
         """
+        if self.IsEmptyStack():
+            return 'Empty Stack'
         topOfStack = self.__stack[self.__pointer]
         self.__pointer -=1
         return topOfStack
@@ -221,6 +223,17 @@ class Stack():
     
     def IsEmptyStack(self):
         return self.__pointer == -1
+    
+class LinkedListNode():
+    def __init__(self, data, parent=None):
+        self.__data = data
+        self.__parent = parent
+    
+    def GetData(self):
+        return self.__data
+    
+    def GetParent(self):
+        return self.__parent 
 
 
 

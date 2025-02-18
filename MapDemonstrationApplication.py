@@ -5,7 +5,7 @@ import math
 import matplotlib.animation as animation
 import time
 from tkinter import messagebox
-from DataStructures import MinHeap, Stack
+from DataStructures import MinHeap, Stack, LinkedListNode
 from Utilities import sin,cos, ConvertDegreesToRadians, ConvertKilometresToMiles
 from NetworkGenerator import BaseNetworkGenerator
 from matplotlib.widgets import Button
@@ -292,16 +292,7 @@ def EuclideanDistance(graph, node1, node2):
 def NodeToCoordinate(graph, node) -> tuple[float,float]:
     return graph.nodes[node]['x'], graph.nodes[node]['y']
 
-class LinkedListNode():
-    def __init__(self, data, parent=None):
-        self.__data = data
-        self.__parent = parent
-    
-    def GetData(self):
-        return self.__data
-    
-    def GetParent(self):
-        return self.__parent 
+
 
 def GetPath(cameFrom, currentNode, startNode) -> list:
     path = []
