@@ -110,9 +110,10 @@ class GraphGeneratorForm(AbstractForm):
 
     def Submit(self):
         try:
-            self.numberOfNodes = int(self.numberOfNodesDropdown.get())  # Ensure it's an integer
+            selectedValue =  self.numberOfNodesDropdown.get()  
+            self.numberOfNodes = int(selectedValue) if selectedValue else 5  # Ensure default is 5
         except ValueError:
-            print('Not entered number of Nodes using 5')
+            self.numberOfNodes = 5 # Set number fo nodes to 5 incase of error.
         self.pValue = self.slider.get()
         #Getting value selected checkbox
         self.isDemoModeSelected = self.demoCheckBox.instate(['selected'])
@@ -273,5 +274,5 @@ class NetworkSettingsInputForm(AbstractForm):
 
 
 if __name__ == "__main__":
-    app = NetworkSettingsInputForm()
+    app = GraphGeneratorForm()
     app.Run()
