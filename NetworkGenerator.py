@@ -5,7 +5,7 @@ class BaseNetworkGenerator:
     def __init__(self, cityName, centrePoint, radius=3000):
         self.cityName= cityName
         self.centrePoint = centrePoint
-        # Radius of circle from centre point that should be included in graph (measured in kilometers)
+        # Radius of circle from centre point that should be included in graph (measured in metres)
         self.radius = radius 
         self.filepath = f"Networks/{self.cityName}Network.graphml" #Parameterised file path 
 

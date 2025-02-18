@@ -264,15 +264,15 @@ class Window():
         #plt.show()
         return nodeReferences, edgeReferences
     
-    def ResolveEdgeLabelOverlap(self, x: float, y: float, label_positions: list[tuple[float, float]], min_distance=0.1) -> tuple[float, float]:
-        for existing_x, existing_y in label_positions:
-            distance = math.sqrt((x - existing_x) ** 2 + (y - existing_y) ** 2)
-            if distance < min_distance:
+    def ResolveEdgeLabelOverlap(self, x: float, y: float, label_positions: list[tuple[float, float]], minimumDistance=0.1) -> tuple[float, float]:
+        for existing_x, existing_y in label_positions: #Loop through each edge label checking for overlap.
+            distance = math.sqrt((x - existing_x) ** 2 + (y - existing_y) ** 2) # Calculating distance between new label and existing labels 
+            if distance < minimumDistance: # If new label too close to exisiting label adjust the position
                 # Adjust the position to resolve the overlap
-                x += random.uniform(-min_distance, min_distance)
-                y += random.uniform(-min_distance, min_distance)
+                x += random.uniform(-minimumDistance, minimumDistance)
+                y += random.uniform(-minimumDistance, minimumDistance)
                 # Check again with updated position (recursively)
-                return self.ResolveEdgeLabelOverlap(x, y, label_positions, min_distance)
+                return self.ResolveEdgeLabelOverlap(x, y, label_positions)
         return x, y
     
     def DisplayWindow(self, adjacencyMatrix: list[list[int]], sourceNodeIndex: int) -> None:
