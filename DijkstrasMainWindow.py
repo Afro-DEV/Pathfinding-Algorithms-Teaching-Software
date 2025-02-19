@@ -155,7 +155,7 @@ class Animator():
     def SetAnimationStarted(self):
         self.__animationStarted = True
 
-class Window():
+class DijkstrasDemonstrationWindow():
     def __init__(self):
         self.TITLE_FONT_SIZE = 20
         self.__adjMatrix = [[0,4,3,7,0,0,0],
@@ -290,9 +290,9 @@ class Window():
         
         window.title("Dijkstra's demonstration")
         
-        topBar = TopBar(window, self)
+        topBar = TopUIBar(window, self)
         
-        bottomBar = BottomBar(window, animator, self)
+        bottomBar = BottomUIBar(window, animator, self)
         GraphFrame = tk.Frame(master=window, width=700, height=250)
         GraphFrame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)   
 
@@ -345,10 +345,10 @@ class Window():
         AnimateDijkstras( adjacencyMatrix, sourceNodeIndex,   animator)
 
 
-class TopBar():
+class TopUIBar():
     def __init__(self, window, windowObject):
         self.__window = window
-        self.__windowObject: Window = windowObject
+        self.__windowObject: DijkstrasDemonstrationWindow = windowObject
         self.__isGraphGeneratorFormRunning: bool = False
         buttonHeight = 2
         butttonWidth = 8
@@ -374,7 +374,7 @@ class TopBar():
         self.__isGraphGeneratorFormRunning = True
         graphGeneratorFormObject = GraphGeneratorForm()
         form = graphGeneratorFormObject.GetForm()
-        #Ensuring when the window is closed via the cross in the top right corner it is handled in the correct way
+        #Ensuring when the window is closed via the window manager it is handled in the correct way
         form.protocol("WM_DELETE_WINDOW", lambda: self.OnGraphGeneratorFormClose(form))
         graphGeneratorFormObject.Run()
         if not graphGeneratorFormObject.IsDemoModeSelected():
@@ -399,10 +399,10 @@ class TopBar():
     def QuitButtonClick(self):
         self.__window.destroy()
         
-class BottomBar():
+class BottomUIBar():
     def __init__(self, window, animator: Animator, windowObject):
         self.__window = window
-        self.__windowObject: Window = windowObject
+        self.__windowObject: DijkstrasDemonstrationWindow = windowObject
         self.__isSourceNodeInputFormRunning: bool = False
         buttonHeight = 2
         buttonWidth = 8
@@ -601,4 +601,4 @@ if __name__ == '__main__':
     b = g.GenerateMatrix(5,50)
     #DisplayWindow(test)
     #DisplayWindow(test, 0)
-    window = Window()
+    window = DijkstrasDemonstrationWindow()

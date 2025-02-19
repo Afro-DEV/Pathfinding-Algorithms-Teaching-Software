@@ -3,8 +3,10 @@ import random
 
 def GenerateMatrix(numberOfNodes: int,densityVal: float) -> list[list[int]]:
     '''
-    Generate an adjacency matrix with random weights of size corresponding to the numberOfNodes param.
-    And connectivity correponding to the densityVal param.
+    Generate an adjacency matrix that represents an undirected simple graph.
+    The graph will have random weights between 2 and 12.
+    The graph will be of size corresponding to the numberOfNodes parameter.
+    The graph will have connectivity corresponding to the densityVal parameter
     '''
     matrix = [[0 for x in range(numberOfNodes)] for y in range(numberOfNodes)] # Populating an n x n matrix with only zeroes
     for i in range(numberOfNodes):

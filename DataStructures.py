@@ -8,6 +8,7 @@ class Node():
         
 
     def OutputNode(self):
+        #Output the nodes label followed by curent priority 
         print((f"({self.__label}, {self.__priority})"))
 
     def GetPriority(self):
@@ -23,8 +24,6 @@ class Node():
     def GetLabel(self)-> str:
         return self.__label
     
-    
-
     def SetPriority(self, newPriority):
         self.__priority = newPriority
     
@@ -36,7 +35,7 @@ class PriorityQueue():
     
     def Enqueue(self, node: Node) -> None:
         for index, item in enumerate(self.__queue):
-        # Lower priority node goes first if equal then goes in alphabetical order of label
+        # Lower priority node goes first if priority equal then goes in alphabetical order of label
             if node.GetPriority() < item.GetPriority() or (node.GetPriority() == item.GetPriority() and node.GetLabel() < item.GetLabel()):
                 self.__queue.insert(index, node)
                 return
@@ -67,9 +66,9 @@ class PriorityQueue():
         '''Change Priority of node by removing instance of node and inserting a new
             instance of the node with the new priority '''
         temp: Node = node
-        self.__queue.remove(node)
+        self.__queue.remove(node)  # Removing node of old priority
         temp.SetPriority(priority)
-        self.Enqueue(temp)
+        self.Enqueue(temp) # Adding node with the new priority 
     
     
     
@@ -98,7 +97,7 @@ class MinHeap:
 
     def Insert(self, item):
         self.__heap.append(item)
-        index = len(self.__heap)-1
+        index = self.HeapLength() -1
         #Moves item up tree to its correct position to maintain the minheap property
         self.HeapifyUp(index)
     
@@ -155,20 +154,24 @@ class MinHeap:
         return self.__heap[self.GetRightChildIndex(index)]
 
     def GetLeftChildIndex(self, index) -> int:
+        '''Returns the index of the left child node which is always 2* node index + 1'''
         return 2* index + 1
         
     
     def GetRightChildIndex(self, index) -> int:
+        '''Returns the index of the right child node  which is always 2* node index + 2'''
         return 2* index + 2
     
     def GetParentIndex(self, index) -> int:
+        '''Returns the parent index which is always the floor division by 2 of the node index -1'''
         return (index-1)//2
 
+    #The Has__ functions work by checking if computed index for left child, right child  or parent node index is between 0 and the length of the heap.
     def HasLeftChild(self, index):
-        return self.GetLeftChildIndex(index) < len(self.__heap)
+        return self.GetLeftChildIndex(index) < self.HeapLength()
 
     def HasRightChild(self, index):
-        return self.GetRightChildIndex(index) < len(self.__heap)
+        return self.GetRightChildIndex(index) < self.HeapLength()
 
     def HasParent(self, index):
         return self.GetParentIndex(index) >=0
@@ -180,12 +183,12 @@ class MinHeap:
         self.__heap[index2] = temp
 
     def IsEmpty(self):
-        return len(self.__heap) == 0
+        return self.HeapLength() == 0
     
-    def GetHeap(self):
+    def GetHeap(self) -> list:
         return self.__heap
     
-    def GetHeapLength(self):
+    def HeapLength(self) -> int:
         return len(self.__heap)
 
     def OutputHeap(self):
@@ -227,7 +230,8 @@ class Stack():
 class LinkedListNode():
     def __init__(self, data, parent=None):
         self.__data = data
-        self.__parent = parent
+        #Parent attribute links the current node to previous node in list.
+        self.__parent = parent 
     
     def GetData(self):
         return self.__data
@@ -238,17 +242,17 @@ class LinkedListNode():
 
 
 if __name__ == '__main__':
-    pass
+    minheap = MinHeap()
     
-    # minheap.Insert(10)
-    # minheap.Insert(4)
-    # minheap.Insert(9)
-    # minheap.Insert(1)
-    # minheap.Insert(7)
+    minheap.Insert(10)
+    minheap.Insert(4)
+    minheap.Insert(9)
+    minheap.Insert(1)
+    minheap.Insert(7)
 
-    # minheap.OutputHeap()
-    # minheap.RemoveMinValue()
-    # minheap.OutputHeap()
+    minheap.OutputHeap()
+    minheap.RemoveMinValue()
+    minheap.OutputHeap()
 
 
     

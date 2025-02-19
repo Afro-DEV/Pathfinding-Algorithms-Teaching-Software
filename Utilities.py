@@ -1,6 +1,7 @@
 import math
 from functools import reduce
 UPPER_LIMIT_OF_EXPANSION = 100
+
 def factorial(num: int) -> int:
     '''Returns factorial of an integer'''
     

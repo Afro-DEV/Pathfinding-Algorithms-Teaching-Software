@@ -23,7 +23,7 @@ class BaseNetworkGenerator:
 
     @classmethod
     def GenerateAllMissingNetworks(cls):
-        ox.settings.cache_folder = "Interactive Map Demonstration/Networks/Network Cache" #Establishing where Network Cache should go 
+        ox.settings.cache_folder = "Networks/Network Cache" #Establishing where Network Cache should go 
         for subclass in cls.__subclasses__(): 
          subClassInstance = subclass() # Instantiate each subclass
          
