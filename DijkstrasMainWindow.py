@@ -7,14 +7,13 @@ import GeneratingAdjacencyMatrix as g
 import random
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import time
 
-NODELABELS = {i: chr(65+i) for i in range(11)}
-BARHEIGHT = 40
+NODELABELS = {i: chr(65+i) for i in range(11)} #Dictionary to access a node label from ID e.g 0 -> A, 1 -> B
+BARHEIGHT = 40 # Height in pixels of the UI top and bar elements
 
 class AnimationController():
     def __init__(self):
-        self.__frameDelay: int = 1000
+        self.__frameDelay: int = 1000 #Time between frame in miliseconds.
         self.__isPaused: bool = True
         
     
@@ -25,7 +24,6 @@ class AnimationController():
         return self.__isPaused
     
     def PauseAnimation(self):
-        print(self.__isPaused)
         self.__isPaused = not self.__isPaused
         if self.__isPaused:
             print("Animation Paused")
@@ -33,14 +31,15 @@ class AnimationController():
             print("Animation Resumed")
     
     def IncreaseAnimationSpeed(self):
-        #Increment Speed up to a max
+        #Increment Animation speed to a max value
         if self.__frameDelay > 100:
-            self.__frameDelay -= 100
+            self.__frameDelay -= 100 #Decreasing frame delay to increase animation speed
         else:
             print('Maximum PlayBack Speed has been reached')
         print(self.__frameDelay)
 
     def DecreaseAnimationSpeed(self):
+        #Decrease animation speed to a minimum value
         if self.__frameDelay < 2500:
             self.__frameDelay +=500
         else:
@@ -48,7 +47,7 @@ class AnimationController():
         print(self.__frameDelay)
 
     def JumpToEndOfAnimation(self):
-        self.SetAnimationSpeed(0)
+        self.SetAnimationSpeed(0) #Setting the frame delay to zero to complete the animation stratight away
 
     def SetAnimationSpeed(self, num: int):
         self.__frameDelay = num  
@@ -73,14 +72,16 @@ class Animator():
         if self.__removeBlankSpaceTrueFlag:
             self.__tableData.pop(0)
             self.__removeBlankSpaceTrueFlag = False
-            
+        
+        #Adding a new row to the table 
         newRow = [distance if distance != float('inf') else '∞' for distance in distances.copy()]
         self.__tableData.append(newRow)
+        #Clearing old table
         if self.__distancesTable:
             self.__distancesTable.remove()
         
       
-    
+        #Redrawing table with new data
         self.__distancesTable = self.__axs[1].table(
         cellText=self.__tableData,
         colLabels=[NODELABELS[i] for i in range(len(distances))],
@@ -92,27 +93,29 @@ class Animator():
         self.__distancesTable.set_fontsize(18) # **** #
         for cell in self.__distancesTable.get_celld().values():
             cell.PAD = 1
-            #pass
         
         self.__fig.canvas.draw()
-        #self.__distancesTable.plt.remove()
 
     
-    def HighlightEdgesOfNode(self, currentIndex) -> None:
-        for edge in self.__edgeReferences[currentIndex]:
+    def HighlightEdgesOfNode(self, nodeID) -> None:
+        '''Highlights all the edges connected to the node passed as the argument as red.'''
+        for edge in self.__edgeReferences[nodeID]:
             edge.set(color='red', linewidth=2)
         self.__fig.canvas.draw()
 
-    def DehighlightEdgesOfNode(self, currentIndex) -> None:
-        for edge in self.__edgeReferences[currentIndex]:
+    def DehighlightEdgesOfNode(self, nodeID) -> None:
+        '''Dehighlights all the edges connected to the node passed as the argument by highlighting it grey.'''
+        for edge in self.__edgeReferences[nodeID]:
             edge.set(color='grey')
         self.__fig.canvas.draw()
 
     def DehighlightAllNodes(self) -> None:
+        '''Sets all nodes in the graph to skyblue'''
         for node in self.__nodeReferences.values():
             node.set(color = 'skyblue')
         self.__fig.canvas.draw()
-
+    
+    #Updater UI methods
     def UpdateVisitedNodesText(self, visitedNodes: list[Node]) -> None:
         visitedNodesString = ','.join(node.GetLabel() for node in visitedNodes)
         self.__visitedNodesText.set_text(f'S{{{visitedNodesString}}}')
@@ -127,7 +130,9 @@ class Animator():
         self.__fig.canvas.draw()
     
     def SetNodeColour(self, id, colour):
+        '''Sets node at passed id to colour passed as argument'''
         self.__nodeReferences[id].set(color = colour)
+        #Redraw figure with update
         self.__fig.canvas.draw()
 
 
@@ -173,7 +178,7 @@ class DijkstrasDemonstrationWindow():
         
         #visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = self.DisplayDataStrucutures(axs[1], numNodes, sourceNodeIndex)
         #nodeReference, edgeReferences = self.DisplayGraph(self.__demoGraph, axs[0])
-        self.DisplayWindow(self.__adjMatrix, self.__sourceNode)
+        self.DisplayWindow(self.__adjMatrix)
     
     def DisplayDataStrucutures(self, axs, numNodes):
         columnLabels = [NODELABELS[i] for i in range(numNodes)]
@@ -229,8 +234,6 @@ class DijkstrasDemonstrationWindow():
         
         
         for i, (x, y) in coordinates.items():
-            #How to alter properties of value
-            #node  = plt.scatter(x, y, s=300, color='skyblue', zorder=3)
             node = axs.scatter(x, y, s=300, color='skyblue', zorder=3)
             nodeReferences[i] = node
             axs.text(x, y, NODELABELS[i], fontsize=12, ha='center', va='center')
@@ -275,7 +278,7 @@ class DijkstrasDemonstrationWindow():
                 return self.ResolveEdgeLabelOverlap(x, y, label_positions)
         return x, y
     
-    def DisplayWindow(self, adjacencyMatrix: list[list[int]], sourceNodeIndex: int) -> None:
+    def DisplayWindow(self, adjacencyMatrix: list[list[int]]) -> None:
         numNodes: int = len(adjacencyMatrix)
         fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
         #Getting references to UI elements
@@ -302,13 +305,6 @@ class DijkstrasDemonstrationWindow():
         canvasWidget = canvas.get_tk_widget()  # Get the Tkinter widget
         canvasWidget.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         #tk.Button(window, text="Update", height=10).pack()
-        
-        
-        
-        #sourceNodeInputForm = SourceNodeInputForm(numNodes)
-        # sourceNodeInputForm.Run()
-        # sourceNodeIndex = sourceNodeInputForm.GetSourceNodeIndex()
-        #self.StartAnimation(adjacencyMatrix, sourceNodeIndex,   animator)
         
         window.mainloop()
         
@@ -383,12 +379,12 @@ class TopUIBar():
             matrix = g.GenerateMatrix(numNodes,density)
             self.__windowObject.SetMatrix(matrix) # Might be redundant
             self.__window.destroy()
-            self.__windowObject.DisplayWindow(matrix,0)
+            self.__windowObject.DisplayWindow(matrix)
         else:
             matrix = self.__windowObject.GetDemoMatrix()
             self.__windowObject.SetMatrix(matrix) # Might be redundant
             self.__window.destroy()
-            self.__windowObject.DisplayWindow(matrix,0)
+            self.__windowObject.DisplayWindow(matrix)
         
 
     def OnGraphGeneratorFormClose(self, form):
@@ -414,7 +410,7 @@ class BottomUIBar():
         self.__bottomBarFrame.pack(side="bottom",  fill=tk.X)
         self.__bottomBarFrame.pack_propagate(False)  
         
-        #Left Spacer
+        #Left Spacer widget
         tk.Frame(self.__bottomBarFrame).pack(side=tk.LEFT, expand=True)
 
         self.__slowDownButton = tk.Button(self.__bottomBarFrame, text="Slow Down", height=buttonHeight, width=buttonWidth, command= self.__animationController.DecreaseAnimationSpeed, padx=10)
@@ -434,25 +430,18 @@ class BottomUIBar():
         self.__jumpToEndButton = tk.Button(self.__bottomBarFrame, text="Jump To End", height=buttonHeight, width=buttonWidth, command= self.__animationController.JumpToEndOfAnimation, padx=10)
         self.__jumpToEndButton.pack(side=tk.LEFT,  padx=10)
 
-        #Right Spacer
+        #Right Spacer widget 
         tk.Frame(self.__bottomBarFrame).pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        self.__lastClickTime = 0
 
        
 
     def RestartAnimation(self):
         self.__window.destroy()
-        self.__windowObject.DisplayWindow(self.__windowObject.GetMatrix(),0)
-        # self.__animator.ClearTable()
-        # self.__animator.DehighlightAllNodes()
-        # AnimateDijkstras(self.__windowObject.GetMatrix(), 0, self.__animator)
+        self.__windowObject.DisplayWindow(self.__windowObject.GetMatrix()) # Restart Window with the same matrix
+       
 
-    def DebouncedTogglePauseAnimation(self):
-        currentTime = time.time()
-        if currentTime - self.__lastClickTime > 0.2:  # 200ms debounce
-            self.__lastClickTime = currentTime
-            self.EnablePausePlayFunctionality()
+    
     
     def EnablePausePlayFunctionality(self):
         if not self.__animator.GetHasAnimationStarted():
@@ -466,8 +455,9 @@ class BottomUIBar():
             AnimateDijkstras(self.__windowObject.GetMatrix(), self.__windowObject.GetSourceNode(), self.__animator)
             
         self.__animationController.PauseAnimation()
-        pauseButtonText = "Resume" if self.__animationController.IsPaused() else "Pause"
-        self.__pausePlayButton.config(text=pauseButtonText)
+        #Conditionally display Resume or Pause based on state of aniamtion
+        pausePlayButtonText = "Resume" if self.__animationController.IsPaused() else "Pause"
+        self.__pausePlayButton.config(text=pausePlayButtonText)
 
     def GetSourceNodeIndexFromForm(self) -> int:
         self.__isSourceNodeInputFormRunning = True
@@ -484,31 +474,28 @@ class BottomUIBar():
         self.__isSourceNodeInputFormRunning = False
         form.destroy()
 
-
-
-        
+    
 
 
 def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  animator: Animator) -> None:
     numNodes = len(adjacencyMatrix)
-    window = animator.GetFigure().canvas.get_tk_widget().master 
+    window = animator.GetFigure().canvas.get_tk_widget().master #Accessing the window where the animation is being displayed
     
-
-
-
-    distances = [float('inf')] * numNodes
-    distances[sourceNodeIndex] = 0
+    distances = [float('inf')] * numNodes #Intialise the distance from every node to the source node as infinity.
+    distances[sourceNodeIndex] = 0 # Distance to source node set to zero
     animator.UpdateDistancesTableUI(distances)
     animator.SetNodeColour(sourceNodeIndex, 'lightgreen')
 
     nodesToBeVisited: list[Node] = PriorityQueue()
     visitedNodes: list[Node]= []
+    #Initiallisng the priority queue of nodes to be visited
     for i in range(numNodes):
         priority = distances[i]
-        nodesToBeVisited.Enqueue(Node(NODELABELS[i], priority, i))
-        
+        nodesToBeVisited.Enqueue(Node(NODELABELS[i], priority, id=i))
+    
+    #Animaiton function that is called upon every frame.
     def updateAnimation():
-        if animator.IsPaused():
+        if animator.IsPaused(): #Check if paused
             window.after(100, updateAnimation) #Check again if not paused 
             return 
         
@@ -517,15 +504,13 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
         else:
             return
         
+        #Condition to show if animation is complete
         if nodesToBeVisited.IsEmpty():
             animator.DehighlightAllNodes()
             print('Animaton Complete!')
             for i in range(numNodes):
                 print(f"Shortest distance to {NODELABELS[i]} is {distances[i]}")
     
-    
-            for i in range(numNodes): 
-                visitedNodes[i].OutputNode()
             animator.SetRunningState(False)
             return 
         
@@ -539,12 +524,9 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
         animator.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
         animator.SetNodeColour(currentIndex, 'yellow') if currentIndex != sourceNodeIndex else None
         
-        
         visitedNodes.append(currentNode)
-
         
         animator.SetNodeColour(currentIndex, 'darksalmon') if currentIndex != sourceNodeIndex else None
-        
         
 
         for neighbourIndex in range(numNodes):
@@ -557,6 +539,7 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
                 
 
                 if newDistance < distances[neighbourIndex]:
+                    #Update distance with the new distance found
                     distances[neighbourIndex] = newDistance
                     nodesToBeVisited.ChangePriority(neighbourNode,newDistance)
                     
@@ -566,9 +549,10 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
         
         
         animator.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
-        def dehighlightCurrentNodeAndEdges():
+        def DehighlightCurrentNodeAndEdges():
+            '''Dehighlight node after being optimised by dijskstras'''
             if animator.IsPaused():
-                window.after(100, dehighlightCurrentNodeAndEdges)  # Retry after a small delay
+                window.after(100, DehighlightCurrentNodeAndEdges)  # Retry after a small delay
                 return
             animator.DehighlightEdgesOfNode(currentIndex)
             #animator.DehighlightAllNodes()
@@ -576,12 +560,10 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
             window.after(animator.GetFrameDelay(), updateAnimation)  # Call the next animation step after dehighlighting
 
     # Delay dehighlighting to let highlighting be visible
-        window.after(int(animator.GetFrameDelay() * 0.75), dehighlightCurrentNodeAndEdges)
-    updateAnimation()
-    #print(distances)
+        window.after(int(animator.GetFrameDelay() * 0.75), DehighlightCurrentNodeAndEdges)
+    updateAnimation() #Call updateAnimation to run the next frame
     
 
-    #plt.show()
 
 
 if __name__ == '__main__':
