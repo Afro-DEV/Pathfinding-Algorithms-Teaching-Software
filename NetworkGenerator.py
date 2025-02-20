@@ -10,7 +10,7 @@ class BaseNetworkGenerator:
         self.filepath = f"Networks/{self.cityName}Network.graphml" #Parameterised file path 
 
     def GenerateNetwork(self):
-        graph = ox.graph.graph_from_point(self.centrePoint, dist=self.distance, network_type="drive")
+        graph = ox.graph.graph_from_point(self.centrePoint, dist=self.radius, network_type="drive")
         ox.save_graphml(graph, filepath=self.filepath)
     
     @staticmethod

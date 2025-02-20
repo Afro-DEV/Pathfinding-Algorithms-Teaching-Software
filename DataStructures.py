@@ -103,7 +103,7 @@ class MinHeap:
     
     def HeapifyUp(self, index):
         if self.HasParent(index) and self.Parent(index)> self.__heap[index]:
-            self.Swap(self.GetParentIndex(index), index) #If parent is greater than child then incorrect position so swap the parent and child node
+            self.SwapValues(self.GetParentIndex(index), index) #If parent is greater than child then incorrect position so swap the parent and child node
             index = self.GetParentIndex(index)
             #Recursively heapify the index up the Binary tree until it is in the correct position
             self.HeapifyUp(index)
@@ -119,7 +119,7 @@ class MinHeap:
         
         #If smallest value is not the current node swap and heapify down the tree
         if(smallest!= index): #left or right child of current node is smaller than node we are currently at
-            self.Swap(index, smallest)
+            self.SwapValues(index, smallest)
             #Recursively move down the tree moving the smallest node to the correct place on tree
             self.HeapifyDown(smallest) #Heapify down from the new position of the current node
 
@@ -176,7 +176,7 @@ class MinHeap:
     def HasParent(self, index):
         return self.GetParentIndex(index) >=0
 
-    def Swap(self, index1, index2):
+    def SwapValues(self, index1, index2):
         '''Swaps the values of the 2 nodes in the heap at the respective indexes.'''
         temp = self.__heap[index1]
         self.__heap[index1] = self.__heap[index2]

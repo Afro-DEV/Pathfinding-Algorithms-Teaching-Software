@@ -4,8 +4,7 @@ from tkinter import ttk
 from Utilities import CharacterToId, IdToCharacter
 from abc import  abstractmethod, ABC
 
-
-class AbstractForm(ABC): # Showing this class has abstract methjods
+class AbstractForm(ABC): # Showing this class has abstract methods
     def __init__(self, parentWindow = None): 
         if parentWindow: # If we want form to run independently or as the window from a parent window.
             self.root = tk.Toplevel(parentWindow)
@@ -16,8 +15,7 @@ class AbstractForm(ABC): # Showing this class has abstract methjods
         self.adjustedHeight, self.adjustedWidth = NormaliseFormSizeOnScaling(self.root, baseHeight, baseWidth)
 
     def Run(self):
-        """Only call mainloop() if this is the main window"""
-        if isinstance(self.root, tk.Tk):
+        if isinstance(self.root, tk.Tk):#"""Only call mainloop() if this is the main window"""
             self.root.mainloop()
 
     def GetForm(self):
@@ -155,7 +153,7 @@ class SourceNodeInputForm(AbstractForm):
         self.submitButton = tk.Button(self.root, text="Submit", command=self.Submit)
         self.submitButton.pack(pady=10)
 
-        self.sourceNodeIndex = None
+        self.sourceNodeID = None
     def Submit(self):
         userInput = self.entry.get()
         userInput = userInput.upper()
@@ -173,9 +171,9 @@ class SourceNodeInputForm(AbstractForm):
             return
 
         try:
-            sourceNodeIndex = CharacterToId(userInput)
-            print(sourceNodeIndex)
-            self.sourceNodeIndex = sourceNodeIndex
+            sourceNodeID = CharacterToId(userInput)
+            print(sourceNodeID)
+            self.sourceNodeID = sourceNodeID
             self.root.quit()
             self.root.destroy() 
             #messagebox.showinfo("Success", f"You entered the SourceNode: {userInput}")
@@ -184,8 +182,8 @@ class SourceNodeInputForm(AbstractForm):
            
     
 
-    def GetSourceNodeIndex(self) -> int:
-        return self.sourceNodeIndex
+    def GetSourceNodeID(self) -> int:
+        return self.sourceNodeID
     
 
 class NetworkSettingsInputForm(AbstractForm):

@@ -15,13 +15,7 @@ class AnimationController():
     def __init__(self):
         self.__frameDelay: int = 1000 #Time between frame in miliseconds.
         self.__isPaused: bool = True
-        
     
-    def GetFrameDelay(self):
-        return self.__frameDelay
-
-    def IsPaused(self):
-        return self.__isPaused
     
     def PauseAnimation(self):
         self.__isPaused = not self.__isPaused
@@ -49,8 +43,14 @@ class AnimationController():
     def JumpToEndOfAnimation(self):
         self.SetAnimationSpeed(0) #Setting the frame delay to zero to complete the animation stratight away
 
+    def IsPaused(self):
+        return self.__isPaused
+
     def SetAnimationSpeed(self, num: int):
         self.__frameDelay = num  
+    
+    def GetFrameDelay(self):
+        return self.__frameDelay
 
 class Animator():
     def __init__(self, nodeReferences, edgeReferences, visitedNodesText, nodesToBeVisitedText, distancesTable, tableData, axs, fig):
@@ -256,8 +256,6 @@ class DijkstrasDemonstrationWindow():
                         label_x = x_mid
                         label_y = y_mid
                     else:
-                        offset_x = 0.05 if abs(x_Coords[0] - x_Coords[1]) > abs(y_Coords[0] - y_Coords[1]) else 0 
-                        offset_y = 0 if abs(x_Coords[0] - x_Coords[1]) > abs(y_Coords[0] - y_Coords[1]) else 0.05
                         #Initially placing edge weight label in the middle of the edge
                         label_x, label_y = self.ResolveEdgeLabelOverlap(x_mid, y_mid, labelPositions)
                         labelPositions.append((label_x, label_y))
@@ -356,14 +354,14 @@ class TopUIBar():
         self.__quitButton.pack(side=tk.RIGHT, padx=10)
         
 
-        self.__graphGeneratorButton = tk.Button(self.__topBarFrame, text="Generate New Graph", height=buttonHeight, command=self.GenerateNewGraphClick)
+        self.__graphGeneratorButton = tk.Button(self.__topBarFrame, text="Generate New Graph", height=buttonHeight, command=self.GenerateNewGraphButtonClick)
         self.__graphGeneratorButton.pack(side=tk.RIGHT)
 
         
         
         #self.__topBarFrame.pack_propagate(False)
     
-    def GenerateNewGraphClick(self):
+    def GenerateNewGraphButtonClick(self):
         if self.__isGraphGeneratorFormRunning:
             tk.messagebox.showwarning("Warning", "The form is already open.")
             return
@@ -424,7 +422,7 @@ class BottomUIBar():
         self.__speedUpButton.pack(side=tk.LEFT,  padx=10)
         #self.__fastForwardButton.place(relx = 0.7, rely = 0.7, anchor = 'center')
 
-        self.__restartButton = tk.Button(self.__bottomBarFrame, text="Restart", height=buttonHeight, width=buttonWidth, command= self.RestartAnimation, padx=10)
+        self.__restartButton = tk.Button(self.__bottomBarFrame, text="Restart", height=buttonHeight, width=buttonWidth, command= self.RestartAnimationButtonClick, padx=10)
         self.__restartButton.pack(side=tk.LEFT,  padx=10)
 
         self.__jumpToEndButton = tk.Button(self.__bottomBarFrame, text="Jump To End", height=buttonHeight, width=buttonWidth, command= self.__animationController.JumpToEndOfAnimation, padx=10)
@@ -436,7 +434,7 @@ class BottomUIBar():
 
        
 
-    def RestartAnimation(self):
+    def RestartAnimationButtonClick(self):
         self.__window.destroy()
         self.__windowObject.DisplayWindow(self.__windowObject.GetMatrix()) # Restart Window with the same matrix
        
@@ -467,7 +465,7 @@ class BottomUIBar():
         #Ensuring when the window is closed via the cross in the top right corner it is handled in the correct way
         form.protocol("WM_DELETE_WINDOW", lambda: self.OnSourceNodeInputFormClose(form))
         sourceNodeInputFormObject.Run()
-        sourceNode = sourceNodeInputFormObject.GetSourceNodeIndex()
+        sourceNode = sourceNodeInputFormObject.GetSourceNodeID()
         return sourceNode
     
     def OnSourceNodeInputFormClose(self, form):

@@ -10,17 +10,17 @@ def factorial(num: int) -> int:
     return num *factorial(num-1)
 
 def cos(x: float) -> float:
-    '''Returns cosine of angle(in radians) via maclaurin expanision'''
+    '''Returns cosine of angle(in radians) via Maclaurin expansion'''
 
-    negativeTerms = reduce(lambda x,y: x+y,[-(x**i)/factorial(i) for i in range(2,UPPER_LIMIT_OF_EXPANSION,4)]) #Calculating positive terms in maclaurin expansion
-    positiveTerms = reduce(lambda x,y: x+y,[(x**i)/factorial(i) for i in range(4,UPPER_LIMIT_OF_EXPANSION,4)])#Calculating positive terms in maclaurin expansion
+    negativeTerms = reduce(lambda x,y: x+y,[-(x**i)/factorial(i) for i in range(2,UPPER_LIMIT_OF_EXPANSION,4)]) #Calculating positive terms in Maclaurin expansion
+    positiveTerms = reduce(lambda x,y: x+y,[(x**i)/factorial(i) for i in range(4,UPPER_LIMIT_OF_EXPANSION,4)])#Calculating positive terms in Maclaurin expansion
     return 1 + negativeTerms + positiveTerms
 
 def sin(x: float) -> float:
-    '''Returns sine of angle(in radians) via maclaurin expanision'''
+    '''Returns sine of angle(in radians) via Maclaurin expansion'''
 
-    negativeTerms = reduce(lambda x,y: x+y,[-(x**i)/factorial(i) for i in range(3,UPPER_LIMIT_OF_EXPANSION,4)])  #Calculating negative terms in maclaurin expansion
-    positiveTerms = reduce(lambda x,y: x+y,[(x**i)/factorial(i) for i in range(5,UPPER_LIMIT_OF_EXPANSION,4)])#Calculating positive terms in maclaurin expansion
+    negativeTerms = reduce(lambda x,y: x+y,[-(x**i)/factorial(i) for i in range(3,UPPER_LIMIT_OF_EXPANSION,4)])  #Calculating negative terms in Maclaurin expansion
+    positiveTerms = reduce(lambda x,y: x+y,[(x**i)/factorial(i) for i in range(5,UPPER_LIMIT_OF_EXPANSION,4)])#Calculating positive terms in Maclaurin expansion
     return x + negativeTerms + positiveTerms
 
 def ConvertDegreesToRadians(x: float) -> float:

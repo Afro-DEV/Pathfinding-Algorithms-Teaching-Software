@@ -318,48 +318,57 @@ def GetPathLinkedList(endListNode: LinkedListNode) -> list:
 
 
 def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int , heuristicWeight = 850):
+    #Initialise the open list(priority queue) and closedSet(visited nodes)
     openList = MinHeap()
     closedSet = set()
-    cameFrom = {}# Used to track the path
+
+    cameFrom = {}# Dictionary  to track the path
     exploredEdges = []
     #Initialising g and f  for every node to be infinity
     g_score = {node: float('inf') for node in graph.nodes}
     f_score = {node: float('inf') for node in graph.nodes}
+
     g_score[startNode] = 0
+
+    #Calculate initial heuristic estimate from start to end node. 
     initialHeuristicEstimate = HaversineDistance(graph, startNode, endNode)
-    print(initialHeuristicEstimate)
+
     f_score[startNode] = g_score[startNode] + initialHeuristicEstimate
+
+    #Insert the start node into the open list with f score
     openList.Insert((f_score[startNode], startNode))
     while not openList.IsEmpty():
+        #Get node with the lowest f score
         _, currentNode = openList.RemoveMinValue()
-        # if currentFScore > f_score[currentNode]:  # Skip outdated entries
-        #     continue
-        # if currentNode in closedSet:
-        #     continue
+
+        #If current node is the end node reconstruct and return path.
         if currentNode == endNode:
-            #path = GetPath(cameFrom, currentNode, startNode)
             path = GetPathLinkedList(cameFrom[endNode])
             lengthOfPath = g_score[endNode]
             return path,  exploredEdges, lengthOfPath
         closedSet.add(currentNode)
 
+        #Iterate over neighbours of the current node
         for neighbourNode in graph.neighbors(currentNode):
+            #Skip neighbour node if already visited
             if neighbourNode in closedSet:
                 continue
+            #Get length from current node to neighbour node
             distance = graph[currentNode][neighbourNode][0]['length']
-            currentFScore =  f_score[neighbourNode]
-            tentativeGScore = distance + g_score[currentNode]
+            provisionalGScore = distance + g_score[currentNode]
 
-            if tentativeGScore < g_score[neighbourNode]:
-                #Ensure getting memeory refence to be parent instead of the actual value
+            #if provisional g score is less than current g score update the score 
+            if provisionalGScore < g_score[neighbourNode]:
+                #Use memory reference to track the parent node for path reconstruction.
                 cameFrom[neighbourNode] = LinkedListNode(neighbourNode, parent=cameFrom.get(currentNode))
-                g_score[neighbourNode] = tentativeGScore
-                #Increase heuristic by a multiplier so that is a stronger weighting on which nodes to optimise
-                f_score[neighbourNode] = tentativeGScore + HaversineDistance(graph, neighbourNode, endNode) * heuristicWeight
-            
+                g_score[neighbourNode] = provisionalGScore
+                #Increase heuristic by a multiplier for strongr weighting 
+                f_score[neighbourNode] = provisionalGScore + HaversineDistance(graph, neighbourNode, endNode) * heuristicWeight
+
+                #Update new f score for neighbour node
                 openList.Insert((f_score[neighbourNode], neighbourNode))
 
-
+                #Mark edge as explored
                 exploredEdges.append((currentNode, neighbourNode))
                 
             
