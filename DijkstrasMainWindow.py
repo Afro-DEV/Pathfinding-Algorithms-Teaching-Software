@@ -160,6 +160,84 @@ class Animator():
     def SetAnimationStarted(self):
         self.__animationStarted = True
 
+class GraphRenderer():
+    def __init__(self, adjacencyMatrix, graphAxis):
+        self.__adjacencyMatrix = adjacencyMatrix
+        self.__numNodes = len(self.__adjacencyMatrix)
+        self.__graphAxis = graphAxis
+        self.TITLE_FONT_SIZE = 20
+    
+    def GetAngles(self) -> list[float]:
+        #tau is 2pi
+        #Make your own pi function
+        step = math.tau / self.__numNodes
+        angles = [i * step for i in range(self.__numNodes)]
+        return angles
+
+
+    def CircularLayout(self) -> dict[int, tuple[float,float]]:
+        radius = 1
+        angles = self.GetAngles()
+        coordinates = {}
+        for i,angle in enumerate(angles):
+            x_Coord = radius * cos(angle) 
+            y_Coord = radius * sin(angle) 
+            coordinates[i] = (x_Coord, y_Coord)
+        return coordinates
+
+
+    def DisplayGraph(self) :
+        nodeReferences = {}
+        edgeReferences = [[] for i in range(self.__numNodes)]
+        edgeLabels = []
+        labelPositions = []
+        #plt.figure(figsize=(8,8))
+        coordinates = self.CircularLayout()
+        
+        
+        for i, (x, y) in coordinates.items():
+            node = self.__graphAxis.scatter(x, y, s=300, color='skyblue', zorder=3)
+            nodeReferences[i] = node
+            self.__graphAxis.text(x, y, NODELABELS[i], fontsize=12, ha='center', va='center')
+            
+        #Plotting the edges
+        for i in range(self.__numNodes):
+            for j in range(i+1, self.__numNodes):
+                if self.__adjacencyMatrix[i][j] !=0:  
+                    x_Coords = [coordinates[i][0], coordinates[j][0]]
+                    y_Coords = [coordinates[i][1], coordinates[j][1]]
+                    #MR R FIX? 45 + 55 /100
+                    x_mid = (x_Coords[0] + x_Coords[1])/2
+                    y_mid = (y_Coords[0] + y_Coords[1])/2
+
+                    edge, = self.__graphAxis.plot(x_Coords, y_Coords, color='grey')
+                    edgeReferences[i].append(edge)
+                    edgeReferences[j].append(edge)
+                    if self.__numNodes == 2:
+                    # For two nodes, place label exactly at the midpoint
+                        label_x = x_mid
+                        label_y = y_mid
+                    else:
+                        #Initially placing edge weight label in the middle of the edge
+                        label_x, label_y = self.ResolveEdgeLabelOverlap(x_mid, y_mid, labelPositions)
+                        labelPositions.append((label_x, label_y))
+                    edgeLabels.append(self.__graphAxis.text(label_x, label_y, str([self.__adjacencyMatrix[i][j]])[1:-1], fontsize=14, ha='center', va='center',))
+        self.__graphAxis.set_title('Dijkstras Demonstration', fontsize= self.TITLE_FONT_SIZE)
+        self.__graphAxis.set_axis_off()
+        #plt.show()
+        return nodeReferences, edgeReferences
+    
+    def ResolveEdgeLabelOverlap(self, x: float, y: float, label_positions: list[tuple[float, float]], minimumDistance=0.1) -> tuple[float, float]:
+        for existing_x, existing_y in label_positions: #Loop through each edge label checking for overlap.
+            distance = math.sqrt((x - existing_x) ** 2 + (y - existing_y) ** 2) # Calculating distance between new label and existing labels 
+            if distance < minimumDistance: # If new label too close to exisiting label adjust the position
+                # Adjust the position to resolve the overlap
+                x += random.uniform(-minimumDistance, minimumDistance)
+                y += random.uniform(-minimumDistance, minimumDistance)
+                # Check again with updated position (recursively)
+                return self.ResolveEdgeLabelOverlap(x, y, label_positions)
+        return x, y
+
 class DijkstrasDemonstrationWindow():
     def __init__(self):
         self.TITLE_FONT_SIZE = 20
@@ -189,9 +267,6 @@ class DijkstrasDemonstrationWindow():
         #axs[1].set_axis_off()
         visitedNodesText =axs.text(0.5, 0.8, 'S{}', fontsize=20, ha='center', va='center', wrap=True)
         nodesToOptimiseText = axs.text(0.5, 0.7, 'P[]', fontsize=20, ha='center', va='center', wrap=True)
-        #Fix This part
-        #data = [[distance if distance != float('inf') else '∞' for distance in initialDistances]]
-        #data = [['∞' for distance in initialDistances]]
         distancesTable = axs.table(cellText=blankSpaceRow,
                                     colLabels=columnLabels,
                                     loc='center',
@@ -204,83 +279,15 @@ class DijkstrasDemonstrationWindow():
         #distancesTable.auto_set_column_width(col=list(range(len(columnLabels))))
    
         return visitedNodesText, nodesToOptimiseText, distancesTable, blankSpaceRow
-    def GetAngles(self, numNodes: int) -> list[float]:
-        #tau is 2pi
-        #Make your own pi function
-        step = math.tau / numNodes
-        angles = [i * step for i in range(numNodes)]
-        return angles
-
-
-    def CircularLayout(self, numNodes: int) -> dict[int, tuple[float,float]]:
-        radius = 1
-        angles = self.GetAngles(numNodes)
-        coordinates = {}
-        for i,angle in enumerate(angles):
-            x_Coord = radius * cos(angle) 
-            y_Coord = radius * sin(angle) 
-            coordinates[i] = (x_Coord, y_Coord)
-        return coordinates
-
-
-    def DisplayGraph(self, adjacencyMatrix: list[list[int]], axs) :
-        numNodes: int = len(adjacencyMatrix)
-        nodeReferences = {}
-        edgeReferences = [[] for i in range(numNodes)]
-        edgeLabels = []
-        labelPositions = []
-        #plt.figure(figsize=(8,8))
-        coordinates = self.CircularLayout(numNodes)
-        
-        
-        for i, (x, y) in coordinates.items():
-            node = axs.scatter(x, y, s=300, color='skyblue', zorder=3)
-            nodeReferences[i] = node
-            axs.text(x, y, NODELABELS[i], fontsize=12, ha='center', va='center')
-            
-        #Plotting the edges
-        for i in range(numNodes):
-            for j in range(i+1, numNodes):
-                if adjacencyMatrix[i][j] !=0:  
-                    x_Coords = [coordinates[i][0], coordinates[j][0]]
-                    y_Coords = [coordinates[i][1], coordinates[j][1]]
-                    #MR R FIX? 45 + 55 /100
-                    x_mid = (x_Coords[0] + x_Coords[1])/2
-                    y_mid = (y_Coords[0] + y_Coords[1])/2
-
-                    edge, = axs.plot(x_Coords, y_Coords, color='grey')
-                    edgeReferences[i].append(edge)
-                    edgeReferences[j].append(edge)
-                    if numNodes == 2:
-                    # For two nodes, place label exactly at the midpoint
-                        label_x = x_mid
-                        label_y = y_mid
-                    else:
-                        #Initially placing edge weight label in the middle of the edge
-                        label_x, label_y = self.ResolveEdgeLabelOverlap(x_mid, y_mid, labelPositions)
-                        labelPositions.append((label_x, label_y))
-                    edgeLabels.append(axs.text(label_x, label_y, str([adjacencyMatrix[i][j]])[1:-1], fontsize=14, ha='center', va='center',))
-        axs.set_title('Dijkstras Demonstration', fontsize= self.TITLE_FONT_SIZE)
-        axs.set_axis_off()
-        #plt.show()
-        return nodeReferences, edgeReferences
     
-    def ResolveEdgeLabelOverlap(self, x: float, y: float, label_positions: list[tuple[float, float]], minimumDistance=0.1) -> tuple[float, float]:
-        for existing_x, existing_y in label_positions: #Loop through each edge label checking for overlap.
-            distance = math.sqrt((x - existing_x) ** 2 + (y - existing_y) ** 2) # Calculating distance between new label and existing labels 
-            if distance < minimumDistance: # If new label too close to exisiting label adjust the position
-                # Adjust the position to resolve the overlap
-                x += random.uniform(-minimumDistance, minimumDistance)
-                y += random.uniform(-minimumDistance, minimumDistance)
-                # Check again with updated position (recursively)
-                return self.ResolveEdgeLabelOverlap(x, y, label_positions)
-        return x, y
     
     def DisplayWindow(self, adjacencyMatrix: list[list[int]]) -> None:
         numNodes: int = len(adjacencyMatrix)
         fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
         #Getting references to UI elements
-        nodeReference, edgeReferences = self.DisplayGraph(adjacencyMatrix, axs[0])
+        graphRenderer = GraphRenderer(adjacencyMatrix, graphAxis=axs[0])
+        nodeReference, edgeReferences = graphRenderer.DisplayGraph()
+
         visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = self.DisplayDataStrucutures(axs[1], numNodes)
         
         animator = Animator(nodeReference, edgeReferences, visitedNodesText, nodesToBeVisitedText , distancesTable, tableData, axs, fig)
