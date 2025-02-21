@@ -1,5 +1,6 @@
 import osmnx as ox
 import os
+import matplotlib.pyplot as plt
 
 class BaseNetworkGenerator:
     def __init__(self, cityName, centrePoint, radius=3000):
@@ -38,6 +39,10 @@ class ParisNetworkGenerator(BaseNetworkGenerator):
     def __init__(self):
         super().__init__("Paris",(48.8584, 2.2945))
 
+class LondonNetworkGenerator(BaseNetworkGenerator):
+    def __init__(self):
+        super().__init__("London", (51.522921, -0.151174), radius=4000)
+
 
         
         
@@ -45,9 +50,7 @@ class ParisNetworkGenerator(BaseNetworkGenerator):
 #Run once to generate Network Files
 if __name__ == "__main__":
     #Establishing where Network Cache should go 
-    ox.settings.cache_folder = "Interactive Map Demonstration/Networks/Network Cache"
-    # p = NewYorkNetworkGenerator()
-    # p.GenerateNetwork()
+    ox.settings.cache_folder = "Networks/Network Cache"
     BaseNetworkGenerator.GenerateAllMissingNetworks()
     
     
