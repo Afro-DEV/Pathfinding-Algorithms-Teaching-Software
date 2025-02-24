@@ -84,7 +84,7 @@ class MainMenuWindow():
         dijkstrasDemonstrationWindow = DijkstrasDemonstrationWindow()
         dijkstrasDemonstrationWindow.DisplayWindow()
     
-    def Run(self):
+    def Run(self): # Begin Tkinter mainloop
         self.root.mainloop()
 
 if __name__ == '__main__':

@@ -145,13 +145,18 @@ class MinHeap:
         return self.__heap[0]
 
     def Parent(self, index):
+        '''Returns value of parent node of index'''
         return self.__heap[self.GetParentIndex(index)]
 
     def LeftChild(self, index):
+        '''Returns value of the left child of index'''
         return self.__heap[self.GetLeftChildIndex(index)]
     
     def RightChild(self, index):
+        '''Returns the value of the right child of  index.'''
         return self.__heap[self.GetRightChildIndex(index)]
+
+
 
     def GetLeftChildIndex(self, index) -> int:
         '''Returns the index of the left child node which is always 2* node index + 1'''
@@ -202,18 +207,14 @@ class Stack():
 
     def Push(self, data):
         """
-        Push an item onto the Stack
-
-        :param data: The data to be pushed onto the stack.
+        Push an item(data) onto the Stack
         """
         self.__pointer +=1
         self.__stack.append(data)
     
     def Pop(self) -> any:
         """
-        Pop the top item off the stack.
-
-        :return: The data from the top of the stack or Empty Stack
+        Pop the top item off the stack and return its value
         """
         if self.IsEmptyStack():
             return 'Empty Stack'

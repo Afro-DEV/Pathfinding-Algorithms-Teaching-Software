@@ -117,17 +117,19 @@ class Animator():
     
     #Updater UI methods
     def UpdateVisitedNodesText(self, visitedNodes: list[Node]) -> None:
+        '''Change the VisitedNodes text to the new visitedNodes passed as an argument'''
         visitedNodesString = ','.join(node.GetLabel() for node in visitedNodes)
         self.__visitedNodesText.set_text(f'S{{{visitedNodesString}}}')
 
     def UpdateNodesToBeVisitedText(self, nodesToBeVisited: PriorityQueue) -> None:
+        '''Change the nodesToBeVisited text to the new nodesToBeVisited passed as an argument'''
         notesToBeVisitedString = ','.join(node.GetLabel() for node in nodesToBeVisited.GetQueue())
         self.__nodesToBeVisitedText.set_text(f'P[{notesToBeVisitedString}]')
     
     def UpdateDataStructuresPAndS(self, visitedNodes: list[Node], nodesToBeVisited: PriorityQueue):
         self.UpdateNodesToBeVisitedText(nodesToBeVisited)
         self.UpdateVisitedNodesText(visitedNodes)
-        self.__fig.canvas.draw()
+        self.__fig.canvas.draw() #Redraw canvaas with updates
     
     def SetNodeColour(self, id, colour):
         '''Sets node at passed id to colour passed as argument'''
@@ -168,49 +170,59 @@ class GraphRenderer():
         self.TITLE_FONT_SIZE = 20
     
     def GetAngles(self) -> list[float]:
-        #tau is 2pi
-        #Make your own pi function
-        step = math.tau / self.__numNodes
+        """
+        Returns a list of angles (0 to 2π) for nodes evenly distributed.
+
+        Returns:
+            list[float]: Angles for each node. List length number of nodes
+        """
+        step = math.pi * 2 / self.__numNodes
         angles = [i * step for i in range(self.__numNodes)]
         return angles
 
 
     def CircularLayout(self) -> dict[int, tuple[float,float]]:
+        '''Get cooridnates for n number of nodes placed around a unit circle'''
         radius = 1
-        angles = self.GetAngles()
+        angles = self.GetAngles() # Get angle of each node from origin
         coordinates = {}
-        for i,angle in enumerate(angles):
+        for i,angle in enumerate(angles): # For each angle convert it to cartesian cordinates placed on the unit circle
             x_Coord = radius * cos(angle) 
             y_Coord = radius * sin(angle) 
-            coordinates[i] = (x_Coord, y_Coord)
+            coordinates[i] = (x_Coord, y_Coord) #Add cordinates as tuple to the dictionary
         return coordinates
 
 
     def DisplayGraph(self) :
         nodeReferences = {}
-        edgeReferences = [[] for i in range(self.__numNodes)]
+        edgeReferences = [[] for i in range(self.__numNodes)] #Used to store a reference to every edge assigned for a node.
         edgeLabels = []
         labelPositions = []
         #plt.figure(figsize=(8,8))
-        coordinates = self.CircularLayout()
+        coordinates = self.CircularLayout() # Get cordinates for each node
         
         
         for i, (x, y) in coordinates.items():
-            node = self.__graphAxis.scatter(x, y, s=300, color='skyblue', zorder=3)
-            nodeReferences[i] = node
-            self.__graphAxis.text(x, y, NODELABELS[i], fontsize=12, ha='center', va='center')
+            node = self.__graphAxis.scatter(x, y, s=300, color='skyblue', zorder=3) #Plot a node on the cartesian grid.
+            nodeReferences[i] = node # Store a reference to the node plodded
+            self.__graphAxis.text(x, y, NODELABELS[i], fontsize=12, ha='center', va='center') # Add a label to the plotted node
             
         #Plotting the edges
         for i in range(self.__numNodes):
             for j in range(i+1, self.__numNodes):
-                if self.__adjacencyMatrix[i][j] !=0:  
+                if self.__adjacencyMatrix[i][j] !=0: # Ensuring there is a coneection between nodes
+                    
+                    #Get coordinates for the start of the edge and the end of the
+                    #edge starts at on of the nodes and ends at the other node
                     x_Coords = [coordinates[i][0], coordinates[j][0]]
                     y_Coords = [coordinates[i][1], coordinates[j][1]]
+
                     #MR R FIX? 45 + 55 /100
                     x_mid = (x_Coords[0] + x_Coords[1])/2
                     y_mid = (y_Coords[0] + y_Coords[1])/2
 
                     edge, = self.__graphAxis.plot(x_Coords, y_Coords, color='grey')
+                    #Add the edge reference to the node corresponding to i and j
                     edgeReferences[i].append(edge)
                     edgeReferences[j].append(edge)
                     if self.__numNodes == 2:
@@ -224,11 +236,12 @@ class GraphRenderer():
                     edgeLabels.append(self.__graphAxis.text(label_x, label_y, str([self.__adjacencyMatrix[i][j]])[1:-1], fontsize=14, ha='center', va='center',))
         self.__graphAxis.set_title('Dijkstras Demonstration', fontsize= self.TITLE_FONT_SIZE)
         self.__graphAxis.set_axis_off()
-        #plt.show()
         return nodeReferences, edgeReferences
     
     def ResolveEdgeLabelOverlap(self, x: float, y: float, label_positions: list[tuple[float, float]], minimumDistance=0.1) -> tuple[float, float]:
+
         for existing_x, existing_y in label_positions: #Loop through each edge label checking for overlap.
+            
             distance = math.sqrt((x - existing_x) ** 2 + (y - existing_y) ** 2) # Calculating distance between new label and existing labels 
             if distance < minimumDistance: # If new label too close to exisiting label adjust the position
                 # Adjust the position to resolve the overlap
@@ -241,7 +254,7 @@ class GraphRenderer():
 class DijkstrasDemonstrationWindow():
     def __init__(self):
         self.TITLE_FONT_SIZE = 20
-        self.__adjMatrix = [[0,4,3,7,0,0,0],
+        self.__adjMatrix = [[0,4,3,7,0,0,0], # Initialy use demo matrix.
                 [4,0,0,1,0,4,0],
                 [3,0,0,3,5,0,0],
                 [7,1,3,0,2,2,7],
@@ -254,14 +267,11 @@ class DijkstrasDemonstrationWindow():
         self.__fig = figAndAxis[0]
         self.__axs = figAndAxis[1]
         
-        #visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = self.DisplayDataStrucutures(axs[1], numNodes, sourceNodeIndex)
-        #nodeReference, edgeReferences = self.DisplayGraph(self.__demoGraph, axs[0])
         self.DisplayWindow(self.__adjMatrix)
     
-    def DisplayDataStrucutures(self, axs, numNodes):
+    def DisplayDataStrucutures(self, axs, numNodes: int):
+        '''Initialise the UI components of the distances table and data structures P,S and the distances table.'''
         columnLabels = [NODELABELS[i] for i in range(numNodes)]
-        # initialDistances = [float('inf')]* numNodes
-        # initialDistances[sourceNodeIndex] = 0
         blankSpaceRow = [[None] * len(columnLabels)]
         axs.set_title('Data Structures', fontsize=self.TITLE_FONT_SIZE)
         #axs[1].set_axis_off()
@@ -282,6 +292,7 @@ class DijkstrasDemonstrationWindow():
     
     
     def DisplayWindow(self, adjacencyMatrix: list[list[int]]) -> None:
+        '''Displaying the Dijkstra's demonstration window.'''
         numNodes: int = len(adjacencyMatrix)
         fig, axs = plt.subplots(1, 2, figsize=(12, 8), gridspec_kw={'width_ratios': [2, 1]})
         #Getting references to UI elements
@@ -298,10 +309,11 @@ class DijkstrasDemonstrationWindow():
         
         window.title("Dijkstra's demonstration")
         
-        topBar = TopUIBar(window, self)
+        topBar = TopUIBar(window, self) #Add topUI bar to window 
         
-        bottomBar = BottomUIBar(window, animator, self)
-        GraphFrame = tk.Frame(master=window, width=700, height=250)
+        bottomBar = BottomUIBar(window, animator, self) #Add bottomUI bar to window
+
+        GraphFrame = tk.Frame(master=window, width=700, height=250) 
         GraphFrame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)   
 
          
@@ -318,13 +330,13 @@ class DijkstrasDemonstrationWindow():
     def GetAxis(self):
         return self.__axs
 
-    def GetMatrix(self):
+    def GetMatrix(self) -> list[list]:
         return self.__adjMatrix
     
     def GetMatrixLength(self) -> int:
         return len(self.__adjMatrix)
     
-    def GetDemoMatrix(self):
+    def GetDemoMatrix(self) -> list[list]:
         return [[0,4,3,7,0,0,0],
                 [4,0,0,1,0,4,0],
                 [3,0,0,3,5,0,0],
@@ -336,25 +348,25 @@ class DijkstrasDemonstrationWindow():
     def SetMatrix(self, matrix):
         self.__adjMatrix = matrix
     
-    def GetSourceNode(self):
+    def GetSourceNode(self) -> int:
         return self.__sourceNode
     
-    def SetSourceNode(self, sourceNode):
+    def SetSourceNode(self, sourceNode: int):
         self.__sourceNode = sourceNode
 
-    def StartAnimation(self,adjacencyMatrix, sourceNodeIndex,   animator):
+    def StartAnimation(self,adjacencyMatrix: list[list], sourceNodeIndex: int,   animator: Animator):
         AnimateDijkstras( adjacencyMatrix, sourceNodeIndex,   animator)
 
 
 class TopUIBar():
-    def __init__(self, window, windowObject):
+    def __init__(self, window: tk.Tk, windowObject: DijkstrasDemonstrationWindow):
         self.__window = window
         self.__windowObject: DijkstrasDemonstrationWindow = windowObject
         self.__isGraphGeneratorFormRunning: bool = False
         buttonHeight = 2
         butttonWidth = 8
 
-        self.__topBarFrame = tk.Frame(self.__window, height=BARHEIGHT)
+        self.__topBarFrame = tk.Frame(self.__window, height=BARHEIGHT) #Intialise top bar component
         self.__topBarFrame.pack(side="top", fill=tk.X)
 
         self.__quitButton = tk.Button(self.__topBarFrame, text='Quit', height=buttonHeight, width=butttonWidth, command=self.QuitButtonClick )
@@ -379,6 +391,7 @@ class TopUIBar():
         form.protocol("WM_DELETE_WINDOW", lambda: self.OnGraphGeneratorFormClose(form))
         graphGeneratorFormObject.Run()
         if not graphGeneratorFormObject.IsDemoModeSelected():
+            #Get graph parameters from the graph generator form and display a new window
             numNodes = graphGeneratorFormObject.GetNumberOfNodes()
             density = graphGeneratorFormObject.pValue
             matrix = g.GenerateMatrix(numNodes,density)
@@ -386,6 +399,7 @@ class TopUIBar():
             self.__window.destroy()
             self.__windowObject.DisplayWindow(matrix)
         else:
+            #If demo mode selcted use the demo mode matrix
             matrix = self.__windowObject.GetDemoMatrix()
             self.__windowObject.SetMatrix(matrix) # Might be redundant
             self.__window.destroy()
@@ -393,7 +407,7 @@ class TopUIBar():
         
 
     def OnGraphGeneratorFormClose(self, form):
-        self.__isGraphGeneratorFormRunning = False
+        self.__isGraphGeneratorFormRunning = False #Set flag to false that the form is running
         form.destroy()
 
         
@@ -450,7 +464,7 @@ class BottomUIBar():
     
     def EnablePausePlayFunctionality(self):
         if not self.__animator.GetHasAnimationStarted():
-            #If animation not initiallised allow user to enter source node and run animation
+            #If animation not initialised allow user to enter source node and run animation
             if self.__isSourceNodeInputFormRunning:
                 return
             sourceNode = self.GetSourceNodeIndexFromForm()
@@ -460,7 +474,7 @@ class BottomUIBar():
             AnimateDijkstras(self.__windowObject.GetMatrix(), self.__windowObject.GetSourceNode(), self.__animator)
             
         self.__animationController.PauseAnimation()
-        #Conditionally display Resume or Pause based on state of aniamtion
+        #Conditionally display Resume or Pause based on state of animation
         pausePlayButtonText = "Resume" if self.__animationController.IsPaused() else "Pause"
         self.__pausePlayButton.config(text=pausePlayButtonText)
 
@@ -486,7 +500,7 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
     numNodes = len(adjacencyMatrix)
     window = animator.GetFigure().canvas.get_tk_widget().master #Accessing the window where the animation is being displayed
     
-    distances = [float('inf')] * numNodes #Intialise the distance from every node to the source node as infinity.
+    distances = [float('inf')] * numNodes #Initialise the distance from every node to the source node as infinity.
     distances[sourceNodeIndex] = 0 # Distance to source node set to zero
     animator.UpdateDistancesTableUI(distances)
     animator.SetNodeColour(sourceNodeIndex, 'lightgreen')
@@ -498,7 +512,7 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
         priority = distances[i]
         nodesToBeVisited.Enqueue(Node(NODELABELS[i], priority, id=i))
     
-    #Animaiton function that is called upon every frame.
+    #Animation function that is called upon every frame.
     def updateAnimation():
         if animator.IsPaused(): #Check if paused
             window.after(100, updateAnimation) #Check again if not paused 
@@ -527,15 +541,16 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
         
         animator.HighlightEdgesOfNode(currentIndex)
         animator.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
-        animator.SetNodeColour(currentIndex, 'yellow') if currentIndex != sourceNodeIndex else None
+        animator.SetNodeColour(currentIndex, 'yellow') if currentIndex != sourceNodeIndex else None #REmove?
         
         visitedNodes.append(currentNode)
         
+        #Set node to 'dark salmon' if we have visited node and it is not the source node
         animator.SetNodeColour(currentIndex, 'darksalmon') if currentIndex != sourceNodeIndex else None
         
 
         for neighbourIndex in range(numNodes):
-            weight = adjacencyMatrix[currentIndex][neighbourIndex]
+            weight = adjacencyMatrix[currentIndex][neighbourIndex] #Get edge weight from adjacency matrix.s
             
             #neighbourNode of type None when neighbourNode has already been visited
             neighbourNode: Node = nodesToBeVisited.GetNodeByID(neighbourIndex)
@@ -555,7 +570,7 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
         
         animator.UpdateDataStructuresPAndS(visitedNodes, nodesToBeVisited)
         def DehighlightCurrentNodeAndEdges():
-            '''Dehighlight node after being optimised by dijskstras'''
+            '''Dehighlight node after being optimised by dijkstras'''
             if animator.IsPaused():
                 window.after(100, DehighlightCurrentNodeAndEdges)  # Retry after a small delay
                 return

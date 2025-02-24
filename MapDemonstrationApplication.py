@@ -13,14 +13,16 @@ from matplotlib.widgets import Button
 
 
 class MapDemonstrationWindow():
-    def __init__(self, network, algorithm, useMiles):
+    def __init__(self, network: str, algorithm: str, useMiles: bool):
         PATH_FINDING_ALGORITHMS_ID = {'A-Star': 0, 'Dijkstras':1}
         self.filepath = self.GetNetworkSelectedFilePath(network)
 
         if not BaseNetworkGenerator.CheckFileExists(self.filepath):
             BaseNetworkGenerator.GenerateAllMissingNetworks()
 
-        self.graph =  ox.load_graphml(filepath=self.filepath)    
+        self.__graph =  ox.load_graphml(filepath=self.filepath) #Load graph from file path as type NetworxX multi d Graph 
+
+        #Create Dictionary to store styles for the grpah     
         self.GRAPH_STYLES = {'EdgeColour': "Grey",
                             'EdgeWidth': 0.3,
                             'StartNodeColour': 'limegreen',
@@ -53,15 +55,16 @@ class MapDemonstrationWindow():
     def UndoLastClick(self, event):
         if self.click_coords:
             self.click_coords.pop()  # Remove last clicked coordinate
-            self.HighlightPoints()  
+            self.HighlightPoints() #Rehighlights points removing the highlighted last click
+
     def GetNetworkSelectedFilePath(self, networkSelected):
         #Parameterised File path
         return f"Networks/{networkSelected}Network.graphml"
 
 
     def DisplayNetwork(self):
-        # shortestPath = nx.shortest_path(self.graph, source=self.startNode, target=self.endNode, weight='length')
-        ox.plot_graph(self.graph, 
+
+        ox.plot_graph(self.__graph, 
                       ax=self.ax, 
                       show=False,
                        close=False, 
@@ -70,10 +73,7 @@ class MapDemonstrationWindow():
                       edge_linewidth=self.GRAPH_STYLES['EdgeWidth'],
                       edge_color=self.GRAPH_STYLES['EdgeColour'])
         self.ax.set_facecolor('black')
-        # ax.scatter(self.startCoords[1], self.startCoords[0], c='r', s=100, marker='x') # Start node
-        # ax.scatter(self.endCoords[1], self.endCoords[0], c='g', s=100, marker='x') #End node
-        # ox.plot_graph_route(self.graph, shortestPath, route_linewidth=4, route_color='r', orig_dest_size=100, ax=ax)
-       
+
         #Event listener waiting for a button press 
         cid = self.fig.canvas.mpl_connect('button_press_event',  self.OnClick)
         plt.show()
@@ -94,15 +94,14 @@ class MapDemonstrationWindow():
 
         if len(self.click_coords) == 2:# If two points are clicked, highlight them
             print('Now begin animating')
-            #plt.close()
-            #animate_astar(self.graph, self.click_coords[0], self.click_coords[1])
             self.ax.clear()
             self.RemoveUndoButton()
-            animator = NetworkAnimator(self.graph,self.click_coords[0], self.click_coords[1], self.algorithmId, self.useMiles, self.figAndAxis, self.GRAPH_STYLES)
+            animator = NetworkAnimator(self.__graph,self.click_coords[0], self.click_coords[1], self.algorithmId, self.useMiles, self.figAndAxis, self.GRAPH_STYLES)
+            animator.StartAnimation()
             self.fig.canvas.draw_idle()
     
     def CheckIfCoordsAreSpaced(self, x_Coord, y_Coord):
-        if ox.nearest_nodes(self.graph, x_Coord, y_Coord) == ox.nearest_nodes(self.graph,  self.click_coords[0][0], self.click_coords[0][1]):
+        if ox.nearest_nodes(self.__graph, x_Coord, y_Coord) == ox.nearest_nodes(self.__graph,  self.click_coords[0][0], self.click_coords[0][1]):
             return False
         return True
     
@@ -115,7 +114,7 @@ class MapDemonstrationWindow():
         # Clear the previous plot
         self.ax.clear()
 
-        ox.plot_graph(self.graph, 
+        ox.plot_graph(self.__graph, 
                       ax=self.ax, 
                       show=False,
                        close=False, 
@@ -141,11 +140,11 @@ class MapDemonstrationWindow():
 
     
     def GetGraph(self):
-        return self.graph
+        return self.__graph
 
 class NetworkAnimator():
     def __init__(self, graph, startCoord, endCoord, algorithmId, useMiles, figAndAxis, GRAPH_STYLES, edgeSkipFactor = 20, interval = 0.5):
-        self.graph = graph
+        self.__graph = graph
         self.GRAPH_STYLES = GRAPH_STYLES
         self.startCoord = startCoord
         self.endCoord = endCoord
@@ -160,10 +159,10 @@ class NetworkAnimator():
         self.startTime = time.time()
         #self.fig.canvas.mpl_connect("draw_event", lambda: self.on_animation_complete())
         
-        self.StartAnimation()
+        
     
     def StartAnimation(self):
-        GRAPH = self.graph
+        GRAPH = self.__graph
         startNode = ox.nearest_nodes(GRAPH, self.startCoord[0], self.startCoord[1])
         endNode = ox.nearest_nodes(GRAPH, self.endCoord[0], self.endCoord[1])
         highlightingEdgeColour = None
@@ -196,7 +195,7 @@ class NetworkAnimator():
         #fig, ax = plt.subplots(figsize=(10, 10))
         ax= self.ax
         fig = self.fig 
-        ox.plot_graph(self.graph, 
+        ox.plot_graph(self.__graph, 
                       ax=self.ax, 
                       show=False,
                        close=False, 
@@ -235,12 +234,7 @@ class NetworkAnimator():
                     plt.draw()  # Ensure UI updates
                     plt.pause(0.1)  # Small delay to ensure UI refresh
                     self.OnAnimationComplete()  # Show the message box
-                
 
-            # if frameNum == numberOfFrames - 1:
-            #     self.OnAnimationComplete()
-            
-                
 
             return shortestPathLine, exploredEdgesLine
         
@@ -256,20 +250,22 @@ class NetworkAnimator():
         timeTook = self.endTime-self.startTime
         units = 'Miles' if self.useMiles else 'Kilometres' #Conditionally show Miles or kilometres
         messagebox.showinfo(title='Length Of Path', 
-                            message=f"The length of path found is {round(self.lengthOfPath,1)} {units} and was found in {round(timeTook, 2)}s")
+                            message=f"The length of path found is {round(self.lengthOfPath,1)} {units} and was found in {round(timeTook, 2)}s") 
         
 def HaversineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
     '''Estimate the distance in Kilometres between 2 points on Earth's surface '''
     coordinateNode1 = NodeToCoordinate(graph,node1)
     coordinateNode2 = NodeToCoordinate(graph, node2)
+
+    #Get lattitude and longitude of nodes
     lat1 = coordinateNode1[0]
     lon1 = coordinateNode1[1]
     lat2 = coordinateNode2[0]
     lon2 = coordinateNode2[1]
 
-    lat1,lon1, lat2, lon2 = map(ConvertDegreesToRadians, [lat1,lon1,lat2,lon2])
+    lat1,lon1, lat2, lon2 = map(ConvertDegreesToRadians, [lat1,lon1,lat2,lon2]) # Convert degrees lattitude and longitude into radians
     
-    # Haversine formula
+    # Apply Haversine formula
     distanceLat = lat2 - lat1
     distanceLon = lon2 - lon1
     a = sin(distanceLat / 2)**2 + cos(lat1) * cos(lat2) * sin(distanceLon / 2)**2
@@ -282,6 +278,7 @@ def HaversineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
     return distance
 
 def EuclideanDistance(graph, node1, node2):
+    '''Calculate the aboslute distance between 2 nodes lattitude and longitude'''
     coordinateNode1 = NodeToCoordinate(graph,node1)
     coordinateNode2 = NodeToCoordinate(graph, node2)
     distanceLatitude = abs(coordinateNode1[0]-coordinateNode2[0])
@@ -341,9 +338,8 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int , heuristicWeight
         #Get node with the lowest f score
         _, currentNode = openList.RemoveMinValue()
 
-        #If current node is the end node reconstruct and return path.
         if currentNode == endNode:
-            path = GetPathLinkedList(cameFrom[endNode])
+            path = GetPathLinkedList(cameFrom[endNode]) #Reconstruct path.
             lengthOfPath = g_score[endNode]
             return path,  exploredEdges, lengthOfPath
         closedSet.add(currentNode)
@@ -381,30 +377,33 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int , heuristicWeight
 def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     nodesToBeVisited = MinHeap()
     visitedNodes = set()
+
     cameFrom = {}
     exploredEdges = []
-    distances = {node: float('inf') for node in graph.nodes}
+
+    distances = {node: float('inf') for node in graph.nodes} #Initialise the distance to every node as infinity.
     distances[startNode] = 0
-    nodesToBeVisited.Insert((distances[startNode], startNode))
+    nodesToBeVisited.Insert((distances[startNode], startNode)) #Mark start node as first node to be visited
 
     while not nodesToBeVisited.IsEmpty():
         currentNodeAndDistance = nodesToBeVisited.RemoveMinValue()
         currentNode = currentNodeAndDistance[1]
         if currentNode == endNode:
-            path = GetPathLinkedList(cameFrom[endNode])
+            path = GetPathLinkedList(cameFrom[endNode]) #Reconstruct path
             lengthOfPath = distances[endNode]
-            print(f'This is the length {lengthOfPath}')
             return path,  exploredEdges, lengthOfPath
-        visitedNodes.add(currentNode)
+        visitedNodes.add(currentNode) # add node to visited nodes set
 
-        for neighbourNode in graph.neighbors(currentNode):
-            if neighbourNode in visitedNodes:
+        for neighbourNode in graph.neighbors(currentNode): #Explore ever neighbour node.
+            if neighbourNode in visitedNodes: #Skip node if already visited
                 continue
             currentDistance = distances[currentNode] + graph[currentNode][neighbourNode][0]['length']
             if currentDistance < distances[neighbourNode]:
+                #Add node to linked list for path reconstruction
                 cameFrom[neighbourNode] = LinkedListNode(neighbourNode, parent=cameFrom.get(currentNode))
                 distances[neighbourNode] = currentDistance
                 neighbourNodeAndDistance = (distances[neighbourNode], neighbourNode)
+                #Mark edge as explored
                 exploredEdges.append((currentNode, neighbourNode))
                 nodesToBeVisited.Insert(neighbourNodeAndDistance)            
 
@@ -417,7 +416,7 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
 
 
 if __name__ == "__main__":
-    window = MapDemonstrationWindow("NewYork", algorithm='Dijkstras', useMiles=False)
+    window = MapDemonstrationWindow("London", algorithm='Dijkstras', useMiles=False)
     window.DisplayNetwork()
     # window = MapDemonstrationWindow("NewYork", algorithm='Dijkstras', useMiles=True)
     # window.DisplayNetwork()

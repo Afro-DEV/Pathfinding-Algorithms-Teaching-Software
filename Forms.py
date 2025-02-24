@@ -72,7 +72,7 @@ class GraphGeneratorForm(AbstractForm):
         
 
         self.slider = tk.Scale(self.root, from_=0, to=100, orient="horizontal", command=self.OnSelectedPValue,  font=("Arial", 12))
-        #Setting the default value of pValue
+        #Setting the default value of pValue which is 50
         self.slider.set(self.pValue)
         self.slider.grid(row=3, column=0, columnspan=2, padx=10, sticky="ew")
 
@@ -82,11 +82,12 @@ class GraphGeneratorForm(AbstractForm):
         self.sliderLabelRight = tk.Label(self.root, text="Highly Connected", font=("Arial", 12))
         self.sliderLabelRight.grid(row=4, column=1)
 
-        style = ttk.Style()
-        style.configure("TCheckbutton", focuscolor="transparent", highlightthickness=0, padding=5, font=("Arial", 12))  # Removing focus borde
+        style = ttk.Style() #Adding style to the checkbox
+        style.configure("TCheckbutton", focuscolor="transparent", highlightthickness=0, padding=5, font=("Arial", 12))  # Removing focus border
+
         self.demoCheckBox = ttk.Checkbutton(self.root, text='Demo Mode', onvalue=True, offvalue=False, style="TCheckbutton")
         self.demoCheckBox.grid(row=5, column=0, columnspan=2, pady=5)
-         # Remove focus highlight (explicitly unfocus the Checkbutton)
+        # Remove focus highlight (explicitly unfocus the Checkbutton)
         self.demoCheckBox.focus_set()  # Give focus to some other widget if needed, or leave as is
         self.demoCheckBox.tk_focusNext().focus_set()
 
@@ -99,19 +100,21 @@ class GraphGeneratorForm(AbstractForm):
         
         
     def OnSelectedNumberOfNodes(self, event):
+        '''Update number of nodes every time to the dropdown is modified'''
         self.numberOfNodes = int(self.numberOfNodesVar.get())
         print(f"Dropdown selected: {self.numberOfNodes}")
     
     def OnSelectedPValue(self, event):
+        '''Update pValue each time the slider is moved'''
         self.pValue = self.slider.get()
      
 
     def Submit(self):
-        try:
+        try: #Try to get the value in number of nodes as an integer
             selectedValue =  self.numberOfNodesDropdown.get()  
             self.numberOfNodes = int(selectedValue) if selectedValue else 5  # Ensure default is 5
         except ValueError:
-            self.numberOfNodes = 5 # Set number fo nodes to 5 incase of error.
+            self.numberOfNodes = 5 # Set number of nodes to 5 incase of error.
         self.pValue = self.slider.get()
         #Getting value selected checkbox
         self.isDemoModeSelected = self.demoCheckBox.instate(['selected'])
@@ -157,6 +160,7 @@ class SourceNodeInputForm(AbstractForm):
     def Submit(self):
         userInput = self.entry.get()
         userInput = userInput.upper()
+        #Validating user input
         if userInput.strip() == "":
             messagebox.showerror("Error", "Input cannot be empty. Please enter a character")
             return
@@ -170,7 +174,7 @@ class SourceNodeInputForm(AbstractForm):
             messagebox.showerror("Error", f"Input must be in range A -{IdToCharacter(self.numNodes-1)}. Please enter a character within this range")
             return
 
-        try:
+        try: #Try to convert Users Selection to ID
             sourceNodeID = CharacterToId(userInput)
             print(sourceNodeID)
             self.sourceNodeID = sourceNodeID
@@ -189,6 +193,8 @@ class SourceNodeInputForm(AbstractForm):
 class NetworkSettingsInputForm(AbstractForm):
     def __init__(self, parentWindow):
         super().__init__(parentWindow)  # Pass parent to AbstractForm by calling AbstractForm initialisng method.
+
+        #Initial form Values
         self.algorithmSelected = None
         self.networkSelected = None
         self.useMiles = False
@@ -241,6 +247,7 @@ class NetworkSettingsInputForm(AbstractForm):
         self.submitButton.grid(row=5, column=0, columnspan=2, pady=30)
 
     def OnSelectedNetwork(self, event):
+        '''Update Network selected variable each time the dropdown  is modified'''
         self.networkSelected = self.selectNetworkVar.get()
         print(f"Network selected is {self.networkSelected}")
 
@@ -249,18 +256,20 @@ class NetworkSettingsInputForm(AbstractForm):
         print(f"Algorithm selected is {self.algorithmSelected}")
 
     def GetNetworkSelectedFilePath(self, networkSelected):
-        #Parameterised File path
+        '''Returns parameterised network file based on selected network'''
         return f"Networks/{networkSelected}Network.graphml"
 
 
     def Submit(self):
         from MainMenu import MainMenuWindow
         
+        #Get current drop down values.
         self.networkSelected = self.selectNetworkVar.get()
         self.algorithmSelected = self.selectAlgorithmVar.get()
-        self.useMiles = self.distanceInMilesCheckBox.instate(['selected'])
+
+        self.useMiles = self.distanceInMilesCheckBox.instate(['selected']) #True if it is selected false if not
         print(f"DEBUG: Submitting with Network={self.networkSelected}, Algorithm={self.algorithmSelected}, UseMiles={self.useMiles}")
-        if MainMenuWindow.CheckOSMNXInstalled():
+        if MainMenuWindow.CheckOSMNXInstalled(): #Only display if necessary packages installed
             from MapDemonstrationApplication import MapDemonstrationWindow
             window = MapDemonstrationWindow(self.networkSelected, algorithm=self.algorithmSelected, useMiles=self.useMiles)
             window.DisplayNetwork()
