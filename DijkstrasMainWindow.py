@@ -3,12 +3,12 @@ import math
 from Utilities import sin, cos
 from DataStructures import Node, PriorityQueue
 from Forms import SourceNodeInputForm, GraphGeneratorForm
-import GeneratingAdjacencyMatrix as g
+import Algorithms as g
 import random
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-NODELABELS = {i: chr(65+i) for i in range(11)} #Dictionary to access a node label from ID e.g 0 -> A, 1 -> B
+NODELABELS = {i: chr(65+i) for i in range(26)} #Dictionary to access a node label from ID e.g 0 -> A, 1 -> B...
 BARHEIGHT = 40 # Height in pixels of the UI top and bar elements
 
 class AnimationController():
@@ -116,19 +116,19 @@ class Animator():
         self.__fig.canvas.draw()
     
     #Updater UI methods
-    def UpdateVisitedNodesText(self, visitedNodes: list[Node]) -> None:
+    def __UpdateVisitedNodesText(self, visitedNodes: list[Node]) -> None:
         '''Change the VisitedNodes text to the new visitedNodes passed as an argument'''
         visitedNodesString = ','.join(node.GetLabel() for node in visitedNodes)
         self.__visitedNodesText.set_text(f'S{{{visitedNodesString}}}')
 
-    def UpdateNodesToBeVisitedText(self, nodesToBeVisited: PriorityQueue) -> None:
+    def __UpdateNodesToBeVisitedText(self, nodesToBeVisited: PriorityQueue) -> None:
         '''Change the nodesToBeVisited text to the new nodesToBeVisited passed as an argument'''
         notesToBeVisitedString = ','.join(node.GetLabel() for node in nodesToBeVisited.GetQueue())
         self.__nodesToBeVisitedText.set_text(f'P[{notesToBeVisitedString}]')
     
     def UpdateDataStructuresPAndS(self, visitedNodes: list[Node], nodesToBeVisited: PriorityQueue):
-        self.UpdateNodesToBeVisitedText(nodesToBeVisited)
-        self.UpdateVisitedNodesText(visitedNodes)
+        self.__UpdateNodesToBeVisitedText(nodesToBeVisited)
+        self.__UpdateVisitedNodesText(visitedNodes)
         self.__fig.canvas.draw() #Redraw canvaas with updates
     
     def SetNodeColour(self, id, colour):
