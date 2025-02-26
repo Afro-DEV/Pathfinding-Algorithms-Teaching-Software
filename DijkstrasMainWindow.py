@@ -413,7 +413,8 @@ class TopUIBar():
         
     def QuitButtonClick(self):
         self.__window.destroy()
-        
+        plt.close('all') #Close MatPlotlib plot.
+
 class BottomUIBar():
     def __init__(self, window, animator: Animator, windowObject):
         self.__window = window
