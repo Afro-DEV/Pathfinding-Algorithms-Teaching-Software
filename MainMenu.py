@@ -74,7 +74,11 @@ class MainMenuWindow():
             messagebox.showerror('Error', 'To use this part of the program ensure you have installed the OSMNX library')
             return
         from Forms import NetworkSettingsInputForm
+        self.MinimsieMainMenu()
         networkSettingsForm = NetworkSettingsInputForm(self.root)
+
+    def MinimsieMainMenu(self):
+        self.root.iconify()
         
             
         
