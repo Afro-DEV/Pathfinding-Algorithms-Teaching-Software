@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import sys
-from DijkstrasMainWindow import DijkstrasDemonstrationWindow
+from DijkstrasDemonstrationWindow import DijkstrasDemonstrationWindow
 class MainMenuWindow():
     def __init__(self):
         self.APPLICATION_BUTTON_HEIGHT = 5
