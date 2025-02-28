@@ -270,7 +270,7 @@ class NetworkSettingsInputForm(AbstractForm):
         self.useMiles = self.distanceInMilesCheckBox.instate(['selected']) #True if it is selected false if not
         print(f"DEBUG: Submitting with Network={self.networkSelected}, Algorithm={self.algorithmSelected}, UseMiles={self.useMiles}")
         if MainMenuWindow.CheckOSMNXInstalled(): #Only display if necessary packages installed
-            from MapDemonstrationApplication import MapDemonstrationWindow
+            from MapDemonstrationWindow import MapDemonstrationWindow
             window = MapDemonstrationWindow(self.networkSelected, algorithm=self.algorithmSelected, useMiles=self.useMiles)
             window.DisplayNetwork()
         else:
