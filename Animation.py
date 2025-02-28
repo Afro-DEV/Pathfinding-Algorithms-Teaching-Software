@@ -1,5 +1,12 @@
 from DataStructures import PriorityQueue, Node
 from Utilities import NODELABELS
+import osmnx as ox
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import time
+from tkinter import messagebox
+from Utilities import ConvertKilometresToMiles
+from Algorithms import Dijkstra, AStar
 
 class AnimationController():
     def __init__(self):
@@ -238,3 +245,111 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
     # Delay dehighlighting to let highlighting be visible
         window.after(int(animator.GetFrameDelay() * 0.75), DehighlightCurrentNodeAndEdges)
     updateAnimation() #Call updateAnimation to run the next frame
+
+#Map demonstration animator class
+class NetworkAnimator():
+    def __init__(self, graph, startCoord, endCoord, algorithmId, useMiles, figAndAxis, GRAPH_STYLES, edgeSkipFactor = 20, interval = 0.5):
+        self.__graph = graph
+        self.GRAPH_STYLES = GRAPH_STYLES
+        self.startCoord = startCoord
+        self.endCoord = endCoord
+        self.algorithmId = algorithmId
+        self.useMiles = useMiles
+        self.edgeSkipFactor = edgeSkipFactor
+        self.interval = interval
+        #Used to hold the FuncAnimation Object
+        self.anim = None
+        self.fig = figAndAxis[0]
+        self.ax = figAndAxis[1]
+        self.startTime = time.time()
+        #self.fig.canvas.mpl_connect("draw_event", lambda: self.on_animation_complete())
+        
+        
+    
+    def StartAnimation(self):
+        GRAPH = self.__graph
+        startNode = ox.nearest_nodes(GRAPH, self.startCoord[0], self.startCoord[1])
+        endNode = ox.nearest_nodes(GRAPH, self.endCoord[0], self.endCoord[1])
+        highlightingEdgeColour = None
+        
+        match self.algorithmId:
+            #Each case pre computes pathfinding algorithm before running to get the path, explored edges and length of path
+            case 0:
+                path,  exploredEdges, lengthOfPath = AStar(GRAPH, startNode, endNode)
+                highlightingEdgeColour = '#2BD9FF'
+                #As A* is a faster algorithm the edgeSkip Factor must be decremented
+                #self.edgeSkipFactor = self.edgeSkipFactor//2
+            case 1:
+                path,  exploredEdges, lengthOfPath = Dijkstra(GRAPH, startNode, endNode)
+                highlightingEdgeColour = '#FF512B'
+            case _: # If does not match any use AStar
+                path,  exploredEdges, lengthOfPath = AStar(GRAPH, startNode, endNode)
+        
+        
+        
+        if lengthOfPath == None:
+            messagebox.showinfo('No Path', 'No path was found between Points')
+            return
+        
+        #Converting to Kilometres
+        self.lengthOfPath = round(lengthOfPath / 1000, 1)
+        if self.useMiles:
+            self.lengthOfPath = ConvertKilometresToMiles(self.lengthOfPath)
+        numberOfFrames = len(exploredEdges) // self.edgeSkipFactor + len(path)
+        #Intitialising plot
+        #fig, ax = plt.subplots(figsize=(10, 10))
+        ax= self.ax
+        fig = self.fig 
+        ox.plot_graph(self.__graph, 
+                      ax=self.ax, 
+                      show=False,
+                       close=False, 
+                      bgcolor="black",
+                      node_size=self.GRAPH_STYLES['NodeSize'], 
+                      edge_linewidth=self.GRAPH_STYLES['EdgeWidth'],
+                      edge_color=self.GRAPH_STYLES['EdgeColour'])
+        
+        #Adding the key for the graph
+        startNodeMarker, = ax.plot(GRAPH.nodes[startNode]['x'], GRAPH.nodes[startNode]['y'],  'o', color=self.GRAPH_STYLES['StartNodeColour'], markersize=6, zorder =3, label="Start Node")
+        endNodeMarker, = ax.plot(GRAPH.nodes[endNode]['x'], GRAPH.nodes[endNode]['y'], 'o', color=self.GRAPH_STYLES['EndNodeColour'], markersize=6, zorder=3, label="End Node")
+        shortestPathLine, = ax.plot([], [], '-', color='yellow', linewidth=5, label="Shortest Path")
+        exploredEdgesLine, = ax.plot([], [], '-', color=highlightingEdgeColour, linewidth=1, zorder=1, label="Visited Edges")
+        ax.legend(loc='best', fontsize='small', frameon=True, title= 'Key')
+
+        #shortestPathLine, = plt.plot([], [], 'y', label="Shortest Path")  
+        
+        #Updates animation frame by frame
+        def update(frameNum):
+            edge_x = []
+            edge_y = []
+            #Highlighting explored Edges. 
+            for edge in exploredEdges[:frameNum* self.edgeSkipFactor]: # Highlighting 'edgeSkipFactor' edges per frame
+                edge_x.extend([GRAPH.nodes[edge[0]]['x'], GRAPH.nodes[edge[1]]['x'], None])
+                edge_y.extend([GRAPH.nodes[edge[0]]['y'], GRAPH.nodes[edge[1]]['y'], None])
+            exploredEdgesLine.set_data(edge_x, edge_y)
+
+            #If the number of the frame is greater than total explored Edges then all edges processed and we can display shortest path, reached final frame
+            if frameNum >= len(exploredEdges) // self.edgeSkipFactor:
+                path_x = [GRAPH.nodes[n]['x'] for n in path]
+                path_y = [GRAPH.nodes[n]['y'] for n in path]
+                shortestPathLine.set_data(path_x, path_y)
+                # Only trigger message box once
+                if not hasattr(self, "messageShown"):  # Check if message was already shown
+                    self.messageShown = True  # Mark that the message was displayed
+                    plt.draw()  # Ensure UI updates
+                    plt.pause(0.1)  # Small delay to ensure UI refresh
+                    self.OnAnimationComplete()  # Show the message box
+
+
+            return shortestPathLine, exploredEdgesLine
+        
+        #Number of frames set to the number the amount of edges we will be highlighting and the length of the path.
+        self.anim = animation.FuncAnimation(fig, update, frames=numberOfFrames, interval=self.interval, repeat=False)
+        
+    def OnAnimationComplete(self):
+        print('Animation Complete')
+        self.endTime = time.time()
+        timeTook = self.endTime-self.startTime
+        units = 'Miles' if self.useMiles else 'Kilometres' #Conditionally show Miles or kilometres
+        messagebox.showinfo(title='Length Of Path', 
+                            message=f"The length of path found is {round(self.lengthOfPath,1)} {units} and was found in {round(timeTook, 2)}s") 
