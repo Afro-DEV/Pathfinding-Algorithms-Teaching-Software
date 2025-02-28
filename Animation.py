@@ -1,5 +1,5 @@
 from DataStructures import PriorityQueue, Node
-NODELABELS = {i: chr(65+i) for i in range(26)} #Dictionary to access a node label from ID e.g 0 -> A, 1 -> B...
+from Utilities import NODELABELS
 
 class AnimationController():
     def __init__(self):

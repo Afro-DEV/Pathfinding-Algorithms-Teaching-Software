@@ -1,14 +1,14 @@
 import matplotlib.pyplot as plt
 import math
-from Utilities import sin, cos
+from Utilities import sin, cos, NODELABELS
 from Forms import SourceNodeInputForm, GraphGeneratorForm
-import Algorithms as g 
+from Algorithms import GenerateMatrix
 from Animation import AnimateDijkstras, AnimationController, Animator
 import random
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-NODELABELS = {i: chr(65+i) for i in range(26)} #Dictionary to access a node label from ID e.g 0 -> A, 1 -> B...
+
 BARHEIGHT = 40 # Height in pixels of the UI top and bar elements
 
 
@@ -244,7 +244,7 @@ class TopUIBar():
             #Get graph parameters from the graph generator form and display a new window
             numNodes = graphGeneratorFormObject.GetNumberOfNodes()
             density = graphGeneratorFormObject.pValue
-            matrix = g.GenerateMatrix(numNodes,density)
+            matrix = GenerateMatrix(numNodes,density)
             self.__windowObject.SetMatrix(matrix) # Might be redundant
             self.__window.destroy()
             self.__windowObject.DisplayWindow(matrix)
@@ -361,7 +361,7 @@ if __name__ == '__main__':
     
     #Maker ur own version
     num = 8
-    b = g.GenerateMatrix(5,50)
+    b = GenerateMatrix(5,50)
     #DisplayWindow(test)
     #DisplayWindow(test, 0)
     window = DijkstrasDemonstrationWindow()

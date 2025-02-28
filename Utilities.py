@@ -1,6 +1,7 @@
 import math
 from functools import reduce
 UPPER_LIMIT_OF_EXPANSION = 100
+NODELABELS = {i: chr(65+i) for i in range(26)} #Dictionary to access a node label from ID e.g 0 -> A, 1 -> B...
 
 def factorial(num: int) -> int:
     '''Returns factorial of an integer'''
