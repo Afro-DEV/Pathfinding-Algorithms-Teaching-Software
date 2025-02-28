@@ -5,7 +5,7 @@ import math
 from Utilities import cos, sin, ConvertDegreesToRadians
 from DataStructures import MinHeap, LinkedListNode, Stack
 
-def GenerateMatrix(numberOfNodes: int,densityVal: float) -> list[list[int]]:
+def GenerateAdjacencyMatrix(numberOfNodes: int,densityVal: float) -> list[list[int]]:
     '''
     Generate an adjacency matrix that represents an undirected simple graph.
     The graph will have random weights between 2 and 12.
@@ -73,6 +73,8 @@ def GetPath(cameFrom, currentNode, startNode) -> list:
     return path[::-1] #Return reversed path
 
 def GetPathLinkedList(endListNode: LinkedListNode) -> list:
+    '''Given the last node of a linked list, traverse and reverse linked list
+        to return path from start node to end node.'''
     stack = Stack()
     path = []
     node: LinkedListNode = endListNode  # Start from the last node which is the target node
@@ -83,7 +85,7 @@ def GetPathLinkedList(endListNode: LinkedListNode) -> list:
     while not stack.IsEmptyStack():
         path.append(stack.Pop())
     
-    return path 
+    return path #Return path from the start node to the end node.
 
 
 def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int , heuristicWeight = 850):
@@ -184,9 +186,9 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
 
 if __name__ == "__main__":
     start_time = time.time()
-    a = GenerateMatrix(5, 0)
-    b = GenerateMatrix(5, 50)
-    c = GenerateMatrix(10,100)
+    a = GenerateAdjacencyMatrix(5, 0)
+    b = GenerateAdjacencyMatrix(5, 50)
+    c = GenerateAdjacencyMatrix(10,100)
     # print(a)
     # print()
     # print(b)

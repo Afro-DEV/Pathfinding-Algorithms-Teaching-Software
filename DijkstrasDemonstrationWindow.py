@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import math
 from Utilities import sin, cos, NODELABELS
 from Forms import SourceNodeInputForm, GraphGeneratorForm
-from Algorithms import GenerateMatrix
+from Algorithms import GenerateAdjacencyMatrix
 from Animation import AnimateDijkstras, AnimationController, Animator
 import random
 import tkinter as tk
@@ -244,7 +244,7 @@ class TopUIBar():
             #Get graph parameters from the graph generator form and display a new window
             numNodes = graphGeneratorFormObject.GetNumberOfNodes()
             density = graphGeneratorFormObject.pValue
-            matrix = GenerateMatrix(numNodes,density)
+            matrix = GenerateAdjacencyMatrix(numNodes,density)
             self.__windowObject.SetMatrix(matrix) # Might be redundant
             self.__window.destroy()
             self.__windowObject.DisplayWindow(matrix)
@@ -361,7 +361,7 @@ if __name__ == '__main__':
     
     #Maker ur own version
     num = 8
-    b = GenerateMatrix(5,50)
+    b = GenerateAdjacencyMatrix(5,50)
     #DisplayWindow(test)
     #DisplayWindow(test, 0)
     window = DijkstrasDemonstrationWindow()
