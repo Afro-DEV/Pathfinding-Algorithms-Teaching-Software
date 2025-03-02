@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from NetworkGenerator import BaseNetworkGenerator
 from matplotlib.widgets import Button
 from Animation import NetworkAnimator
-
+from tkinter import messagebox
 
 class MapDemonstrationWindow():
     def __init__(self, network: str, algorithm: str, useMiles: bool):
@@ -66,10 +66,12 @@ class MapDemonstrationWindow():
                       edge_linewidth=self.GRAPH_STYLES['EdgeWidth'],
                       edge_color=self.GRAPH_STYLES['EdgeColour'])
         self.ax.set_facecolor('black')
-
         #Event listener waiting for a button press 
         cid = self.fig.canvas.mpl_connect('button_press_event',  self.OnClick)
+        self.ax.set_title('Click 2 points on the road network to begin pathfinding.', loc='center', fontsize=12, color='black')
+
         plt.show()
+        
 
     def OnClick(self, event):
         if event.inaxes != self.ax:  # Ignore clicks outside the main plot area
