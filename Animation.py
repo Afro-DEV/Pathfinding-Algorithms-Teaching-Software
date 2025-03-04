@@ -88,8 +88,8 @@ class Animator():
         )
         self.__distancesTable.auto_set_font_size(False)
         self.__distancesTable.set_fontsize(18) # **** #
-        for cell in self.__distancesTable.get_celld().values():
-            cell.PAD = 1
+        for cell in self.__distancesTable.get_celld().values(): #Get each cell from distances table
+            cell.PAD = 4
         
         self.__fig.canvas.draw()
 
