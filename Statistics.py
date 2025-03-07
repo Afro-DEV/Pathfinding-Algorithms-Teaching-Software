@@ -1,8 +1,11 @@
 import csv
 import os
 import pandas as pd
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import ttk
 
-class StatisticsManager():
+class StatisticsTableManager():
     def __init__(self):
         self.__fileName = 'Statitistics/Statisticstable.csv'
         self.__headers = ['ID', 'Algorithm', 'Length Of Path', 'Edges Explored', 'Time Taken', 'Network']
@@ -38,9 +41,7 @@ class StatisticsManager():
 
         print("CSV file cleared, but headers are retained.")
 
-    
-    def PreviewEntries(self):
-        ...
+
 
     def HasStatisticsTableFile(self):
         return os.path.isfile(self.__fileName)
@@ -56,6 +57,8 @@ class StatisticsManager():
         return 1  # Start from ID 1 
     
     def DeleteEntryByID(self, id):
+        if not self.CheckIDExists(id):
+            messagebox.showerror('Error', 'ID does not exist')
         updatedTableData = []
         with open(self.__fileName, mode='r', newline='') as file:
             reader = csv.reader(file)
@@ -71,16 +74,14 @@ class StatisticsManager():
             writer.writerows(updatedTableData)  
 
 
-    def GenerateTimeStamp(self):
-        ...
     
     def CheckIDExists(self, targetID):
-        currentIds = []
         with open(self.__fileName, mode='r') as file:
                 reader = csv.reader(file)
                 rows = list(reader)
-                self.BinarySearchForID(rows[1:], targetID)
-        print(currentIds)
+                if self.BinarySearchForID(rows[1:], targetID):
+                    return True
+                return False
 
     def BinarySearchForID(self, rows, targetId):
         low = 0
@@ -98,11 +99,70 @@ class StatisticsManager():
                 print(f'found id {rows[mid][0]}')
                 return rows[mid][0]
                 
-        print('no id ')
-        return 'ID not present'
+        return None
+    
+class StatisticsWindow():
+    def __init__(self):
+        self.__window = tk.Tk()
+        self.__window.title("Statistics Manager")
+        self.__window.rowconfigure(0, weight=1)
+        self.__window.columnconfigure(0, weight=1)
+
+        self.__dataFrame: pd.DataFrame = pd.read_csv('Statitistics/Statisticstable.csv')
+        self.__statisticsManager = StatisticsTableManager()
+
+ 
+
+        
+    def DisplayWindow(self):
+        heading = tk.Label(self.__window, text="Statistics Manager", font=("Arial", 16, "bold"))
+        heading.grid(row=0, column=0, columnspan=2, pady=10)
+        self.tree = ttk.Treeview(self.__window, columns=list(self.__dataFrame.columns), show="headings")
+        self.CreateTable()
+
+        deleteAllEntriesBTN = tk.Button(self.__window, text='Delete All Entries', command=self.ClearTable, background='red', foreground='white')
+        deleteAllEntriesBTN.grid(row=2, column=0)
+
+        deleteRecordBTN = tk.Button(self.__window, text='Delete  Entry', command=self.__statisticsManager.DropAllEntries, background='red', foreground='white')
+        deleteRecordBTN.grid(row=2, column=1)
+        
+        self.__window.mainloop()
+
+    def ClearTable(self):
+        self.__statisticsManager.DropAllEntries()
+        self.RefreshTable()
+
+
+    def CreateTable(self):
+        
+
+        # Define column headings
+        for col in self.__dataFrame.columns:
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=100)  
+
+        # Insert rows into table
+        for _, row in self.__dataFrame.iterrows():
+            self.tree.insert("", tk.END, values=list(row))
+
+        self.tree.grid(row=1, column=0, sticky="nsew")
+
+    def RefreshTable(self):
+        self.__dataFrame = pd.read_csv("Statitistics/Statisticstable.csv") #Read new updated csv file
+        for item in self.tree.get_children(): #delete every old row
+            self.tree.delete(item)
+
+        for _, row in self.__dataFrame.iterrows():
+            self.tree.insert("", tk.END, values=list(row)) #Insert the new rows
+
+
+
 if __name__ == '__main__':
-    SM = StatisticsManager()
-    # SM.AddEntry([ 'Dijkstras', 100,20, 2.34, 'London'])
-    # SM.DeleteEntryByID(99)
-    SM.CheckIDExists(99)
+    SM = StatisticsTableManager()
+    sw = StatisticsWindow()
+    sw.DisplayWindow()
+    for i in range(100):
+        SM.AddEntry([ 'Dijkstras', 100,20, 2.34, 'London'])
+    #SM.DeleteEntryByID(99)
+    #SM.CheckIDExists(4)
    
