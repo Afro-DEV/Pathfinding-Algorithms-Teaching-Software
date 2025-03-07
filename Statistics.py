@@ -9,10 +9,11 @@ class StatisticsManager():
         self.__current_id = self.GetCurrentID()
     
     def AddEntry(self, data):
+        #exist_ok = True stops the directory from being created if already exists
         os.makedirs(os.path.dirname(self.__fileName), exist_ok=True)
 
         # Check if the file already exists and has content
-        fileExists = os.path.isfile(self.__fileName)
+        #fileExists = os.path.isfile(self.__fileName)
         with open(self.__fileName, mode='a+', newline='') as file:
             writer = csv.writer(file)
             file.seek(0) #Start reading from the top most line
@@ -54,7 +55,7 @@ class StatisticsManager():
                     return int(rows[-1][0]) + 1
         return 1  # Start from ID 1 
     
-    def DeleteEntryByID(self, id ):
+    def DeleteEntryByID(self, id):
         updatedTableData = []
         with open(self.__fileName, mode='r', newline='') as file:
             reader = csv.reader(file)
@@ -73,9 +74,35 @@ class StatisticsManager():
     def GenerateTimeStamp(self):
         ...
     
+    def CheckIDExists(self, targetID):
+        currentIds = []
+        with open(self.__fileName, mode='r') as file:
+                reader = csv.reader(file)
+                rows = list(reader)
+                self.BinarySearchForID(rows[1:], targetID)
+        print(currentIds)
 
+    def BinarySearchForID(self, rows, targetId):
+        low = 0
+        high = len(rows)-1 
+        mid = 0
+        while low <= high:
+            mid = (high + low) //2
+            if int(rows[mid][0]) > targetId:
+                high = mid-1
+            
+            elif int(rows[mid][0]) < targetId:
+                low = mid +1
+            
+            else: 
+                print(f'found id {rows[mid][0]}')
+                return rows[mid][0]
+                
+        print('no id ')
+        return 'ID not present'
 if __name__ == '__main__':
     SM = StatisticsManager()
-    #SM.AddEntry([ 'Dijkstras', 100,20, 2.34, 'London'])
-    SM.DeleteEntryByID(3)
+    # SM.AddEntry([ 'Dijkstras', 100,20, 2.34, 'London'])
+    # SM.DeleteEntryByID(99)
+    SM.CheckIDExists(99)
    
