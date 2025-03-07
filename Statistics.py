@@ -15,15 +15,17 @@ class StatisticsManager():
         fileExists = os.path.isfile(self.__fileName)
         with open(self.__fileName, mode='a+', newline='') as file:
             writer = csv.writer(file)
-            file.seek(0)
-            if not fileExists:
-                writer.writerow(self.__headers)
+            file.seek(0) #Start reading from the top most line
+            if not self.HasStatisticsTableFile():
+                writer.writerow(self.__headers) #If file did not exist add header
             
             entry = [self.__current_id] + data
             writer.writerow(entry)
 
             # Increment the ID counter
             self.__current_id += 1
+
+
     def DropAllEntries(self):
         table: pd.DataFrame = pd.read_csv(self.__fileName)
 
@@ -39,6 +41,9 @@ class StatisticsManager():
     def PreviewEntries(self):
         ...
 
+    def HasStatisticsTableFile(self):
+        return os.path.isfile(self.__fileName)
+
     def GetCurrentID(self):
         if os.path.isfile(self.__fileName):  # Check if the file exists
             with open(self.__fileName, mode='r') as file:
@@ -47,16 +52,30 @@ class StatisticsManager():
                 if len(rows) > 1:  # Check if there are data rows
                     # Retrieve the last ID and increment it
                     return int(rows[-1][0]) + 1
-        return 1  # Start from ID 1 if file does not exist or is empty
+        return 1  # Start from ID 1 
     
-    def DeleteEntryByID(self):
-        ...
+    def DeleteEntryByID(self, id ):
+        updatedTableData = []
+        with open(self.__fileName, mode='r', newline='') as file:
+            reader = csv.reader(file)
+            headers = next(reader)  # Read the headers
+            updatedTableData.append(headers)
+            for row in reader:
+                    if row and row[0] != str(id):  # Only add the rows we are not deleting
+                        updatedTableData.append(row)
+
+        # Write the new data removing missing gaps
+        with open(self.__fileName, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(updatedTableData)  
+
 
     def GenerateTimeStamp(self):
         ...
-
+    
 
 if __name__ == '__main__':
     SM = StatisticsManager()
-    SM.AddEntry([ 'Dijkstras', 100,20, 2.34, 'London'])
+    #SM.AddEntry([ 'Dijkstras', 100,20, 2.34, 'London'])
+    SM.DeleteEntryByID(3)
    
