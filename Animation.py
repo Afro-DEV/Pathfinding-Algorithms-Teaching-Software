@@ -7,6 +7,7 @@ import time
 from tkinter import messagebox
 from Utilities import ConvertKilometresToMiles
 from Algorithms import Dijkstra, AStar
+from Statistics import StatisticsManager
 
 class AnimationController():
     def __init__(self):
@@ -291,7 +292,9 @@ class NetworkAnimator():
             messagebox.showinfo('No Path', 'No path was found between Points')
             return
         
-        #Converting to Kilometres
+        self.path = lengthOfPath
+        self.edgeexplored = len(exploredEdges)
+        #Converting to 
         self.lengthOfPath = round(lengthOfPath / 1000, 1)
         if self.useMiles:
             self.lengthOfPath = ConvertKilometresToMiles(self.lengthOfPath)
@@ -347,9 +350,11 @@ class NetworkAnimator():
         self.anim = animation.FuncAnimation(fig, update, frames=numberOfFrames, interval=self.interval, repeat=False)
         
     def OnAnimationComplete(self):
+        SM = StatisticsManager()
         print('Animation Complete')
         self.endTime = time.time()
         timeTook = self.endTime-self.startTime
         units = 'Miles' if self.useMiles else 'Kilometres' #Conditionally show Miles or kilometres
         messagebox.showinfo(title='Length Of Path', 
                             message=f"The length of path found is {round(self.lengthOfPath,1)} {units} and was found in {round(timeTook, 2)}s") 
+        SM.AddEntry([self.algorithmId, self.path,self.edgeexplored, timeTook, 'London'])
