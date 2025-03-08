@@ -1,5 +1,6 @@
 import csv
 import os
+import random
 import pandas as pd
 import tkinter as tk
 from tkinter import messagebox
@@ -134,8 +135,12 @@ class StatisticsWindow():
         self.__statisticsManager = StatisticsTableManager()
         self.__window = tk.Tk()
         self.__window.title("Statistics Manager")
-        self.__window.rowconfigure(0, weight=1)
+
+        self.__window.rowconfigure(0, weight=0)
+        self.__window.rowconfigure(1, weight=1)
         self.__window.columnconfigure(0, weight=1)
+        self.__window.columnconfigure(1, weight=1)  
+        self.__window.columnconfigure(2, weight=1)  
        
         if not self.__statisticsManager.HasStatisticsTableFile():
             self.__statisticsManager.CreateFilePath()
@@ -150,20 +155,22 @@ class StatisticsWindow():
         
     def DisplayWindow(self):
         heading = tk.Label(self.__window, text="Statistics Manager", font=("Arial", 16, "bold"))
-        heading.grid(row=0, column=0, columnspan=2, pady=10)
+        heading.grid(row=0, column=0, pady=10, sticky='n')
+        
+        refreshBTN = tk.Button(self.__window, text='Refresh', command=self.RefreshTable,  pady=5)
+        refreshBTN.grid(row=2, column=0, sticky='ew', padx=10, pady=5)
+
+        deleteRecordBTN = tk.Button(self.__window, text='Delete  Entry', command=self.DeleteRecord, background='#FF0F0F', foreground='white', pady=5)
+        deleteRecordBTN.grid(row=2, column=1, sticky='ew', padx=10, pady=5)
+
+        deleteAllEntriesBTN = tk.Button(self.__window, text='Delete All Entries', command=self.ClearTable, background='#FF0F0F', foreground='white', pady=5, font=('Arial', 9, 'bold'))
+        deleteAllEntriesBTN.grid(row=2, column=2, sticky='ew', padx=10, pady=5)
+
         
 
-        deleteAllEntriesBTN = tk.Button(self.__window, text='Delete All Entries', command=self.ClearTable, background='red', foreground='white')
-        deleteAllEntriesBTN.grid(row=2, column=0)
-
-        deleteRecordBTN = tk.Button(self.__window, text='Delete  Entry', command=self.DeleteRecord, background='red', foreground='white')
-        deleteRecordBTN.grid(row=2, column=1)
+        
         
         self.__window.mainloop()
-
-    def ClearTable(self):
-        self.__statisticsManager.DropAllEntries()
-        self.RefreshTable()
 
 
     def CreateTable(self):
@@ -178,7 +185,14 @@ class StatisticsWindow():
         for _, row in self.__dataFrame.iterrows():
             self.tree.insert("", tk.END, values=list(row))
 
-        self.tree.grid(row=1, column=0, sticky="nsew")
+        self.tree.grid(row=1, column=0, sticky="nsew", pady=20, padx=10, columnspan=3)
+
+    def ClearTable(self):
+        self.__statisticsManager.DropAllEntries()
+        self.RefreshTable()
+
+
+    
 
     def RefreshTable(self):
         self.__dataFrame = pd.read_csv("Statistics/StatisticsTable.csv") #Read new updated csv file
@@ -196,13 +210,20 @@ class StatisticsWindow():
         self.RefreshTable()
 
 
+def GenerateRandomData():
+    algos =['A-Star', 'Dijkstras']
+    cities = ['London', 'NewYork', 'Paris']
+    a =random.randint(0,1)
+    b = random.randint(0,2)
+    return [algos[a], random.randint(100,1000), random.randint(10,100), round(random.uniform(10, 30), 1), cities[b]]
+
 
 if __name__ == '__main__':
     SM = StatisticsTableManager()
     sw = StatisticsWindow()
     sw.DisplayWindow()
-    for i in range(200):
-        SM.AddEntry([ 'Dijkstras', 100,20, 2.34, 'London'])
+    # for i in range(200):
+    #     SM.AddEntry(GenerateRandomData())
 
     #SM.DeleteEntryByID(99)
     #SM.CheckIDExists(4)
