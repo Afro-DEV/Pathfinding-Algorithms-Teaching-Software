@@ -7,7 +7,7 @@ import time
 from tkinter import messagebox
 from Utilities import ConvertKilometresToMiles
 from Algorithms import Dijkstra, AStar
-from Statistics import StatisticsManager
+from Statistics import StatisticsTableManager
 
 class AnimationController():
     def __init__(self):
@@ -249,7 +249,7 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
 
 #Map demonstration animator class
 class NetworkAnimator():
-    def __init__(self, graph, startCoord, endCoord, algorithmId, useMiles, figAndAxis, GRAPH_STYLES, edgeSkipFactor = 20, interval = 0.5):
+    def __init__(self, graph, startCoord, endCoord, algorithmId, useMiles, figAndAxis, GRAPH_STYLES, networkName, edgeSkipFactor = 20, interval = 0.5):
         self.__graph = graph
         self.GRAPH_STYLES = GRAPH_STYLES
         self.startCoord = startCoord
@@ -263,6 +263,7 @@ class NetworkAnimator():
         self.fig = figAndAxis[0]
         self.ax = figAndAxis[1]
         self.startTime = time.time()
+        self.networkName = networkName
         #self.fig.canvas.mpl_connect("draw_event", lambda: self.on_animation_complete())
         
         
@@ -292,8 +293,9 @@ class NetworkAnimator():
             messagebox.showinfo('No Path', 'No path was found between Points')
             return
         
-        self.path = lengthOfPath
-        self.edgeexplored = len(exploredEdges)
+        self.path = lengthOfPath #This path variable is used to store length of path in statistics table
+        self.numberOfEdgesAccessed = len(exploredEdges)
+
         #Converting to 
         self.lengthOfPath = round(lengthOfPath / 1000, 1)
         if self.useMiles:
@@ -350,11 +352,14 @@ class NetworkAnimator():
         self.anim = animation.FuncAnimation(fig, update, frames=numberOfFrames, interval=self.interval, repeat=False)
         
     def OnAnimationComplete(self):
-        SM = StatisticsManager()
-        print('Animation Complete')
+        statisticsTableManager = StatisticsTableManager()
+
         self.endTime = time.time()
         timeTook = self.endTime-self.startTime
+
+
         units = 'Miles' if self.useMiles else 'Kilometres' #Conditionally show Miles or kilometres
         messagebox.showinfo(title='Length Of Path', 
                             message=f"The length of path found is {round(self.lengthOfPath,1)} {units} and was found in {round(timeTook, 2)}s") 
-        SM.AddEntry([self.algorithmId, self.path,self.edgeexplored, timeTook, 'London'])
+        
+        statisticsTableManager.AddEntry([self.algorithmId, self.path,self.numberOfEdgesAccessed, timeTook, self.networkName]) #Store data on pathfinding information
