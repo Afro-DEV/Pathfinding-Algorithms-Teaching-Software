@@ -4,7 +4,7 @@ import pandas as pd
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
-
+from Forms import StatisticsManagerInputRecordIDForm
 class StatisticsTableManager():
     def __init__(self):
         self.__fileName = 'Statistics/StatisticsTable.csv'
@@ -21,8 +21,10 @@ class StatisticsTableManager():
         with open(self.__fileName, mode='a+', newline='') as file:
             writer = csv.writer(file)
             file.seek(0) #Start reading from the top most line
-            if not self.HasStatisticsTableFile():
-                writer.writerow(self.__headers) #If file did not exist add header
+            firstRow = file.readline().strip()
+
+            if not firstRow:  # If the file is empty, write the headers
+                writer.writerow(self.__headers)
             
             entry = [self.__current_id] + data
             writer.writerow(entry)
@@ -34,7 +36,7 @@ class StatisticsTableManager():
     def DropAllEntries(self):
         table: pd.DataFrame = pd.read_csv(self.__fileName)
 
-# Drop all rows
+        # Drop all rows
         table = table.drop(table.index)
 
         # Save back to CSV
@@ -43,17 +45,30 @@ class StatisticsTableManager():
         print("CSV file cleared, but headers are retained.")
 
 
-
     def HasStatisticsTableFile(self):
         return os.path.isfile(self.__fileName)
     
     def CreateFilePath(self):
         #exist_ok = True stops the directory from being created if already exists
+        # os.makedirs(os.path.dirname(self.__fileName), exist_ok=True)
+        # if not os.path.exists(self.__fileName):
+        #     with open(self.__fileName, 'w') as file:
+        #         writer = csv.writer(file)
+        #         writer.writerow(self.__headers)  
+
         os.makedirs(os.path.dirname(self.__fileName), exist_ok=True)
-        if not os.path.exists(self.__fileName):
-            with open(self.__fileName, 'w') as file:
-                writer = csv.writer(file)
-                writer.writerow(self.__headers)  
+
+        # Check if the file already exists and has content
+        #fileExists = os.path.isfile(self.__fileName)
+        with open(self.__fileName, mode='a+', newline='') as file:
+            writer = csv.writer(file)
+            file.seek(0) #Start reading from the top most line
+            firstRow = file.readline().strip()
+
+            if not firstRow:  # If the file is empty, write the headers
+                writer.writerow(self.__headers)
+            
+            
 
     def GetCurrentID(self):
         if os.path.isfile(self.__fileName):  # Check if the file exists
@@ -141,7 +156,7 @@ class StatisticsWindow():
         deleteAllEntriesBTN = tk.Button(self.__window, text='Delete All Entries', command=self.ClearTable, background='red', foreground='white')
         deleteAllEntriesBTN.grid(row=2, column=0)
 
-        deleteRecordBTN = tk.Button(self.__window, text='Delete  Entry', command=self.__statisticsManager.DropAllEntries, background='red', foreground='white')
+        deleteRecordBTN = tk.Button(self.__window, text='Delete  Entry', command=self.DeleteRecord, background='red', foreground='white')
         deleteRecordBTN.grid(row=2, column=1)
         
         self.__window.mainloop()
@@ -166,12 +181,19 @@ class StatisticsWindow():
         self.tree.grid(row=1, column=0, sticky="nsew")
 
     def RefreshTable(self):
-        self.__dataFrame = pd.read_csv("Statitistics/Statisticstable.csv") #Read new updated csv file
+        self.__dataFrame = pd.read_csv("Statistics/StatisticsTable.csv") #Read new updated csv file
         for item in self.tree.get_children(): #delete every old row
             self.tree.delete(item)
 
         for _, row in self.__dataFrame.iterrows():
             self.tree.insert("", tk.END, values=list(row)) #Insert the new rows
+
+    def DeleteRecord(self):
+        form = StatisticsManagerInputRecordIDForm()
+        form.Run()
+        recordId = form.GetDeletedID()
+        self.__statisticsManager.DeleteEntryByID(recordId)
+        self.RefreshTable()
 
 
 
@@ -179,8 +201,9 @@ if __name__ == '__main__':
     SM = StatisticsTableManager()
     sw = StatisticsWindow()
     sw.DisplayWindow()
-    # for i in range(100):
-    #     SM.AddEntry([ 'Dijkstras', 100,20, 2.34, 'London'])
+    for i in range(200):
+        SM.AddEntry([ 'Dijkstras', 100,20, 2.34, 'London'])
+
     #SM.DeleteEntryByID(99)
     #SM.CheckIDExists(4)
    
