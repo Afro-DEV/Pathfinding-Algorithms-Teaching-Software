@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import messagebox
 import sys
 from DijkstrasDemonstrationWindow import DijkstrasDemonstrationWindow
+from Statistics import StatisticsWindow
+
 class MainMenuWindow():
     def __init__(self):
         self.APPLICATION_BUTTON_HEIGHT = 5
@@ -18,6 +20,8 @@ class MainMenuWindow():
 
         self.mainMenuTitle = tk.Label(self.root, text='Main Menu', font=("Arial", 16, "bold", "underline"))
         self.mainMenuTitle.grid(row=0, column=0, columnspan=2, pady=10)
+
+        
 
         self.OpenDijkstrasDemonstrationButton = tk.Button(self.root,
                                                           text='Dijkstras Demonstration',
@@ -38,6 +42,15 @@ class MainMenuWindow():
         
         self.OpenMapDemonstrationButton.grid(row=1, column=0, pady=15, padx=5)
 
+        self.OpenStatatisticsWindowButton = tk.Button(self.root,
+                                                          text='View Statistics Table',
+                                                          height=2,
+                                                          width=20,
+                                                          font=("Arial", 10),
+                                                          command=self.OpenStatisticsWindow)
+        
+        self.OpenStatatisticsWindowButton.grid(row=2, column=0, columnspan=2,pady=15)
+
 
         self.QuitButton = tk.Button(self.root, 
                                     text='Quit',
@@ -47,7 +60,7 @@ class MainMenuWindow():
                                     font=("Arial", 12, "bold"),
                                     command=self.QuitApplication)
         
-        self.QuitButton.grid(row=2, columnspan=2, pady=25)
+        self.QuitButton.grid(row=3,column=0, columnspan=2, pady=25)
 
         #When window is closed via the window manager it is handled the correct way.
         self.root.protocol("WM_DELETE_WINDOW", self.QuitApplication)
@@ -80,7 +93,9 @@ class MainMenuWindow():
     def MinimsieMainMenu(self):
         self.root.iconify()
         
-            
+    def OpenStatisticsWindow(self):
+        statisticsWindow = StatisticsWindow()
+        statisticsWindow.DisplayWindow()
         
 
     
