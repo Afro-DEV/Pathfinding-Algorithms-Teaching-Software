@@ -7,11 +7,12 @@ from tkinter import ttk
 
 class StatisticsTableManager():
     def __init__(self):
-        self.__fileName = 'Statitistics/Statisticstable.csv'
+        self.__fileName = 'Statistics/StatisticsTable.csv'
         self.__headers = ['ID', 'Algorithm', 'Length Of Path', 'Edges Explored', 'Time Taken', 'Network']
         self.__current_id = self.GetCurrentID()
     
     def AddEntry(self, data):
+        
         #exist_ok = True stops the directory from being created if already exists
         os.makedirs(os.path.dirname(self.__fileName), exist_ok=True)
 
@@ -45,6 +46,14 @@ class StatisticsTableManager():
 
     def HasStatisticsTableFile(self):
         return os.path.isfile(self.__fileName)
+    
+    def CreateFilePath(self):
+        #exist_ok = True stops the directory from being created if already exists
+        os.makedirs(os.path.dirname(self.__fileName), exist_ok=True)
+        if not os.path.exists(self.__fileName):
+            with open(self.__fileName, 'w') as file:
+                writer = csv.writer(file)
+                writer.writerow(self.__headers)  
 
     def GetCurrentID(self):
         if os.path.isfile(self.__fileName):  # Check if the file exists
@@ -57,8 +66,12 @@ class StatisticsTableManager():
         return 1  # Start from ID 1 
     
     def DeleteEntryByID(self, id):
-        if not self.CheckIDExists(id):
+        if not self.HasStatisticsTableFile():
+            messagebox.showerror('Error', 'Table has not been created.')
+            return 
+        if not self.__CheckIDExists(id):
             messagebox.showerror('Error', 'ID does not exist')
+            return
         updatedTableData = []
         with open(self.__fileName, mode='r', newline='') as file:
             reader = csv.reader(file)
@@ -75,7 +88,7 @@ class StatisticsTableManager():
 
 
     
-    def CheckIDExists(self, targetID):
+    def __CheckIDExists(self, targetID):
         with open(self.__fileName, mode='r') as file:
                 reader = csv.reader(file)
                 rows = list(reader)
@@ -103,22 +116,27 @@ class StatisticsTableManager():
     
 class StatisticsWindow():
     def __init__(self):
+        self.__statisticsManager = StatisticsTableManager()
         self.__window = tk.Tk()
         self.__window.title("Statistics Manager")
         self.__window.rowconfigure(0, weight=1)
         self.__window.columnconfigure(0, weight=1)
+       
+        if not self.__statisticsManager.HasStatisticsTableFile():
+            self.__statisticsManager.CreateFilePath()
 
-        self.__dataFrame: pd.DataFrame = pd.read_csv('Statitistics/Statisticstable.csv')
-        self.__statisticsManager = StatisticsTableManager()
-
+        self.__dataFrame: pd.DataFrame = pd.read_csv('Statistics/StatisticsTable.csv')
+        
+        self.tree = ttk.Treeview(self.__window, columns=list(self.__dataFrame.columns), show="headings")
+        self.CreateTable()
+        
  
 
         
     def DisplayWindow(self):
         heading = tk.Label(self.__window, text="Statistics Manager", font=("Arial", 16, "bold"))
         heading.grid(row=0, column=0, columnspan=2, pady=10)
-        self.tree = ttk.Treeview(self.__window, columns=list(self.__dataFrame.columns), show="headings")
-        self.CreateTable()
+        
 
         deleteAllEntriesBTN = tk.Button(self.__window, text='Delete All Entries', command=self.ClearTable, background='red', foreground='white')
         deleteAllEntriesBTN.grid(row=2, column=0)
@@ -161,8 +179,8 @@ if __name__ == '__main__':
     SM = StatisticsTableManager()
     sw = StatisticsWindow()
     sw.DisplayWindow()
-    for i in range(100):
-        SM.AddEntry([ 'Dijkstras', 100,20, 2.34, 'London'])
+    # for i in range(100):
+    #     SM.AddEntry([ 'Dijkstras', 100,20, 2.34, 'London'])
     #SM.DeleteEntryByID(99)
     #SM.CheckIDExists(4)
    
