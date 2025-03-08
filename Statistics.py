@@ -46,7 +46,7 @@ class StatisticsTableManager():
         print("CSV file cleared, but headers are retained.")
 
 
-    def HasStatisticsTableFile(self):
+    def HasStatisticsTableFile(self) -> bool:
         return os.path.isfile(self.__fileName)
     
     def CreateFilePath(self):
@@ -108,27 +108,48 @@ class StatisticsTableManager():
         with open(self.__fileName, mode='r') as file:
                 reader = csv.reader(file)
                 rows = list(reader)
-                if self.BinarySearchForID(rows[1:], targetID):
+                if self.BinarySearchForID(rows[1:],low=0, high=len(rows)-2, targetId= targetID):
                     return True
                 return False
 
-    def BinarySearchForID(self, rows, targetId):
-        low = 0
-        high = len(rows)-1 
-        mid = 0
-        while low <= high:
-            mid = (high + low) //2
-            if int(rows[mid][0]) > targetId:
-                high = mid-1
+    # def BinarySearchForID(self, rows, targetId):
+    #     low = 0
+    #     high = len(rows)-1 
+    #     mid = 0
+    #     while low <= high:
+    #         mid = (high + low) //2
+    #         if int(rows[mid][0]) > targetId:
+    #             high = mid-1
             
-            elif int(rows[mid][0]) < targetId:
-                low = mid +1
+    #         elif int(rows[mid][0]) < targetId:
+    #             low = mid +1
             
-            else: 
-                print(f'found id {rows[mid][0]}')
-                return rows[mid][0]
+    #         else: 
+    #             print(f'found id {rows[mid][0]}')
+    #             return rows[mid][0]
                 
-        return None
+    #     return None
+    
+    def BinarySearchForID(self, rows, low, high, targetId):
+        if high >= low: #Base case check
+            mid = low + (high-low) //2
+            
+            if int(rows[mid][0]) == targetId:
+                return rows[mid][0]
+            
+            elif int(rows[mid][0]) > targetId:
+                return self.BinarySearchForID(rows, low, mid-1, targetId)
+            
+            elif int(rows[mid][0]) < targetId:  #Must be present in right subarray
+                return self.BinarySearchForID(rows, mid+1, high, targetId)
+            
+        else:
+            return None
+            
+
+
+
+        
     
 class StatisticsWindow():
     def __init__(self):
@@ -148,22 +169,22 @@ class StatisticsWindow():
         self.__dataFrame: pd.DataFrame = pd.read_csv('Statistics/StatisticsTable.csv')
         
         self.tree = ttk.Treeview(self.__window, columns=list(self.__dataFrame.columns), show="headings")
-        self.CreateTable()
+        self.__CreateTable()
         
  
 
         
     def DisplayWindow(self):
         heading = tk.Label(self.__window, text="Statistics Manager", font=("Arial", 16, "bold"))
-        heading.grid(row=0, column=0, pady=10, sticky='n')
+        heading.grid(row=0, column=0, pady=10, sticky='n', columnspan=3)
         
-        refreshBTN = tk.Button(self.__window, text='Refresh', command=self.RefreshTable,  pady=5)
+        refreshBTN = tk.Button(self.__window, text='Refresh', command=self.__RefreshTable,  pady=5)
         refreshBTN.grid(row=2, column=0, sticky='ew', padx=10, pady=5)
 
-        deleteRecordBTN = tk.Button(self.__window, text='Delete  Entry', command=self.DeleteRecord, background='#FF0F0F', foreground='white', pady=5)
+        deleteRecordBTN = tk.Button(self.__window, text='Delete  Entry', command=self.__DeleteRecord, background='#FF0F0F', foreground='white', pady=5)
         deleteRecordBTN.grid(row=2, column=1, sticky='ew', padx=10, pady=5)
 
-        deleteAllEntriesBTN = tk.Button(self.__window, text='Delete All Entries', command=self.ClearTable, background='#FF0F0F', foreground='white', pady=5, font=('Arial', 9, 'bold'))
+        deleteAllEntriesBTN = tk.Button(self.__window, text='Delete All Entries', command=self.__ClearTable, background='#FF0F0F', foreground='white', pady=5, font=('Arial', 9, 'bold'))
         deleteAllEntriesBTN.grid(row=2, column=2, sticky='ew', padx=10, pady=5)
 
         
@@ -173,7 +194,7 @@ class StatisticsWindow():
         self.__window.mainloop()
 
 
-    def CreateTable(self):
+    def __CreateTable(self):
         
 
         # Define column headings
@@ -187,14 +208,14 @@ class StatisticsWindow():
 
         self.tree.grid(row=1, column=0, sticky="nsew", pady=20, padx=10, columnspan=3)
 
-    def ClearTable(self):
+    def __ClearTable(self):
         self.__statisticsManager.DropAllEntries()
-        self.RefreshTable()
+        self.__RefreshTable()
 
 
     
 
-    def RefreshTable(self):
+    def __RefreshTable(self):
         self.__dataFrame = pd.read_csv("Statistics/StatisticsTable.csv") #Read new updated csv file
         for item in self.tree.get_children(): #delete every old row
             self.tree.delete(item)
@@ -202,12 +223,12 @@ class StatisticsWindow():
         for _, row in self.__dataFrame.iterrows():
             self.tree.insert("", tk.END, values=list(row)) #Insert the new rows
 
-    def DeleteRecord(self):
+    def __DeleteRecord(self):
         form = StatisticsManagerInputRecordIDForm()
         form.Run()
         recordId = form.GetDeletedID()
         self.__statisticsManager.DeleteEntryByID(recordId)
-        self.RefreshTable()
+        self.__RefreshTable()
 
 
 def GenerateRandomData():
