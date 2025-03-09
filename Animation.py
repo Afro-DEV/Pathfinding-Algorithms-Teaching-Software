@@ -264,6 +264,7 @@ class NetworkAnimator():
         self.ax = figAndAxis[1]
         self.startTime = time.time()
         self.networkName = networkName
+        self.ALGORITHM_ID_TO_ALGORITHM =  {0: 'A-Star', 1: 'Dijkstras'}
         #self.fig.canvas.mpl_connect("draw_event", lambda: self.on_animation_complete())
         
         
@@ -279,8 +280,6 @@ class NetworkAnimator():
             case 0:
                 path,  exploredEdges, lengthOfPath = AStar(GRAPH, startNode, endNode)
                 highlightingEdgeColour = '#2BD9FF'
-                #As A* is a faster algorithm the edgeSkip Factor must be decremented
-                #self.edgeSkipFactor = self.edgeSkipFactor//2
             case 1:
                 path,  exploredEdges, lengthOfPath = Dijkstra(GRAPH, startNode, endNode)
                 highlightingEdgeColour = '#FF512B'
@@ -293,7 +292,7 @@ class NetworkAnimator():
             messagebox.showinfo('No Path', 'No path was found between Points')
             return
         
-        self.path = lengthOfPath #This path variable is used to store length of path in statistics table
+        self.path = round(lengthOfPath,6) #This path variable is used to store length of path in statistics table
         self.numberOfEdgesAccessed = len(exploredEdges)
 
         #Converting to 
@@ -355,11 +354,11 @@ class NetworkAnimator():
         statisticsTableManager = StatisticsTableManager()
 
         self.endTime = time.time()
-        timeTook = self.endTime-self.startTime
+        timeTook = round(self.endTime-self.startTime, 6)
 
 
         units = 'Miles' if self.useMiles else 'Kilometres' #Conditionally show Miles or kilometres
         messagebox.showinfo(title='Length Of Path', 
                             message=f"The length of path found is {round(self.lengthOfPath,1)} {units} and was found in {round(timeTook, 2)}s") 
         
-        statisticsTableManager.AddEntry([self.algorithmId, self.path,self.numberOfEdgesAccessed, timeTook, self.networkName]) #Store data on pathfinding information
+        statisticsTableManager.AddEntry([self.ALGORITHM_ID_TO_ALGORITHM[self.algorithmId], self.path,self.numberOfEdgesAccessed, timeTook, self.networkName]) #Store data on pathfinding information
