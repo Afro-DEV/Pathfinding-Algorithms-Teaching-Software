@@ -102,8 +102,7 @@ class GraphGeneratorForm(AbstractForm):
     def OnSelectedNumberOfNodes(self, event):
         '''Update number of nodes every time to the dropdown is modified'''
         self.numberOfNodes = int(self.numberOfNodesVar.get())
-        print(f"Dropdown selected: {self.numberOfNodes}")
-    
+        
     def OnSelectedPValue(self, event):
         '''Update pValue each time the slider is moved'''
         self.pValue = self.slider.get()
@@ -120,8 +119,7 @@ class GraphGeneratorForm(AbstractForm):
         self.isDemoModeSelected = self.demoCheckBox.instate(['selected'])
         self.form.quit()
         self.form.destroy() 
-        print(self.GetNumberOfNodes())
-
+        
     def IsDemoModeSelected(self)-> bool:
         return self.isDemoModeSelected
 
@@ -132,7 +130,7 @@ class GraphGeneratorForm(AbstractForm):
 
 
 class SourceNodeInputForm(AbstractForm):
-    def __init__(self, numNodes):
+    def __init__(self, numNodes: int):
         AbstractForm.__init__(self)
         self.form.title('Form')
         # Normalize the size based on screen scaling
@@ -177,7 +175,6 @@ class SourceNodeInputForm(AbstractForm):
 
         try: #Try to convert Users Selection to ID
             sourceNodeID = CharacterToId(userInput)
-            print(sourceNodeID)
             self.sourceNodeID = sourceNodeID
             self.form.quit()
             self.form.destroy() 
@@ -250,11 +247,9 @@ class NetworkSettingsInputForm(AbstractForm):
     def OnSelectedNetwork(self, event):
         '''Update Network selected variable each time the dropdown  is modified'''
         self.networkSelected = self.selectNetworkVar.get()
-        print(f"Network selected is {self.networkSelected}")
 
     def OnSelectedAlgorithm(self, event):
         self.algorithmSelected = self.selectAlgorithmVar.get()
-        print(f"Algorithm selected is {self.algorithmSelected}")
 
     def GetNetworkSelectedFilePath(self, networkSelected):
         '''Returns parameterised network file based on selected network'''
@@ -269,13 +264,11 @@ class NetworkSettingsInputForm(AbstractForm):
         self.algorithmSelected = self.selectAlgorithmVar.get()
 
         self.useMiles = self.distanceInMilesCheckBox.instate(['selected']) #True if it is selected false if not
-        print(f"DEBUG: Submitting with Network={self.networkSelected}, Algorithm={self.algorithmSelected}, UseMiles={self.useMiles}")
         if MainMenuWindow.CheckOSMNXInstalled(): #Only display if necessary packages installed
             from MapDemonstrationWindow import MapDemonstrationWindow
             window = MapDemonstrationWindow(self.networkSelected, algorithm=self.algorithmSelected, useMiles=self.useMiles)
             window.DisplayNetwork()
-        else:
-            print('OSMNX is not installed')
+        
 
 class StatisticsManagerInputRecordIDForm(AbstractForm):
 
@@ -293,7 +286,7 @@ class StatisticsManagerInputRecordIDForm(AbstractForm):
         #self.root.title("Source Node Input Form")
         
 
-        self.label = tk.Label(self.form, text=f"Enter record ID to be deleted.", wraplength=140)
+        self.label = tk.Label(self.form, text=f"Enter Record ID to be deleted.", wraplength=140)
         self.label.pack(pady=10)
 
         
