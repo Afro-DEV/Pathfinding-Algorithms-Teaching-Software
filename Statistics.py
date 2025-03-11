@@ -42,7 +42,7 @@ class StatisticsTableManager():
         # Save back to CSV
         table.to_csv(self.__fileName, index=False)
 
-        print("CSV file cleared, but headers are retained.")
+    
 
 
     def HasStatisticsTableFile(self) -> bool:

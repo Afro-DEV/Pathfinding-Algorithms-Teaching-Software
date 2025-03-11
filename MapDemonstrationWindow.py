@@ -88,7 +88,6 @@ class MapDemonstrationWindow():
             self.HighlightPoints()
 
         if len(self.click_coords) == 2:# If two points are clicked, highlight them
-            print('Now begin animating')
             self.ax.clear()
             self.RemoveUndoButton()
             animator = NetworkAnimator(self.__graph,self.click_coords[0], self.click_coords[1], self.algorithmId, self.useMiles, self.figAndAxis, self.GRAPH_STYLES, self.networkName)

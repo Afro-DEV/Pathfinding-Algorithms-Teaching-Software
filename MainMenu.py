@@ -24,7 +24,7 @@ class MainMenuWindow():
         
 
         self.OpenDijkstrasDemonstrationButton = tk.Button(self.root,
-                                                          text='Dijkstras Demonstration',
+                                                          text="Dijkstra's Demonstration",
                                                           height=self.APPLICATION_BUTTON_HEIGHT,
                                                           width=self.APPLICATION_BUTTON_WIDTH,
                                                           font=("Arial", 12, "bold"),
@@ -73,7 +73,6 @@ class MainMenuWindow():
             isInstalled = True
             return isInstalled
         except ImportError:
-            print('Sorry to run this part of the program OSMNX must be installed')
             return isInstalled
             
 

@@ -25,9 +25,9 @@ class AbstractForm(ABC): # Showing this class has abstract methods
     def Submit(self):
         pass
 
-def NormaliseFormSizeOnScaling(root, baseHeight: int, baseWidth: int) -> tuple[int,int]:
+def NormaliseFormSizeOnScaling(form, baseHeight: int, baseWidth: int) -> tuple[int,int]:
     '''Normalise the size of form based on Screen Scaling'''
-    scaling = root.tk.call('tk', 'scaling')
+    scaling = form.tk.call('tk', 'scaling')
     return int(baseHeight*scaling), int(baseWidth* scaling)
 
 class GraphGeneratorForm(AbstractForm):

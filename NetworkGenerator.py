@@ -14,7 +14,7 @@ class BaseNetworkGenerator:
         ox.save_graphml(graph, filepath=self.filepath) #Saves graph as graphml file 
     
     @staticmethod
-    def CheckFileExists(filepath):
+    def CheckFileExists(filepath: str):
         if os.path.exists(filepath):
             return True
         else:

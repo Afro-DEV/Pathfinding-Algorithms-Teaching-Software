@@ -74,7 +74,8 @@ class PriorityQueue():
     
     def ReturnNodeAtIndex(self, index: int) -> Node:
         return self.__queue[index]
-        
+
+    #Used to output queue when debugging    
     def OutputQueue(self)-> None:
         for item in self.__queue:
             print(item.GetNodeData(), end= "")
@@ -196,6 +197,7 @@ class MinHeap:
     def HeapLength(self) -> int:
         return len(self.__heap)
 
+    #Used to output heap when debugging.
     def OutputHeap(self):
         print(self.__heap)
 
@@ -222,6 +224,7 @@ class Stack():
         self.__pointer -=1
         return topOfStack
     
+    #Used to output stack when debugging
     def OutputStack(self):
         print(self.__stack)
     
@@ -243,17 +246,4 @@ class LinkedListNode():
 
 
 if __name__ == '__main__':
-    minheap = MinHeap()
-    
-    minheap.Insert(10)
-    minheap.Insert(4)
-    minheap.Insert(9)
-    minheap.Insert(1)
-    minheap.Insert(7)
-
-    minheap.OutputHeap()
-    minheap.RemoveMinValue()
-    minheap.OutputHeap()
-
-
-    
+    pass

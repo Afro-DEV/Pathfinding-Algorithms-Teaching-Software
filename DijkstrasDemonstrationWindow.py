@@ -348,20 +348,5 @@ class BottomUIBar():
 
 
 if __name__ == '__main__':
-    test = [[0,4,3,7,0,0,0],
-                [4,0,0,1,0,4,0],
-                [3,0,0,3,5,0,0],
-                [7,1,3,0,2,2,7],
-                [0,0,5,2,0,0,2],
-                [0,4,0,2,0,0,4],
-                [0,0,0,7,2,4,0]]
     
-    
-    #For the animation highlight a node being optimised and every edge connected to said node. And add the data structure
-    
-    #Maker ur own version
-    num = 8
-    b = GenerateAdjacencyMatrix(5,50)
-    #DisplayWindow(test)
-    #DisplayWindow(test, 0)
     window = DijkstrasDemonstrationWindow()

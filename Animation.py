@@ -17,10 +17,7 @@ class AnimationController():
     
     def PauseAnimation(self):
         self.__isPaused = not self.__isPaused
-        if self.__isPaused:
-            print("Animation Paused")
-        else:
-            print("Animation Resumed")
+        
     
     def IncreaseAnimationSpeed(self):
         #Increment Animation speed to a max value
@@ -28,7 +25,7 @@ class AnimationController():
             self.__frameDelay -= 100 #Decreasing frame delay to increase animation speed
         else:
             print('Maximum PlayBack Speed has been reached')
-        print(self.__frameDelay)
+        
 
     def DecreaseAnimationSpeed(self):
         #Decrease animation speed to a minimum value
@@ -36,7 +33,7 @@ class AnimationController():
             self.__frameDelay +=500
         else:
             print('Minimum Playback speed has been reached')
-        print(self.__frameDelay)
+        
 
     def JumpToEndOfAnimation(self):
         self.SetAnimationSpeed(0) #Setting the frame delay to zero to complete the animation stratight away
@@ -190,9 +187,6 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
         #Condition to show if animation is complete
         if nodesToBeVisited.IsEmpty():
             animator.DehighlightAllNodes()
-            print('Animaton Complete!')
-            for i in range(numNodes):
-                print(f"Shortest distance to {NODELABELS[i]} is {distances[i]}")
     
             animator.SetRunningState(False)
             return 

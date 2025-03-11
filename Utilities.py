@@ -46,7 +46,4 @@ def CharacterToId(char: str) -> int:
     return ord(char) - 65
 
 if __name__ == '__main__':
-    print([i for i in range(3,20,4)])
-
-    print(IdToCharacter(0))
-    print(CharacterToId('A '))
+    pass
