@@ -1,5 +1,5 @@
 class Node():
-    def __init__(self, label,priority, id):
+    def __init__(self, label: str,priority: int, id: int):
         self.__label: str = label
         self.__priority = priority
         #The Id property is a numerical value corresponding to the label of a Node
@@ -101,14 +101,14 @@ class MinHeap:
         #Moves item up tree to its correct position to maintain the minheap property
         self.HeapifyUp(index)
     
-    def HeapifyUp(self, index):
+    def HeapifyUp(self, index: int):
         if self.HasParent(index) and self.Parent(index)> self.__heap[index]:
             self.SwapValues(self.GetParentIndex(index), index) #If parent is greater than child then incorrect position so swap the parent and child node
             index = self.GetParentIndex(index)
             #Recursively heapify the index up the Binary tree until it is in the correct position
             self.HeapifyUp(index)
 
-    def HeapifyDown(self, index):
+    def HeapifyDown(self, index: int):
         smallest = index # Initialise smallest as the index of the current node
         
         #Check if left or right child is the smallest node found
@@ -144,44 +144,44 @@ class MinHeap:
             raise('Empty Heap')
         return self.__heap[0]
 
-    def Parent(self, index):
+    def Parent(self, index: int):
         '''Returns value of parent node of index'''
         return self.__heap[self.GetParentIndex(index)]
 
-    def LeftChild(self, index):
+    def LeftChild(self, index: int):
         '''Returns value of the left child of index'''
         return self.__heap[self.GetLeftChildIndex(index)]
     
-    def RightChild(self, index):
+    def RightChild(self, index: int):
         '''Returns the value of the right child of  index.'''
         return self.__heap[self.GetRightChildIndex(index)]
 
 
 
-    def GetLeftChildIndex(self, index) -> int:
+    def GetLeftChildIndex(self, index: int) -> int:
         '''Returns the index of the left child node which is always 2* node index + 1'''
         return 2* index + 1
         
     
-    def GetRightChildIndex(self, index) -> int:
+    def GetRightChildIndex(self, index: int) -> int:
         '''Returns the index of the right child node  which is always 2* node index + 2'''
         return 2* index + 2
     
-    def GetParentIndex(self, index) -> int:
+    def GetParentIndex(self, index: int) -> int:
         '''Returns the parent index which is always the floor division by 2 of the node index -1'''
         return (index-1)//2
 
     #The Has__ functions work by checking if computed index for left child, right child  or parent node index is between 0 and the length of the heap.
-    def HasLeftChild(self, index):
+    def HasLeftChild(self, index: int):
         return self.GetLeftChildIndex(index) < self.HeapLength()
 
-    def HasRightChild(self, index):
+    def HasRightChild(self, index: int):
         return self.GetRightChildIndex(index) < self.HeapLength()
 
-    def HasParent(self, index):
+    def HasParent(self, index: int):
         return self.GetParentIndex(index) >=0
 
-    def SwapValues(self, index1, index2):
+    def SwapValues(self, index1: int, index2: int):
         '''Swaps the values of the 2 nodes in the heap at the respective indexes.'''
         temp = self.__heap[index1]
         self.__heap[index1] = self.__heap[index2]
