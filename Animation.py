@@ -65,7 +65,7 @@ class Animator():
         self.__animationStarted: bool = False
         self.__removeBlankSpaceTrueFlag: bool = True
 
-    def UpdateDistancesTableUI(self, distances):
+    def UpdateDistancesTableUI(self, distances: list):
         #Removing placeholder blank space row in distances table
         if self.__removeBlankSpaceTrueFlag:
             self.__tableData.pop(0)
@@ -95,13 +95,13 @@ class Animator():
         self.__fig.canvas.draw()
 
     
-    def HighlightEdgesOfNode(self, nodeID) -> None:
+    def HighlightEdgesOfNode(self, nodeID: int) -> None:
         '''Highlights all the edges connected to the node passed as the argument as red.'''
         for edge in self.__edgeReferences[nodeID]:
             edge.set(color='red', linewidth=2)
         self.__fig.canvas.draw()
 
-    def DehighlightEdgesOfNode(self, nodeID) -> None:
+    def DehighlightEdgesOfNode(self, nodeID: int) -> None:
         '''Dehighlights all the edges connected to the node passed as the argument by highlighting it grey.'''
         for edge in self.__edgeReferences[nodeID]:
             edge.set(color='grey')
@@ -129,7 +129,7 @@ class Animator():
         self.__UpdateVisitedNodesText(visitedNodes)
         self.__fig.canvas.draw() #Redraw canvaas with updates
     
-    def SetNodeColour(self, id, colour):
+    def SetNodeColour(self, id: int, colour: str):
         '''Sets node at passed id to colour passed as argument'''
         self.__nodeReferences[id].set(color = colour)
         #Redraw figure with update
@@ -323,7 +323,7 @@ class NetworkAnimator():
         #shortestPathLine, = plt.plot([], [], 'y', label="Shortest Path")  
         
         #Updates animation frame by frame
-        def update(frameNum):
+        def update(frameNum: int):
             edge_x = []
             edge_y = []
             #Highlighting explored Edges. 
