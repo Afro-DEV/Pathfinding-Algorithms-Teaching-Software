@@ -195,7 +195,7 @@ class DijkstrasDemonstrationWindow():
                 [0,4,0,2,0,0,4],
                 [0,0,0,7,2,4,0]]
     
-    def SetMatrix(self, matrix):
+    def SetMatrix(self, matrix: list[list]):
         self.__adjMatrix = matrix
     
     def GetSourceNode(self) -> int:
@@ -266,7 +266,7 @@ class TopUIBar():
         plt.close('all') #Close MatPlotlib plot.
 
 class BottomUIBar():
-    def __init__(self, window, animator: Animator, windowObject):
+    def __init__(self, window: tk.Tk, animator: Animator, windowObject: DijkstrasDemonstrationWindow):
         self.__window = window
         self.__windowObject: DijkstrasDemonstrationWindow = windowObject
         self.__isSourceNodeInputFormRunning: bool = False
