@@ -21,6 +21,7 @@ def GenerateAdjacencyMatrix(numberOfNodes: int,densityVal: float) -> list[list[i
                 matrix[j][i] = matrix[i][j] # Update adjacency matrix connection going to the other way to create an undirected edge.
     return matrix
 
+#Used to output each array in adjacency matrix for debugging
 def OutputMatrix(matrix):
     for each in matrix:
         print(each)
@@ -50,7 +51,7 @@ def HaversineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
     distance = c * RADIUS_EARTH
     return distance
 
-def EuclideanDistance(graph, node1, node2):
+def EuclideanDistance(graph: nx.MultiDiGraph,node1: int, node2: int)-> float:
     '''Calculate the aboslute distance between 2 nodes lattitude and longitude'''
     coordinateNode1 = NodeToCoordinate(graph,node1)
     coordinateNode2 = NodeToCoordinate(graph, node2)
@@ -59,18 +60,11 @@ def EuclideanDistance(graph, node1, node2):
     distance = math.sqrt(distanceLatitude**2 + distanceLongitude**2)
     return distance
 
-def NodeToCoordinate(graph, node) -> tuple[float,float]:
+def NodeToCoordinate(graph: nx.MultiDiGraph, node: int) -> tuple[float,float]:
+    '''Gets cordinates of nx multi graph '''
     return graph.nodes[node]['x'], graph.nodes[node]['y']
 
 
-
-def GetPath(cameFrom, currentNode, startNode) -> list:
-    path = []
-    while currentNode in cameFrom:
-        path.append(currentNode)
-        currentNode = cameFrom[currentNode]
-    path.append(startNode)
-    return path[::-1] #Return reversed path
 
 def GetPathLinkedList(endListNode: LinkedListNode) -> list:
     '''Given the last node of a linked list, traverse and reverse linked list
@@ -185,18 +179,4 @@ def Dijkstra(graph: nx.MultiDiGraph, startNode: int, endNode: int):
     return [], exploredEdges, None
 
 if __name__ == "__main__":
-    start_time = time.time()
-    a = GenerateAdjacencyMatrix(5, 0)
-    b = GenerateAdjacencyMatrix(5, 50)
-    c = GenerateAdjacencyMatrix(10,100)
-    # print(a)
-    # print()
-    # print(b)
-    # print()
-    # print(c)
-
-    OutputMatrix(c)
-    print(c[0][0])
-    #print(type(a))
-
-    #print("My program took", time.time() - start_time, "to run")
+    pass
