@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 from Forms import StatisticsManagerInputRecordIDForm
+
 class StatisticsTableManager():
     def __init__(self):
         self.__fileName = 'Statistics/StatisticsTable.csv'
@@ -17,8 +18,6 @@ class StatisticsTableManager():
         #exist_ok = True stops the directory from being created if already exists
         os.makedirs(os.path.dirname(self.__fileName), exist_ok=True)
 
-        # Check if the file already exists and has content
-        #fileExists = os.path.isfile(self.__fileName)
         with open(self.__fileName, mode='a+', newline='') as file:
             writer = csv.writer(file)
             file.seek(0) #Start reading from the top most line
@@ -50,17 +49,9 @@ class StatisticsTableManager():
         return os.path.isfile(self.__fileName)
     
     def CreateFilePath(self):
-        #exist_ok = True stops the directory from being created if already exists
-        # os.makedirs(os.path.dirname(self.__fileName), exist_ok=True)
-        # if not os.path.exists(self.__fileName):
-        #     with open(self.__fileName, 'w') as file:
-        #         writer = csv.writer(file)
-        #         writer.writerow(self.__headers)  
-
         os.makedirs(os.path.dirname(self.__fileName), exist_ok=True)
 
-        # Check if the file already exists and has content
-        #fileExists = os.path.isfile(self.__fileName)
+        
         with open(self.__fileName, mode='a+', newline='') as file:
             writer = csv.writer(file)
             file.seek(0) #Start reading from the top most line
@@ -112,24 +103,7 @@ class StatisticsTableManager():
                     return True
                 return False
 
-    # def BinarySearchForID(self, rows, targetId):
-    #     low = 0
-    #     high = len(rows)-1 
-    #     mid = 0
-    #     while low <= high:
-    #         mid = (high + low) //2
-    #         if int(rows[mid][0]) > targetId:
-    #             high = mid-1
-            
-    #         elif int(rows[mid][0]) < targetId:
-    #             low = mid +1
-            
-    #         else: 
-    #             print(f'found id {rows[mid][0]}')
-    #             return rows[mid][0]
-                
-    #     return None
-    
+  
     def BinarySearchForID(self, rows, low, high, targetId):
         if high >= low: #Base case check
             mid = low + (high-low) //2
@@ -138,19 +112,15 @@ class StatisticsTableManager():
                 return rows[mid][0]
             
             elif int(rows[mid][0]) > targetId:
-                return self.BinarySearchForID(rows, low, mid-1, targetId)
+                return self.BinarySearchForID(rows, low, mid-1, targetId) #Call binary search looking at left sub array
             
-            elif int(rows[mid][0]) < targetId:  #Must be present in right subarray
-                return self.BinarySearchForID(rows, mid+1, high, targetId)
+            elif int(rows[mid][0]) < targetId:  
+                return self.BinarySearchForID(rows, mid+1, high, targetId) #Call binary search looking at right sub array
             
         else:
-            return None
+            return None #ID not present in rows list
             
 
-
-
-        
-    
 class StatisticsWindow():
     def __init__(self):
         self.__statisticsManager = StatisticsTableManager()
@@ -163,7 +133,7 @@ class StatisticsWindow():
         self.__window.columnconfigure(1, weight=1)  
         self.__window.columnconfigure(2, weight=1)  
        
-        if not self.__statisticsManager.HasStatisticsTableFile():
+        if not self.__statisticsManager.HasStatisticsTableFile(): #Initiate file path if theres no table to be able to create the file
             self.__statisticsManager.CreateFilePath()
 
         self.__dataFrame: pd.DataFrame = pd.read_csv('Statistics/StatisticsTable.csv')
@@ -187,10 +157,7 @@ class StatisticsWindow():
         deleteAllEntriesBTN = tk.Button(self.__window, text='Delete All Entries', command=self.__ClearTable, background='#FF0F0F', foreground='white', pady=5, font=('Arial', 9, 'bold'))
         deleteAllEntriesBTN.grid(row=2, column=2, sticky='ew', padx=10, pady=5)
 
-        
-
-        
-        
+   
         self.__window.mainloop()
 
 
@@ -212,9 +179,6 @@ class StatisticsWindow():
         self.__statisticsManager.DropAllEntries()
         self.__RefreshTable()
 
-
-    
-
     def __RefreshTable(self):
         self.__dataFrame = pd.read_csv("Statistics/StatisticsTable.csv") #Read new updated csv file
         for item in self.tree.get_children(): #delete every old row
@@ -230,8 +194,9 @@ class StatisticsWindow():
         self.__statisticsManager.DeleteEntryByID(recordId)
         self.__RefreshTable()
 
-
+#Used to generate dummy data for testing
 def GenerateRandomData():
+    '''Add dummy data to the Statistics table'''
     algos =['A-Star', 'Dijkstras']
     cities = ['London', 'NewYork', 'Paris']
     a =random.randint(0,1)
@@ -246,6 +211,5 @@ if __name__ == '__main__':
     # for i in range(200):
     #     SM.AddEntry(GenerateRandomData())
 
-    #SM.DeleteEntryByID(99)
-    #SM.CheckIDExists(4)
+    
    

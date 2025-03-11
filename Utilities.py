@@ -31,14 +31,14 @@ def ConvertKilometresToMiles(length: float) -> float:
     '''Converts Kilometres To Miles Correct to one decimal place'''
     return round(length / 1.609, 1)
 
-def IdToCharacter(id) -> str:
+def IdToCharacter(id: int) -> str:
     '''
     Converts an numeric Integer to respective alphabetic character
     For example 0-> A, 1-> B, 2-> C....
     '''
     return chr(id+65) 
 
-def CharacterToId(char) -> int:
+def CharacterToId(char: str) -> int:
     '''
     Converts an alphabetic character to its respective id
     For example A -> 0, B-> 1, C-> 2...
