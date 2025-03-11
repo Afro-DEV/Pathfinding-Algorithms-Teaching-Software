@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 from NetworkGenerator import BaseNetworkGenerator
 from matplotlib.widgets import Button
 from Animation import NetworkAnimator
-from tkinter import messagebox
 
 class MapDemonstrationWindow():
     def __init__(self, network: str, algorithm: str, useMiles: bool):
-        PATH_FINDING_ALGORITHMS_ID = {'A-Star': 0, 'Dijkstras':1}
+        PATH_FINDING_ALGORITHMS_TO_ID = {'A-Star': 0, 'Dijkstras':1}
+        self.networkName = network
         self.filepath = self.GetNetworkSelectedFilePath(network)
   
         if not BaseNetworkGenerator.CheckFileExists(self.filepath):
@@ -22,7 +22,7 @@ class MapDemonstrationWindow():
                             'EndNodeColour': '#ff0000', 
                             'NodeSize': 2 }
         try:
-            self.algorithmId = PATH_FINDING_ALGORITHMS_ID[algorithm]
+            self.algorithmId = PATH_FINDING_ALGORITHMS_TO_ID[algorithm]
         except:
             #In case the user manages to write into the dropdown box which should not be possible
             raise ValueError('Unexpected value passed for algorithmId')
@@ -91,16 +91,17 @@ class MapDemonstrationWindow():
             print('Now begin animating')
             self.ax.clear()
             self.RemoveUndoButton()
-            animator = NetworkAnimator(self.__graph,self.click_coords[0], self.click_coords[1], self.algorithmId, self.useMiles, self.figAndAxis, self.GRAPH_STYLES)
+            animator = NetworkAnimator(self.__graph,self.click_coords[0], self.click_coords[1], self.algorithmId, self.useMiles, self.figAndAxis, self.GRAPH_STYLES, self.networkName)
             animator.StartAnimation()
             self.fig.canvas.draw_idle()
     
-    def CheckIfCoordsAreSpaced(self, x_Coord, y_Coord):
+    def CheckIfCoordsAreSpaced(self, x_Coord: float, y_Coord: float) -> bool:
         if ox.nearest_nodes(self.__graph, x_Coord, y_Coord) == ox.nearest_nodes(self.__graph,  self.click_coords[0][0], self.click_coords[0][1]):
             return False
         return True
     
-    def CheckValidClick(self, x_Coord, y_Coord):
+    def CheckValidClick(self, x_Coord: float, y_Coord: float) -> bool:
+        '''Return True if both of the x and y coordinate is not equal to none'''
         return x_Coord != None or y_Coord !=None
 
         
@@ -137,39 +138,6 @@ class MapDemonstrationWindow():
 
 
 if __name__ == "__main__":
-    window = MapDemonstrationWindow("London", algorithm='A-Star', useMiles=False)
+    window = MapDemonstrationWindow("NewYork", algorithm='A-Star', useMiles=False)
     window.DisplayNetwork()
-    # window = MapDemonstrationWindow("NewYork", algorithm='Dijkstras', useMiles=True)
-    # window.DisplayNetwork()
-
-
-
-
-    # GRAPH_STYLES = {'EdgeColour': "Grey",
-    #                         'EdgeWidth': 0.3,
-    #                         'StartNodeColour': 'limegreen',
-    #                         'EndNodeColour': '#ff0000', 
-    #                         'NodeSize': 2 }
-    # figax = plt.subplots(figsize=(10, 10))
-    # graph =  ox.load_graphml(filepath="Networks/LondonNetwork.graphml")
-    # startCoords = (51.5017, -0.1419)  
-    # endCoords = (51.53, -0.15)
-    # x  = NetworkAnimator(graph, startCoords, endCoords,1, True, figax, GRAPH_STYLES)
-    # plt.show()
     
-    # startNode = ox.distance.nearest_nodes(graph, startCoords[1], startCoords[0])
-    # endNode = ox.distance.nearest_nodes(graph, endCoords[1], endCoords[0])
-   
-    # startTime = time.time()
-    # path, exploredEdges, length = Dijkstra(graph, startNode, endNode)
-    # endTime = time.time()
-    # print(endTime-startTime)
-    # print(path)
-    # #Gett cordinates of nodes on the path
-    # path_x = [graph.nodes[node]['x'] for node in path]
-    # path_y = [graph.nodes[node]['y'] for node in path]
-    # ax.plot(path_x, path_y, linewidth=2, color="red", label="A* Shortest Path")
-    # plt.legend()
-    # plt.show()
-
-    #animate_astar(ox.load_graphml(filepath="Networks/LondonNetwork.graphml"), (51.5017, -0.1419), (51.53, -0.15))
