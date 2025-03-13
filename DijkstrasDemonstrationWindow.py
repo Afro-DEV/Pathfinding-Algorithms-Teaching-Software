@@ -32,14 +32,14 @@ class GraphRenderer():
 
 
     def CircularLayout(self) -> dict[int, tuple[float,float]]:
-        '''Get cooridnates for n number of nodes placed around a unit circle'''
+        '''Get coordinates for n number of nodes placed around a unit circle'''
         radius = 1
         angles = self.GetAngles() # Get angle of each node from origin
         coordinates = {}
-        for i,angle in enumerate(angles): # For each angle convert it to cartesian cordinates placed on the unit circle
+        for i,angle in enumerate(angles): # For each angle convert it to cartesian coordinates placed on the unit circle
             x_Coord = radius * cos(angle) 
             y_Coord = radius * sin(angle) 
-            coordinates[i] = (x_Coord, y_Coord) #Add cordinates as tuple to the dictionary
+            coordinates[i] = (x_Coord, y_Coord) #Add coordinates as tuple to the dictionary
         return coordinates
 
 
@@ -48,8 +48,7 @@ class GraphRenderer():
         edgeReferences = [[] for i in range(self.__numNodes)] #Used to store a reference to every edge assigned for a node.
         edgeLabels = []
         labelPositions = []
-        #plt.figure(figsize=(8,8))
-        coordinates = self.CircularLayout() # Get cordinates for each node
+        coordinates = self.CircularLayout() # Get coordinates for each node
         
         
         for i, (x, y) in coordinates.items():
@@ -60,7 +59,7 @@ class GraphRenderer():
         #Plotting the edges
         for i in range(self.__numNodes):
             for j in range(i+1, self.__numNodes):
-                if self.__adjacencyMatrix[i][j] !=0: # Ensuring there is a coneection between nodes
+                if self.__adjacencyMatrix[i][j] !=0: # Ensuring there is a connection between nodes
                     
                     #Get coordinates for the start of the edge and the end of the
                     #edge starts at on of the nodes and ends at the other node
@@ -93,7 +92,7 @@ class GraphRenderer():
         for existing_x, existing_y in label_positions: #Loop through each edge label checking for overlap.
             
             distance = math.sqrt((x - existing_x) ** 2 + (y - existing_y) ** 2) # Calculating distance between new label and existing labels 
-            if distance < minimumDistance: # If new label too close to exisiting label adjust the position
+            if distance < minimumDistance: # If new label too close to existing label adjust the position
                 # Adjust the position to resolve the overlap
                 x += random.uniform(-minimumDistance, minimumDistance)
                 y += random.uniform(-minimumDistance, minimumDistance)
@@ -104,7 +103,7 @@ class GraphRenderer():
 class DijkstrasDemonstrationWindow():
     def __init__(self):
         self.TITLE_FONT_SIZE = 20
-        self.__adjMatrix = [[0,4,3,7,0,0,0], # Initialy use demo matrix.
+        self.__adjMatrix = [[0,4,3,7,0,0,0], # Initially use demo matrix.
                 [4,0,0,1,0,4,0],
                 [3,0,0,3,5,0,0],
                 [7,1,3,0,2,2,7],
@@ -214,12 +213,12 @@ class TopUIBar():
         self.__windowObject: DijkstrasDemonstrationWindow = windowObject
         self.__isGraphGeneratorFormRunning: bool = False
         buttonHeight = 2
-        butttonWidth = 8
+        buttonWidth = 8
 
         self.__topBarFrame = tk.Frame(self.__window, height=BARHEIGHT) #Intialise top bar component
         self.__topBarFrame.pack(side="top", fill=tk.X)
 
-        self.__quitButton = tk.Button(self.__topBarFrame, text='Quit', height=buttonHeight, width=butttonWidth, command=self.QuitButtonClick )
+        self.__quitButton = tk.Button(self.__topBarFrame, text='Quit', height=buttonHeight, width=buttonWidth, command=self.QuitButtonClick )
         self.__quitButton.pack(side=tk.RIGHT, padx=10)
         
 
@@ -249,7 +248,7 @@ class TopUIBar():
             self.__window.destroy()
             self.__windowObject.DisplayWindow(matrix)
         else:
-            #If demo mode selcted use the demo mode matrix
+            #If demo mode selected use the demo mode matrix
             matrix = self.__windowObject.GetDemoMatrix()
             self.__windowObject.SetMatrix(matrix) # Might be redundant
             self.__window.destroy()

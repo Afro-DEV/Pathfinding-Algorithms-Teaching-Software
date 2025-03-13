@@ -13,9 +13,9 @@ class MapDemonstrationWindow():
         if not BaseNetworkGenerator.CheckFileExists(self.filepath):
             BaseNetworkGenerator.GenerateAllMissingNetworks()
 
-        self.__graph =  ox.load_graphml(filepath=self.filepath) #Load graph from file path as type NetworxX multi d Graph 
+        self.__graph =  ox.load_graphml(filepath=self.filepath) #Load graph from file path as type NetworkX multi d Graph 
 
-        #Create Dictionary to store styles for the grpah     
+        #Create Dictionary to store styles for the graph     
         self.GRAPH_STYLES = {'EdgeColour': "Grey",
                             'EdgeWidth': 0.3,
                             'StartNodeColour': 'limegreen',
@@ -51,7 +51,7 @@ class MapDemonstrationWindow():
             self.HighlightPoints() #Rehighlights points removing the highlighted last click
 
     def GetNetworkSelectedFilePath(self, networkSelected):
-        #Parameterised File path
+        #Parametrised File path
         return f"Networks/{networkSelected}Network.graphml"
 
 
@@ -81,7 +81,7 @@ class MapDemonstrationWindow():
 
                 
         if self.CheckValidClick(x_Coord, y_Coord) and len(self.click_coords) < 2: #Ensuring valid clicks
-            #If second click cordinate is not far enough away from first click do not add to click coords.
+            #If second click coordinate is not far enough away from first click do not add to click coords.
             if len(self.click_coords) == 1 and not self.CheckIfCoordsAreSpaced(x_Coord, y_Coord): 
                 return 
             self.click_coords.append((x_Coord, y_Coord))

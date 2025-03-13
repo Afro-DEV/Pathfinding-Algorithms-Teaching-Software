@@ -7,7 +7,7 @@ class BaseNetworkGenerator:
         self.centrePoint = centrePoint #Centre of network
         # Radius of circle from centre point that should be included in graph (measured in metres)
         self.radius = radius 
-        self.filepath = f"Networks/{self.cityName}Network.graphml" #Parameterised file path 
+        self.filepath = f"Networks/{self.cityName}Network.graphml" #Parametrised file path 
 
     def GenerateNetwork(self):
         graph = ox.graph.graph_from_point(self.centrePoint, dist=self.radius, network_type="drive") 

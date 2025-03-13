@@ -11,7 +11,7 @@ from Statistics import StatisticsTableManager
 
 class AnimationController():
     def __init__(self):
-        self.__frameDelay: int = 1000 #Time between frame in miliseconds.
+        self.__frameDelay: int = 1000 #Time between frame in milliseconds.
         self.__isPaused: bool = True
     
     
@@ -36,7 +36,7 @@ class AnimationController():
         
 
     def JumpToEndOfAnimation(self):
-        self.SetAnimationSpeed(0) #Setting the frame delay to zero to complete the animation stratight away
+        self.SetAnimationSpeed(0) #Setting the frame delay to zero to complete the animation straight away
 
     def IsPaused(self):
         return self.__isPaused
@@ -124,7 +124,7 @@ class Animator():
     def UpdateDataStructuresPAndS(self, visitedNodes: list[Node], nodesToBeVisited: PriorityQueue):
         self.__UpdateNodesToBeVisitedText(nodesToBeVisited)
         self.__UpdateVisitedNodesText(visitedNodes)
-        self.__fig.canvas.draw() #Redraw canvaas with updates
+        self.__fig.canvas.draw() #Redraw canvas with updates
     
     def SetNodeColour(self, id: int, colour: str):
         '''Sets node at passed id to colour passed as argument'''
@@ -168,7 +168,7 @@ def AnimateDijkstras(adjacencyMatrix: list[list[int]], sourceNodeIndex: int,  an
 
     nodesToBeVisited: list[Node] = PriorityQueue()
     visitedNodes: list[Node]= []
-    #Initiallisng the priority queue of nodes to be visited
+    #Initialising the priority queue of nodes to be visited
     for i in range(numNodes):
         priority = distances[i]
         nodesToBeVisited.Enqueue(Node(NODELABELS[i], priority, id=i))
@@ -294,8 +294,7 @@ class NetworkAnimator():
         if self.useMiles:
             self.lengthOfPath = ConvertKilometresToMiles(self.lengthOfPath)
         numberOfFrames = len(exploredEdges) // self.edgeSkipFactor + len(path)
-        #Intitialising plot
-        #fig, ax = plt.subplots(figsize=(10, 10))
+        #Initialising plot
         ax= self.ax
         fig = self.fig 
         ox.plot_graph(self.__graph, 

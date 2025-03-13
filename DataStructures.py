@@ -8,7 +8,7 @@ class Node():
         
 
     def OutputNode(self):
-        #Output the nodes label followed by curent priority 
+        #Output the nodes label followed by current priority 
         print((f"({self.__label}, {self.__priority})"))
 
     def GetPriority(self):

@@ -31,13 +31,13 @@ def HaversineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
     coordinateNode1 = NodeToCoordinate(graph,node1)
     coordinateNode2 = NodeToCoordinate(graph, node2)
 
-    #Get lattitude and longitude of nodes
+    #Get latitude and longitude of nodes
     lat1 = coordinateNode1[0]
     lon1 = coordinateNode1[1]
     lat2 = coordinateNode2[0]
     lon2 = coordinateNode2[1]
 
-    lat1,lon1, lat2, lon2 = map(ConvertDegreesToRadians, [lat1,lon1,lat2,lon2]) # Convert degrees lattitude and longitude into radians
+    lat1,lon1, lat2, lon2 = map(ConvertDegreesToRadians, [lat1,lon1,lat2,lon2]) # Convert degrees latitude and longitude into radians
     
     # Apply Haversine formula
     distanceLat = lat2 - lat1
@@ -52,7 +52,7 @@ def HaversineDistance(graph: nx.MultiDiGraph, node1: int,  node2: int) -> float:
     return distance
 
 def EuclideanDistance(graph: nx.MultiDiGraph,node1: int, node2: int)-> float:
-    '''Calculate the aboslute distance between 2 nodes lattitude and longitude'''
+    '''Calculate the absolute distance between 2 nodes latitude and longitude'''
     coordinateNode1 = NodeToCoordinate(graph,node1)
     coordinateNode2 = NodeToCoordinate(graph, node2)
     distanceLatitude = abs(coordinateNode1[0]-coordinateNode2[0])
@@ -61,7 +61,7 @@ def EuclideanDistance(graph: nx.MultiDiGraph,node1: int, node2: int)-> float:
     return distance
 
 def NodeToCoordinate(graph: nx.MultiDiGraph, node: int) -> tuple[float,float]:
-    '''Gets cordinates of nx multi graph '''
+    '''Gets coordinates of nx multi graph '''
     return graph.nodes[node]['x'], graph.nodes[node]['y']
 
 
@@ -126,7 +126,7 @@ def AStar(graph: nx.MultiDiGraph, startNode: int, endNode: int , heuristicWeight
                 #Use memory reference to track the parent node for path reconstruction.
                 cameFrom[neighbourNode] = LinkedListNode(neighbourNode, parent=cameFrom.get(currentNode))
                 g_score[neighbourNode] = provisionalGScore
-                #Increase heuristic by a multiplier for strongr weighting 
+                #Increase heuristic by a multiplier for stronger weighting 
                 f_score[neighbourNode] = provisionalGScore + HaversineDistance(graph, neighbourNode, endNode) * heuristicWeight
 
                 #Update new f score for neighbour node

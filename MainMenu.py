@@ -42,14 +42,14 @@ class MainMenuWindow():
         
         self.OpenMapDemonstrationButton.grid(row=1, column=0, pady=15, padx=5)
 
-        self.OpenStatatisticsWindowButton = tk.Button(self.root,
+        self.OpenStatisticsWindowButton = tk.Button(self.root,
                                                           text='View Statistics Table',
                                                           height=2,
                                                           width=20,
                                                           font=("Arial", 10),
                                                           command=self.OpenStatisticsWindow)
         
-        self.OpenStatatisticsWindowButton.grid(row=2, column=0, columnspan=2,pady=15)
+        self.OpenStatisticsWindowButton.grid(row=2, column=0, columnspan=2,pady=15)
 
 
         self.QuitButton = tk.Button(self.root, 
@@ -86,10 +86,10 @@ class MainMenuWindow():
             messagebox.showerror('Error', 'To use this part of the program ensure you have installed the OSMNX library')
             return
         from Forms import NetworkSettingsInputForm
-        self.MinimsieMainMenu()
+        self.MinimiseMainMenu()
         networkSettingsForm = NetworkSettingsInputForm(self.root)
 
-    def MinimsieMainMenu(self):
+    def MinimiseMainMenu(self):
         self.root.iconify()
         
     def OpenStatisticsWindow(self):

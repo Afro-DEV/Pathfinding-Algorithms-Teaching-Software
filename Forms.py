@@ -113,7 +113,7 @@ class GraphGeneratorForm(AbstractForm):
             selectedValue =  self.numberOfNodesDropdown.get()  
             self.numberOfNodes = int(selectedValue) if selectedValue else 5  # Ensure default is 5
         except ValueError:
-            self.numberOfNodes = 5 # Set number of nodes to 5 incase of error.
+            self.numberOfNodes = 5 # Set number of nodes to 5 if there is an error.
         self.pValue = self.slider.get()
         #Getting value selected checkbox
         self.isDemoModeSelected = self.demoCheckBox.instate(['selected'])
@@ -190,7 +190,7 @@ class SourceNodeInputForm(AbstractForm):
 
 class NetworkSettingsInputForm(AbstractForm):
     def __init__(self, parentWindow):
-        super().__init__(parentWindow)  # Pass parent to AbstractForm by calling AbstractForm initialisng method.
+        super().__init__(parentWindow)  # Pass parent to AbstractForm by calling AbstractForm initialising method.
 
         #Initial form Values
         self.algorithmSelected = None
@@ -234,7 +234,7 @@ class NetworkSettingsInputForm(AbstractForm):
         self.distanceInMilesCheckBoxLabel.grid(row=3,column=0, rowspan=2)
 
         style = ttk.Style()
-        style.configure("TCheckbutton", focuscolor="transparent", highlightthickness=0, padding=5, font=("Arial", 12))  # Removing focus borde
+        style.configure("TCheckbutton", focuscolor="transparent", highlightthickness=0, padding=5, font=("Arial", 12))  # Removing focus border
         self.distanceInMilesCheckBox = ttk.Checkbutton(self.form, text='Miles', onvalue=True, offvalue=False, style="TCheckbutton")
         self.distanceInMilesCheckBox.grid(row=3, column=1,  pady=5)
          # Remove focus highlight (explicitly unfocus the Checkbutton)
@@ -252,7 +252,7 @@ class NetworkSettingsInputForm(AbstractForm):
         self.algorithmSelected = self.selectAlgorithmVar.get()
 
     def GetNetworkSelectedFilePath(self, networkSelected):
-        '''Returns parameterised network file based on selected network'''
+        '''Returns parametrised network file based on selected network'''
         return f"Networks/{networkSelected}Network.graphml"
 
 
