@@ -66,7 +66,7 @@ class GraphRenderer():
                     x_Coords = [coordinates[i][0], coordinates[j][0]]
                     y_Coords = [coordinates[i][1], coordinates[j][1]]
 
-                    #MR R FIX? 45 + 55 /100
+                    
                     x_mid = (x_Coords[0] + x_Coords[1])/2
                     y_mid = (y_Coords[0] + y_Coords[1])/2
 
@@ -80,7 +80,7 @@ class GraphRenderer():
                         label_y = y_mid
                     else:
                         #Initially placing edge weight label in the middle of the edge
-                        label_x, label_y = self.ResolveEdgeLabelOverlap(x_mid, y_mid, labelPositions)
+                        label_x, label_y = self.ResolveEdgeLabelOverlap(x_mid, y_mid, labelPositions) #Adjust edge position so no overlap
                         labelPositions.append((label_x, label_y))
                     edgeLabels.append(self.__graphAxis.text(label_x, label_y, str([self.__adjacencyMatrix[i][j]])[1:-1], fontsize=14, ha='center', va='center',))
         self.__graphAxis.set_title('Dijkstras Demonstration', fontsize= self.TITLE_FONT_SIZE)
@@ -118,7 +118,7 @@ class DijkstrasDemonstrationWindow():
         
         self.DisplayWindow(self.__adjMatrix)
     
-    def DisplayDataStrucutures(self, axs, numNodes: int):
+    def DisplayDataStructures(self, axs, numNodes: int):
         '''Initialise the UI components of the distances table and data structures P,S and the distances table.'''
         columnLabels = [NODELABELS[i] for i in range(numNodes)]
         blankSpaceRow = [[None] * len(columnLabels)]
@@ -148,7 +148,7 @@ class DijkstrasDemonstrationWindow():
         graphRenderer = GraphRenderer(adjacencyMatrix, graphAxis=axs[0])
         nodeReference, edgeReferences = graphRenderer.DisplayGraph()
 
-        visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = self.DisplayDataStrucutures(axs[1], numNodes)
+        visitedNodesText, nodesToBeVisitedText, distancesTable, tableData = self.DisplayDataStructures(axs[1], numNodes)
         
         animator = Animator(nodeReference, edgeReferences, visitedNodesText, nodesToBeVisitedText , distancesTable, tableData, axs, fig)
 
@@ -215,7 +215,7 @@ class TopUIBar():
         buttonHeight = 2
         buttonWidth = 8
 
-        self.__topBarFrame = tk.Frame(self.__window, height=BARHEIGHT) #Intialise top bar component
+        self.__topBarFrame = tk.Frame(self.__window, height=BARHEIGHT) #Initialise top bar component
         self.__topBarFrame.pack(side="top", fill=tk.X)
 
         self.__quitButton = tk.Button(self.__topBarFrame, text='Quit', height=buttonHeight, width=buttonWidth, command=self.QuitButtonClick )
@@ -244,13 +244,13 @@ class TopUIBar():
             numNodes = graphGeneratorFormObject.GetNumberOfNodes()
             density = graphGeneratorFormObject.pValue
             matrix = GenerateAdjacencyMatrix(numNodes,density)
-            self.__windowObject.SetMatrix(matrix) # Might be redundant
+            self.__windowObject.SetMatrix(matrix) 
             self.__window.destroy()
             self.__windowObject.DisplayWindow(matrix)
         else:
             #If demo mode selected use the demo mode matrix
             matrix = self.__windowObject.GetDemoMatrix()
-            self.__windowObject.SetMatrix(matrix) # Might be redundant
+            self.__windowObject.SetMatrix(matrix) 
             self.__window.destroy()
             self.__windowObject.DisplayWindow(matrix)
         
