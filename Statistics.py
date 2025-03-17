@@ -208,7 +208,7 @@ if __name__ == '__main__':
     SM = StatisticsTableManager()
     sw = StatisticsWindow()
     sw.DisplayWindow()
-    # for i in range(200):
+    # for i in range(200): #Add 200 dummy entries to the statistics table
     #     SM.AddEntry(GenerateRandomData())
 
     

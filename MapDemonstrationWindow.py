@@ -137,6 +137,6 @@ class MapDemonstrationWindow():
 
 
 if __name__ == "__main__":
-    window = MapDemonstrationWindow("NewYork", algorithm='A-Star', useMiles=False)
+    window = MapDemonstrationWindow("London", algorithm='A-Star', useMiles=False)
     window.DisplayNetwork()
     
