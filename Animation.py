@@ -289,10 +289,11 @@ class NetworkAnimator():
         self.path = round(lengthOfPath,6) #This path variable is used to store length of path in statistics table
         self.numberOfEdgesAccessed = len(exploredEdges)
 
-        #Converting to 
+        #Convert length in meters to kilometers
         self.lengthOfPath = round(lengthOfPath / 1000, 1)
         if self.useMiles:
             self.lengthOfPath = ConvertKilometresToMiles(self.lengthOfPath)
+        #Number of frames set to the number the amount of edges we will be highlighting and the length of the path.
         numberOfFrames = len(exploredEdges) // self.edgeSkipFactor + len(path)
         #Initialising plot
         ax= self.ax
@@ -340,7 +341,7 @@ class NetworkAnimator():
 
             return shortestPathLine, exploredEdgesLine
         
-        #Number of frames set to the number the amount of edges we will be highlighting and the length of the path.
+        
         self.anim = animation.FuncAnimation(fig, update, frames=numberOfFrames, interval=self.interval, repeat=False)
         
     def OnAnimationComplete(self):

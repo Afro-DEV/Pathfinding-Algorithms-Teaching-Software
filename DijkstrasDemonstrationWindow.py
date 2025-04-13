@@ -22,9 +22,6 @@ class GraphRenderer():
     def GetAngles(self) -> list[float]:
         """
         Returns a list of angles (0 to 2π) for nodes evenly distributed.
-
-        Returns:
-            list[float]: Angles for each node. List length number of nodes
         """
         step = math.pi * 2 / self.__numNodes
         angles = [i * step for i in range(self.__numNodes)]
@@ -87,9 +84,9 @@ class GraphRenderer():
         self.__graphAxis.set_axis_off()
         return nodeReferences, edgeReferences
     
-    def ResolveEdgeLabelOverlap(self, x: float, y: float, label_positions: list[tuple[float, float]], minimumDistance=0.1) -> tuple[float, float]:
+    def ResolveEdgeLabelOverlap(self, x: float, y: float, labelPositions: list[tuple[float, float]], minimumDistance=0.1) -> tuple[float, float]:
 
-        for existing_x, existing_y in label_positions: #Loop through each edge label checking for overlap.
+        for existing_x, existing_y in labelPositions: #Loop through each edge label checking for overlap.
             
             distance = math.sqrt((x - existing_x) ** 2 + (y - existing_y) ** 2) # Calculating distance between new label and existing labels 
             if distance < minimumDistance: # If new label too close to existing label adjust the position
@@ -97,7 +94,7 @@ class GraphRenderer():
                 x += random.uniform(-minimumDistance, minimumDistance)
                 y += random.uniform(-minimumDistance, minimumDistance)
                 # Check again with updated position (recursively)
-                return self.ResolveEdgeLabelOverlap(x, y, label_positions)
+                return self.ResolveEdgeLabelOverlap(x, y, labelPositions)
         return x, y
 
 class DijkstrasDemonstrationWindow():
